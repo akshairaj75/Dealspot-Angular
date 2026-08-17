@@ -27,13 +27,14 @@ export class BrandsCrudComponent implements OnInit {
   editingBrandId: number | null = null;
   searchQuery = '';
   filePath = environment.filePath;
+  selectedLogoFile: File | null = null;
+  logoPreviewUrl: string | null = null;
 
   ngOnInit(): void {
     this.loadBrands();
     this.brandForm = this.fb.group({
       nameEn: ['', Validators.required],
       nameAr: ['', Validators.required],
-      logoUrl: ['', Validators.required],
       sortOrder: [1, [Validators.required, Validators.min(1)]],
       isActive: [true]
     });
@@ -69,12 +70,23 @@ export class BrandsCrudComponent implements OnInit {
     this.filteredBrands.set(filtered);
   }
 
+  getLogoUrl(url: string | null | undefined): string {
+    if (!url) {
+      return 'https://placehold.co/100x100?text=No+Logo';
+    }
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+      return url;
+    }
+    return this.filePath + url;
+  }
+
   openAddModal(): void {
     this.editingBrandId = null;
+    this.selectedLogoFile = null;
+    this.logoPreviewUrl = null;
     this.brandForm.reset({
       nameEn: '',
       nameAr: '',
-      logoUrl: '',
       sortOrder: this.brands().length + 1,
       isActive: true
     });
@@ -83,10 +95,11 @@ export class BrandsCrudComponent implements OnInit {
 
   openEditModal(brand: any): void {
     this.editingBrandId = brand.id;
+    this.selectedLogoFile = null;
+    this.logoPreviewUrl = brand.logoUrl ? this.getLogoUrl(brand.logoUrl) : null;
     this.brandForm.patchValue({
       nameEn: brand.nameEn || brand.name_en,
       nameAr: brand.nameAr || brand.name_ar,
-      logoUrl: brand.logoUrl || brand.logo_url,
       sortOrder: brand.sortOrder || 1,
       isActive: brand.active === 1 || brand.active === true || brand.isActive === 1 || brand.isActive === true
     });
@@ -95,6 +108,25 @@ export class BrandsCrudComponent implements OnInit {
 
   closeModal(): void {
     this.isModalOpen = false;
+    this.selectedLogoFile = null;
+    this.logoPreviewUrl = null;
+  }
+
+  onFileSelected(event: any): void {
+    const file = event.target.files?.[0];
+    if (file) {
+      this.selectedLogoFile = file;
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.logoPreviewUrl = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeSelectedLogo(): void {
+    this.selectedLogoFile = null;
+    this.logoPreviewUrl = null;
   }
 
   onSubmit(): void {
@@ -128,59 +160,54 @@ export class BrandsCrudComponent implements OnInit {
       return;
     }
 
-    const payload = {
+    const brandData = {
       nameEn: val.nameEn,
       nameAr: val.nameAr,
-      logoUrl: val.logoUrl,
       sortOrder: Number(val.sortOrder),
-      active: val.isActive ? 1 : 0
+      active: val.isActive ? true : false
     };
 
-    if (this.editingBrandId) {
-      this.brandService.updateBrand(this.editingBrandId, payload).subscribe({
-        next: () => {
-          Swal.fire({
-            icon: 'success',
-            title: this.currentLang() === 'en' ? 'Updated!' : 'تم التحديث!',
-            text: this.currentLang() === 'en' ? 'Brand updated successfully.' : 'تم تحديث العلامة التجارية بنجاح.',
-            timer: 2000,
-            showConfirmButton: false
-          });
-          this.loadBrands();
-          this.closeModal();
-        },
-        error: (err) => {
-          console.error(err);
-          Swal.fire({
-            icon: 'error',
-            title: this.currentLang() === 'en' ? 'Error' : 'خطأ',
-            text: this.currentLang() === 'en' ? 'Failed to update brand.' : 'فشل تحديث العلامة التجارية.'
-          });
-        }
-      });
-    } else {
-      this.brandService.createBrand(payload).subscribe({
-        next: () => {
-          Swal.fire({
-            icon: 'success',
-            title: this.currentLang() === 'en' ? 'Added!' : 'تمت الإضافة!',
-            text: this.currentLang() === 'en' ? 'Brand added successfully.' : 'تم إضافة العلامة التجارية بنجاح.',
-            timer: 2000,
-            showConfirmButton: false
-          });
-          this.loadBrands();
-          this.closeModal();
-        },
-        error: (err) => {
-          console.error(err);
-          Swal.fire({
-            icon: 'error',
-            title: this.currentLang() === 'en' ? 'Error' : 'خطأ',
-            text: this.currentLang() === 'en' ? 'Failed to add brand.' : 'فشل إضافة العلامة التجارية.'
-          });
-        }
-      });
+    const formData = new FormData();
+    formData.append(
+      'data',
+      new Blob([JSON.stringify(brandData)], {
+        type: 'application/json'
+      })
+    );
+
+    if (this.selectedLogoFile) {
+      formData.append('logoFile', this.selectedLogoFile);
     }
+
+    const request = this.editingBrandId
+      ? this.brandService.updateBrand(this.editingBrandId, formData)
+      : this.brandService.createBrand(formData);
+
+    request.subscribe({
+      next: () => {
+        Swal.fire({
+          icon: 'success',
+          title: this.currentLang() === 'en' ? (this.editingBrandId ? 'Updated!' : 'Added!') : (this.editingBrandId ? 'تم التحديث!' : 'تمت الإضافة!'),
+          text: this.currentLang() === 'en'
+            ? (this.editingBrandId ? 'Brand updated successfully.' : 'Brand added successfully.')
+            : (this.editingBrandId ? 'تم تحديث العلامة التجارية بنجاح.' : 'تم إضافة العلامة التجارية بنجاح.'),
+          timer: 2000,
+          showConfirmButton: false
+        });
+        this.loadBrands();
+        this.closeModal();
+      },
+      error: (err) => {
+        console.error(err);
+        Swal.fire({
+          icon: 'error',
+          title: this.currentLang() === 'en' ? 'Error' : 'خطأ',
+          text: this.currentLang() === 'en'
+            ? (this.editingBrandId ? 'Failed to update brand.' : 'Failed to add brand.')
+            : (this.editingBrandId ? 'فشل تحديث العلامة التجارية.' : 'فشل إضافة العلامة التجارية.')
+        });
+      }
+    });
   }
 
   deleteBrand(id: number): void {

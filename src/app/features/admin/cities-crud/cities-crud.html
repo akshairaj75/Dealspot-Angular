@@ -1,87 +1,105 @@
 <div class="crud-container">
-      <div class="crud-header">
-        <h2>Manage Cities</h2>
-        <button class="btn btn-primary" (click)="openAddModal()">
-          <span class="material-icons-round">add</span>
-          <span>Add City</span>
-        </button>
-      </div>
+  <div class="crud-header">
+    <h2>{{ currentLang() === 'en' ? 'Manage Cities' : 'إدارة المدن' }}</h2>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <span class="material-icons-round">add</span>
+      <span>{{ currentLang() === 'en' ? 'Add City' : 'إضافة مدينة' }}</span>
+    </button>
+  </div>
 
-      <!-- Cities Table -->
-      <div class="card table-wrapper">
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name (EN)</th>
-              <th>Name (AR)</th>
-              <th>Region Code</th>
-              <th>Latitude</th>
-              <th>Longitude</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let c of cities()">
-              <td>{{ c.id }}</td>
-              <td>{{ c.nameEn }}</td>
-              <td>{{ c.nameAr }}</td>
-              <td><code>{{ c.regionCode }}</code></td>
-              <td>{{ c.latitude }}</td>
-              <td>{{ c.longitude }}</td>
-              <td>
-                <span class="badge" [class.badge-featured]="c.is_active === 1" [class.badge-discount]="c.is_active === 0">
-                  {{ c.is_active === 1 ? 'Active' : 'Inactive' }}
-                </span>
-              </td>
-              <td>
-                <div class="action-buttons-cell">
-                  <button class="btn-icon" (click)="openEditModal(c)" title="Edit"><span class="material-icons-round">edit</span></button>
-                  <button class="btn-icon text-danger" (click)="deleteCity(c.id)" title="Delete"><span class="material-icons-round">delete</span></button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+  <!-- Cities Table -->
+  <div class="card table-wrapper">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>{{ currentLang() === 'en' ? 'ID' : 'المعرف' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Name (EN)' : 'الاسم (EN)' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Name (AR)' : 'الاسم (AR)' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Region Code' : 'رمز المنطقة' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Latitude' : 'خط العرض' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Longitude' : 'خط الطول' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Status' : 'الحالة' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Actions' : 'الإجراءات' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of cities()">
+          <td>{{ c.id }}</td>
+          <td><strong>{{ c.nameEn || c.name_en }}</strong></td>
+          <td>{{ c.nameAr || c.name_ar }}</td>
+          <td><code>{{ c.regionCode || c.region_code }}</code></td>
+          <td>{{ c.latitude }}</td>
+          <td>{{ c.longitude }}</td>
+          <td>
+            <span 
+              class="badge" 
+              [class.badge-featured]="c.active === true || c.active === 1 || c.isActive === true || c.isActive === 1 || c.is_active === 1 || c.is_active === true" 
+              [class.badge-discount]="c.active === false || c.active === 0 || c.isActive === false || c.isActive === 0 || c.is_active === 0 || c.is_active === false"
+            >
+              {{ (c.active === true || c.active === 1 || c.isActive === true || c.isActive === 1 || c.is_active === 1 || c.is_active === true) 
+                 ? (currentLang() === 'en' ? 'Active' : 'نشط') 
+                 : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') 
+              }}
+            </span>
+          </td>
+          <td>
+            <div class="action-buttons-cell">
+              <button class="btn-icon" (click)="openEditModal(c)" [title]="currentLang() === 'en' ? 'Edit' : 'تعديل'">
+                <span class="material-icons-round">edit</span>
+              </button>
+              <button class="btn-icon text-danger" (click)="deleteCity(c.id)" [title]="currentLang() === 'en' ? 'Delete' : 'حذف'">
+                <span class="material-icons-round">delete</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="cities().length === 0">
+          <td colspan="8" style="text-align: center; padding: 32px; color: var(--text-muted);">
+            <p>{{ currentLang() === 'en' ? 'No cities found.' : 'لم يتم العثور على أي مدن.' }}</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-      <!-- Add/Edit Modal -->
-      <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
-        <div class="modal-content" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h3>{{ editingCityId ? 'Edit City' : 'Add New City' }}</h3>
-            <button class="btn-icon border-none" (click)="closeModal()"><span class="material-icons-round">close</span></button>
+  <!-- Add/Edit Modal -->
+  <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ editingCityId ? (currentLang() === 'en' ? 'Edit City' : 'تعديل المدينة') : (currentLang() === 'en' ? 'Add New City' : 'إضافة مدينة جديدة') }}</h3>
+        <button class="btn-icon border-none" (click)="closeModal()"><span class="material-icons-round">close</span></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="cityForm" (submit)="onSubmit()" class="auth-form">
+          <div class="form-group">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Name (English)' : 'الاسم (الإنجليزية)' }}</label>
+            <input type="text" formControlName="name_en" class="form-control" placeholder="e.g. Riyadh">
           </div>
-          <div class="modal-body">
-            <form [formGroup]="cityForm" (submit)="onSubmit()" class="auth-form">
-              <div class="form-group">
-                <label class="form-label">Name (English)</label>
-                <input type="text" formControlName="name_en" class="form-control">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Name (Arabic)</label>
-                <input type="text" formControlName="name_ar" class="form-control">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Region Code (e.g. RUH)</label>
-                <input type="text" formControlName="region_code" class="form-control">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Latitude</label>
-                <input type="number" step="0.0001" formControlName="latitude" class="form-control">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Longitude</label>
-                <input type="number" step="0.0001" formControlName="longitude" class="form-control">
-              </div>
-              <div class="form-group checkbox-label">
-                <input type="checkbox" formControlName="is_active">
-                <span>Active Status</span>
-              </div>
-              <button type="submit" [disabled]="cityForm.invalid" class="btn btn-primary w-full">Save Changes</button>
-            </form>
+          <div class="form-group">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Name (Arabic)' : 'الاسم (العربية)' }}</label>
+            <input type="text" formControlName="name_ar" class="form-control" placeholder="مثال: الرياض">
           </div>
-        </div>
+          <div class="form-group">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Region Code (e.g. RUH)' : 'رمز المنطقة (مثال: RUH)' }}</label>
+            <input type="text" formControlName="region_code" class="form-control" placeholder="RUH">
+          </div>
+          <div class="form-group">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Latitude' : 'خط العرض' }}</label>
+            <input type="number" step="0.0001" formControlName="latitude" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Longitude' : 'خط الطول' }}</label>
+            <input type="number" step="0.0001" formControlName="longitude" class="form-control">
+          </div>
+          <div class="form-group checkbox-label">
+            <input type="checkbox" formControlName="is_active">
+            <span>{{ currentLang() === 'en' ? 'Active Status' : 'الحالة النشطة' }}</span>
+          </div>
+          <button type="submit" [disabled]="cityForm.invalid" class="btn btn-primary w-full">
+            {{ currentLang() === 'en' ? 'Save Changes' : 'حفظ التغييرات' }}
+          </button>
+        </form>
       </div>
     </div>
+  </div>
+</div>

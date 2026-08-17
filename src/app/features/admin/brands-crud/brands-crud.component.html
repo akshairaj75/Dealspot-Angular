@@ -43,7 +43,7 @@
         <tr *ngFor="let b of filteredBrands()">
           <td>
             <div class="brand-logo-container">
-              <img [src]="filePath + b.logoUrl" class="brand-table-logo" alt="brand logo" (error)="b.logoUrl = 'https://placehold.co/100x100?text=No+Logo'">
+              <img [src]="getLogoUrl(b.logoUrl)" class="brand-table-logo" alt="brand logo" (error)="$any($event.target).src = 'https://placehold.co/100x100?text=No+Logo'">
             </div>
           </td>
           <td>{{ b.id }}</td>
@@ -119,10 +119,19 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">{{ currentLang() === 'en' ? 'Logo Image URL' : 'رابط صورة الشعار' }}</label>
-            <input type="text" formControlName="logoUrl" class="form-control" placeholder="https://example.com/logo.png">
-            <div class="error-msg" *ngIf="brandForm.get('logoUrl')?.touched && brandForm.get('logoUrl')?.invalid">
-              {{ currentLang() === 'en' ? 'Logo image URL is required.' : 'رابط صورة الشعار مطلوب.' }}
+            <label class="form-label">{{ currentLang() === 'en' ? 'Brand Logo Image' : 'صورة شعار العلامة التجارية' }}</label>
+            <div class="file-upload-box">
+              <input type="file" (change)="onFileSelected($event)" accept="image/*">
+            </div>
+            <div *ngIf="logoPreviewUrl" class="logo-preview-container">
+              <img [src]="logoPreviewUrl" class="logo-preview-img" alt="Logo Preview" (error)="$any($event.target).src = 'https://placehold.co/100x100?text=No+Logo'">
+              <div class="logo-preview-info">
+                <span class="preview-title">{{ currentLang() === 'en' ? 'Logo Preview' : 'معاينة الشعار' }}</span>
+                <span class="preview-subtitle" *ngIf="selectedLogoFile">{{ selectedLogoFile.name }}</span>
+              </div>
+              <button type="button" class="btn-icon text-danger" (click)="removeSelectedLogo()" [title]="currentLang() === 'en' ? 'Remove Image' : 'إزالة الصورة'">
+                <span class="material-icons-round">delete_outline</span>
+              </button>
             </div>
           </div>
 

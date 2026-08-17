@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environment/environment';
 import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -11,20 +12,20 @@ export class CityService {
 
   constructor(private http: HttpClient) {}
 
-  getCities() {
-    return this.http.get<any>(this.apiUrl+'/fetch-all');
+  getCities(): Observable<any[]> {
+    return this.http.get<any[]>(this.apiUrl + '/fetch-all');
   }
 
-  createCity(city: any) {
-    return this.http.post(this.apiUrl, city);
+  createCity(city: any): Observable<any> {
+    return this.http.post<any>(this.apiUrl + '/create', city);
   }
 
-  updateCity(city: any) {
-    return this.http.put(this.apiUrl + '/' + city.id, city);
+  updateCity(id: number, city: any): Observable<any> {
+    return this.http.put<any>(this.apiUrl + '/edit/' + id, city);
   }
 
-  deleteCity(id: number) {
-    return this.http.delete(this.apiUrl + '/delete/' + id);
+  deleteCity(id: number): Observable<any> {
+    return this.http.delete(this.apiUrl + '/delete/' + id, { responseType: 'text' });
   }
 
 }

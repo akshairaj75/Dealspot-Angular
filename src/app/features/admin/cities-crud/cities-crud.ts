@@ -1,24 +1,23 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CityService } from '../../../core/services/city.service';
-import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
-// import { AdminService } from '../../../core/services/admin.service';
-// import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
-// import { City } from '../../../core/models';
+import { TranslationService } from '../../../core/services/translation.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-cities-crud',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: 'cities-crud.html',
   styleUrls: ['./cities-crud.css']
 })
 export class CitiesCrudComponent implements OnInit {
   private fb = inject(FormBuilder);
   private cityService = inject(CityService);
-  // private adminService = inject(AdminService);
+  private translationService = inject(TranslationService);
 
+  currentLang = this.translationService.currentLang;
   cities = signal<any[]>([]);
   cityForm!: FormGroup;
   isModalOpen = false;
@@ -38,31 +37,37 @@ export class CitiesCrudComponent implements OnInit {
 
   loadCities(): void {
     this.cityService.getCities().subscribe({
-      next: (res: any) => {
-        console.log(res);
-        this.cities.set(res);
+      next: (res: any[]) => {
+        this.cities.set(res || []);
       },
       error: (err) => {
-        console.error(err);
+        console.error('Error loading cities:', err);
       }
-    })
+    });
   }
 
   openAddModal(): void {
     this.editingCityId = null;
-    this.cityForm.reset({ is_active: true, latitude: 24.0, longitude: 46.0 });
+    this.cityForm.reset({
+      name_en: '',
+      name_ar: '',
+      region_code: '',
+      latitude: 24.0,
+      longitude: 46.0,
+      is_active: true
+    });
     this.isModalOpen = true;
   }
 
   openEditModal(city: any): void {
     this.editingCityId = city.id;
     this.cityForm.patchValue({
-      name_en: city.name_en,
-      name_ar: city.name_ar,
-      region_code: city.region_code,
-      latitude: city.latitude,
-      longitude: city.longitude,
-      is_active: city.is_active === 1
+      name_en: city.nameEn ?? city.name_en ?? '',
+      name_ar: city.nameAr ?? city.name_ar ?? '',
+      region_code: city.regionCode ?? city.region_code ?? '',
+      latitude: city.latitude ?? 24.0,
+      longitude: city.longitude ?? 46.0,
+      is_active: city.active === true || city.active === 1 || city.isActive === true || city.isActive === 1 || city.is_active === 1 || city.is_active === true
     });
     this.isModalOpen = true;
   }
@@ -72,40 +77,101 @@ export class CitiesCrudComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.cityForm.invalid) return;
+    if (this.cityForm.invalid) {
+      this.cityForm.markAllAsTouched();
+      return;
+    }
 
     const val = this.cityForm.value;
     const payload = {
-      name_en: val.name_en,
-      name_ar: val.name_ar,
-      region_code: val.region_code,
+      nameEn: val.name_en,
+      nameAr: val.name_ar,
+      regionCode: val.region_code,
       latitude: Number(val.latitude),
       longitude: Number(val.longitude),
-      is_active: val.is_active ? 1 : 0
+      isActive: Boolean(val.is_active)
     };
 
-    // if (this.editingCityId) {
-    //   this.cityService.updateCity(this.editingCityId, payload).subscribe(res => {
-    //     this.adminService.logAction('city', res.id, 'UPDATE', 1, payload);
-    //     this.loadCities();
-    //     this.closeModal();
-    //   });
-    // } else {
-    //   this.cityService.createCity(payload).subscribe(res => {
-    //     this.adminService.logAction('city', res.id, 'CREATE', 1, payload);
-    //     this.loadCities();
-    //     this.closeModal();
-    //   });
-    // }
-  }
-
-  deleteCity(id: number): void {
-    if (confirm('Are you sure you want to delete this city?')) {
-      this.cityService.deleteCity(id).subscribe(() => {
-        // this.adminService.logAction('city', id, 'DELETE', 1);
-        this.loadCities();
+    if (this.editingCityId) {
+      this.cityService.updateCity(this.editingCityId, payload).subscribe({
+        next: () => {
+          Swal.fire({
+            icon: 'success',
+            title: this.currentLang() === 'en' ? 'Updated!' : 'تم التحديث!',
+            text: this.currentLang() === 'en' ? 'City updated successfully.' : 'تم تحديث المدينة بنجاح.',
+            timer: 2000,
+            showConfirmButton: false
+          });
+          this.loadCities();
+          this.closeModal();
+        },
+        error: (err) => {
+          console.error('Error updating city:', err);
+          Swal.fire({
+            icon: 'error',
+            title: this.currentLang() === 'en' ? 'Error' : 'خطأ',
+            text: this.currentLang() === 'en' ? 'Failed to update city.' : 'فشل تحديث المدينة.'
+          });
+        }
+      });
+    } else {
+      this.cityService.createCity(payload).subscribe({
+        next: () => {
+          Swal.fire({
+            icon: 'success',
+            title: this.currentLang() === 'en' ? 'Added!' : 'تمت الإضافة!',
+            text: this.currentLang() === 'en' ? 'City added successfully.' : 'تم إضافة المدينة بنجاح.',
+            timer: 2000,
+            showConfirmButton: false
+          });
+          this.loadCities();
+          this.closeModal();
+        },
+        error: (err) => {
+          console.error('Error adding city:', err);
+          Swal.fire({
+            icon: 'error',
+            title: this.currentLang() === 'en' ? 'Error' : 'خطأ',
+            text: this.currentLang() === 'en' ? 'Failed to add city.' : 'فشل إضافة المدينة.'
+          });
+        }
       });
     }
   }
+
+  deleteCity(id: number): void {
+    Swal.fire({
+      title: this.currentLang() === 'en' ? 'Are you sure?' : 'هل أنت متأكد؟',
+      text: this.currentLang() === 'en' ? 'Do you want to delete this city?' : 'هل تريد حذف هذه المدينة؟',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: this.currentLang() === 'en' ? 'Yes, delete it!' : 'نعم، احذفها!',
+      cancelButtonText: this.currentLang() === 'en' ? 'Cancel' : 'إلغاء'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.cityService.deleteCity(id).subscribe({
+          next: () => {
+            Swal.fire(
+              this.currentLang() === 'en' ? 'Deleted!' : 'تم الحذف!',
+              this.currentLang() === 'en' ? 'City has been deleted.' : 'تم حذف المدينة.',
+              'success'
+            );
+            this.loadCities();
+          },
+          error: (err) => {
+            console.error('Error deleting city:', err);
+            Swal.fire(
+              this.currentLang() === 'en' ? 'Error' : 'خطأ',
+              this.currentLang() === 'en' ? 'Failed to delete city.' : 'فشل حذف المدينة.',
+              'error'
+            );
+          }
+        });
+      }
+    });
+  }
 }
 export { TranslationService } from '../../../core/services/translation.service';
+
