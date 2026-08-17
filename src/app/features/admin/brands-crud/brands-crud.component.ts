@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { BrandService } from '../../../core/services/brand.service';
+import { CategoryService } from '../../../core/services/category.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import Swal from 'sweetalert2';
 import { environment } from '../../../environment/environment';
@@ -16,26 +17,35 @@ import { environment } from '../../../environment/environment';
 export class BrandsCrudComponent implements OnInit {
   private fb = inject(FormBuilder);
   private brandService = inject(BrandService);
+  private categoryService = inject(CategoryService);
   private translationService = inject(TranslationService);
 
   currentLang = this.translationService.currentLang;
   brands = signal<any[]>([]);
   filteredBrands = signal<any[]>([]);
+  categories = signal<any[]>([]);
   
   brandForm!: FormGroup;
   isModalOpen = false;
   editingBrandId: number | null = null;
   searchQuery = '';
+  categorySearch = '';
+  isCategoryDropdownOpen = false;
   filePath = environment.filePath;
   selectedLogoFile: File | null = null;
   logoPreviewUrl: string | null = null;
 
   ngOnInit(): void {
     this.loadBrands();
+    this.loadCategories();
     this.brandForm = this.fb.group({
       nameEn: ['', Validators.required],
       nameAr: ['', Validators.required],
-      sortOrder: [1, [Validators.required, Validators.min(1)]],
+      descriptionEn: [''],
+      descriptionAr: [''],
+      websiteUrl: [''],
+      categoryIds: [[]],
+      isFeatured: [false],
       isActive: [true]
     });
   }
@@ -43,14 +53,23 @@ export class BrandsCrudComponent implements OnInit {
   loadBrands(): void {
     this.brandService.getBrands().subscribe({
       next: (res: any[]) => {
-        // Sort brands by sortOrder by default
-        const sorted = res.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+        const sorted = res.sort((a, b) => (a.nameEn || '').localeCompare(b.nameEn || ''));
         this.brands.set(sorted);
-        console.log(res,"brands")
         this.applyFilter();
       },
       error: (err) => {
         console.error('Error loading brands:', err);
+      }
+    });
+  }
+
+  loadCategories(): void {
+    this.categoryService.getCategories().subscribe({
+      next: (res: any[]) => {
+        this.categories.set(res || []);
+      },
+      error: (err) => {
+        console.error('Error loading categories:', err);
       }
     });
   }
@@ -65,7 +84,8 @@ export class BrandsCrudComponent implements OnInit {
     const filtered = this.brands().filter(b => 
       (b.nameEn && b.nameEn.toLowerCase().includes(query)) ||
       (b.nameAr && b.nameAr.toLowerCase().includes(query)) ||
-      (b.id && b.id.toString().includes(query))
+      (b.id && b.id.toString().includes(query)) ||
+      (b.categories && b.categories.some((c: any) => c.nameEn?.toLowerCase().includes(query) || c.nameAr?.toLowerCase().includes(query)))
     );
     this.filteredBrands.set(filtered);
   }
@@ -80,14 +100,87 @@ export class BrandsCrudComponent implements OnInit {
     return this.filePath + url;
   }
 
+  // --- Category Multi-Select Helpers ---
+  toggleCategoryDropdown(): void {
+    this.isCategoryDropdownOpen = !this.isCategoryDropdownOpen;
+  }
+
+  closeCategoryDropdown(): void {
+    this.isCategoryDropdownOpen = false;
+  }
+
+  getFilteredCategories(): any[] {
+    const search = this.categorySearch.toLowerCase().trim();
+    if (!search) {
+      return this.categories();
+    }
+    return this.categories().filter(c => 
+      (c.nameEn && c.nameEn.toLowerCase().includes(search)) ||
+      (c.nameAr && c.nameAr.toLowerCase().includes(search))
+    );
+  }
+
+  isCategorySelected(catId: number): boolean {
+    const selected: number[] = this.brandForm.get('categoryIds')?.value || [];
+    return selected.includes(catId);
+  }
+
+  toggleCategory(catId: number): void {
+    const selected: number[] = [...(this.brandForm.get('categoryIds')?.value || [])];
+    const index = selected.indexOf(catId);
+    if (index > -1) {
+      selected.splice(index, 1);
+    } else {
+      selected.push(catId);
+    }
+    this.brandForm.patchValue({ categoryIds: selected });
+    this.brandForm.get('categoryIds')?.markAsDirty();
+  }
+
+  removeCategory(catId: number, event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    const selected: number[] = [...(this.brandForm.get('categoryIds')?.value || [])];
+    const index = selected.indexOf(catId);
+    if (index > -1) {
+      selected.splice(index, 1);
+      this.brandForm.patchValue({ categoryIds: selected });
+      this.brandForm.get('categoryIds')?.markAsDirty();
+    }
+  }
+
+  getSelectedCategoryObjects(): any[] {
+    const selectedIds: number[] = this.brandForm.get('categoryIds')?.value || [];
+    return this.categories().filter(c => selectedIds.includes(c.id));
+  }
+
+  selectAllCategories(): void {
+    const allIds = this.categories().map(c => c.id);
+    this.brandForm.patchValue({ categoryIds: allIds });
+    this.brandForm.get('categoryIds')?.markAsDirty();
+  }
+
+  clearAllCategories(): void {
+    this.brandForm.patchValue({ categoryIds: [] });
+    this.brandForm.get('categoryIds')?.markAsDirty();
+  }
+
+  // --- Modal Helpers ---
   openAddModal(): void {
     this.editingBrandId = null;
     this.selectedLogoFile = null;
     this.logoPreviewUrl = null;
+    this.categorySearch = '';
+    this.isCategoryDropdownOpen = false;
     this.brandForm.reset({
       nameEn: '',
       nameAr: '',
-      sortOrder: this.brands().length + 1,
+      descriptionEn: '',
+      descriptionAr: '',
+      websiteUrl: '',
+      categoryIds: [],
+      isFeatured: false,
       isActive: true
     });
     this.isModalOpen = true;
@@ -97,10 +190,19 @@ export class BrandsCrudComponent implements OnInit {
     this.editingBrandId = brand.id;
     this.selectedLogoFile = null;
     this.logoPreviewUrl = brand.logoUrl ? this.getLogoUrl(brand.logoUrl) : null;
-    this.brandForm.patchValue({
-      nameEn: brand.nameEn || brand.name_en,
-      nameAr: brand.nameAr || brand.name_ar,
-      sortOrder: brand.sortOrder || 1,
+    this.categorySearch = '';
+    this.isCategoryDropdownOpen = false;
+
+    const catIds = (brand.categories || []).map((c: any) => c.id);
+
+    this.brandForm.reset({
+      nameEn: brand.nameEn || brand.name_en || '',
+      nameAr: brand.nameAr || brand.name_ar || '',
+      descriptionEn: brand.descriptionEn || brand.description_en || '',
+      descriptionAr: brand.descriptionAr || brand.description_ar || '',
+      websiteUrl: brand.websiteUrl || brand.website_url || '',
+      categoryIds: catIds,
+      isFeatured: brand.featured === true || brand.isFeatured === true,
       isActive: brand.active === 1 || brand.active === true || brand.isActive === 1 || brand.isActive === true
     });
     this.isModalOpen = true;
@@ -110,6 +212,7 @@ export class BrandsCrudComponent implements OnInit {
     this.isModalOpen = false;
     this.selectedLogoFile = null;
     this.logoPreviewUrl = null;
+    this.isCategoryDropdownOpen = false;
   }
 
   onFileSelected(event: any): void {
@@ -163,8 +266,12 @@ export class BrandsCrudComponent implements OnInit {
     const brandData = {
       nameEn: val.nameEn,
       nameAr: val.nameAr,
-      sortOrder: Number(val.sortOrder),
-      active: val.isActive ? true : false
+      descriptionEn: val.descriptionEn || '',
+      descriptionAr: val.descriptionAr || '',
+      websiteUrl: val.websiteUrl || '',
+      featured: !!val.isFeatured,
+      active: !!val.isActive,
+      categoryIds: val.categoryIds || []
     };
 
     const formData = new FormData();

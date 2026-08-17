@@ -57,9 +57,9 @@
                     <td>{{ cat.nameAr }}</td>
                     <td>{{ cat.sortOrder }}</td>
                     <td>
-                        <span class="badge" [class.badge-featured]="cat.is_active === 1 || cat.isActive === 1 || cat.is_active === true || cat.isActive === true"
-                            [class.badge-discount]="cat.is_active === 0 || cat.isActive === 0 || cat.is_active === false || cat.isActive === false">
-                            {{ (cat.is_active === 1 || cat.isActive === 1 || cat.is_active === true || cat.isActive === true) ? 'Active' : 'Inactive' }}
+                        <span class="badge" [class.badge-featured]="cat.active ?? (cat.is_active === 1 || cat.isActive === 1 || cat.is_active === true || cat.isActive === true)"
+                            [class.badge-discount]="!(cat.active ?? (cat.is_active === 1 || cat.isActive === 1 || cat.is_active === true || cat.isActive === true))">
+                            {{ (cat.active ?? (cat.is_active === 1 || cat.isActive === 1 || cat.is_active === true || cat.isActive === true)) ? 'Active' : 'Inactive' }}
                         </span>
                     </td>
                     <td>
@@ -107,9 +107,9 @@
                     </td>
                     <td>{{ cat.sortOrder }}</td>
                     <td>
-                        <span class="badge" [class.badge-featured]="cat.is_active === 1 || cat.isActive === 1 || cat.is_active === true || cat.isActive === true"
-                            [class.badge-discount]="cat.is_active === 0 || cat.isActive === 0 || cat.is_active === false || cat.isActive === false">
-                            {{ (cat.is_active === 1 || cat.isActive === 1 || cat.is_active === true || cat.isActive === true) ? 'Active' : 'Inactive' }}
+                        <span class="badge" [class.badge-featured]="cat.active ?? (cat.is_active === 1 || cat.isActive === 1 || cat.is_active === true || cat.isActive === true)"
+                            [class.badge-discount]="!(cat.active ?? (cat.is_active === 1 || cat.isActive === 1 || cat.is_active === true || cat.isActive === true))">
+                            {{ (cat.active ?? (cat.is_active === 1 || cat.isActive === 1 || cat.is_active === true || cat.isActive === true)) ? 'Active' : 'Inactive' }}
                         </span>
                     </td>
                     <td>
@@ -156,7 +156,7 @@
                         <label class="form-label">Parent Category</label>
                         <select formControlName="parentId" class="form-control">
                             <option [ngValue]="null">None (Root Category)</option>
-                            <option *ngFor="let c of parentCategories" [value]="c.id">{{ c.nameEn}}</option>
+                            <option *ngFor="let c of parentCategories" [ngValue]="c.id" [disabled]="c.id === editingCategoryId">{{ c.nameEn }}</option>
                         </select>
                     </div>
                     <div class="form-group">

@@ -1,0 +1,230 @@
+<div class="store-detail-page">
+  <!-- Top Navigation / Breadcrumb Bar -->
+  <div class="top-nav-bar">
+    <a routerLink="/stores" class="btn btn-outline btn-back">
+      <span class="material-icons-round back-icon">{{ currentLang() === 'ar' ? 'arrow_forward' : 'arrow_back' }}</span>
+      <span>{{ currentLang() === 'en' ? 'Back to Stores' : 'العودة للمتاجر' }}</span>
+    </a>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div class="spinner-container" *ngIf="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Main Store Content -->
+  <div class="store-detail-container" *ngIf="!loading && store()">
+    <!-- Store Hero Banner Card -->
+    <div class="store-hero-banner card">
+      <div class="store-hero-left">
+        <div class="store-detail-logo-wrapper">
+          <img 
+            [src]="getLogoUrl(store()?.logoUrl)" 
+            [alt]="store()?.nameEn || 'Store Logo'"
+            (error)="$any($event.target).src = 'https://placehold.co/120x120?text=No+Logo'"
+          >
+        </div>
+        <div class="store-hero-text">
+          <div class="store-title-row">
+            <h1>{{ currentLang() === 'en' ? (store()?.nameEn || store()?.name_en) : (store()?.nameAr || store()?.name_ar || store()?.nameEn) }}</h1>
+            <span class="badge badge-verified" *ngIf="store()?.verified || store()?.isVerified || store()?.is_verified">
+              <span class="material-icons-round verified-icon">verified</span>
+              <span>{{ currentLang() === 'en' ? 'Verified' : 'موثق' }}</span>
+            </span>
+          </div>
+
+          <div class="store-category-city-row">
+            <span class="store-category" *ngIf="store()?.categoryNameEn || store()?.category?.nameEn">
+              <span class="material-icons-round cat-icon">category</span>
+              <span>{{ currentLang() === 'en' ? (store()?.categoryNameEn || store()?.category?.nameEn) : (store()?.categoryNameAr || store()?.category?.nameAr || store()?.categoryNameEn) }}</span>
+            </span>
+            <span class="store-city" *ngIf="store()?.cityNameEn || store()?.city?.nameEn">
+              <span class="material-icons-round loc-icon">location_on</span>
+              <span>{{ currentLang() === 'en' ? (store()?.cityNameEn || store()?.city?.nameEn) : (store()?.cityNameAr || store()?.city?.nameAr || store()?.cityNameEn) }}</span>
+            </span>
+          </div>
+
+          <p class="store-desc" *ngIf="store()?.descriptionEn || store()?.descriptionAr">
+            {{ currentLang() === 'en' ? (store()?.descriptionEn || store()?.descriptionAr) : (store()?.descriptionAr || store()?.descriptionEn) }}
+          </p>
+
+          <div class="store-meta-specs" *ngIf="store()?.crNumber || store()?.cr_number || store()?.vatNumber || store()?.vat_number">
+            <span class="meta-tag" *ngIf="store()?.crNumber || store()?.cr_number">CR: {{ store()?.crNumber || store()?.cr_number }}</span>
+            <span class="meta-tag" *ngIf="store()?.vatNumber || store()?.vat_number">VAT: {{ store()?.vatNumber || store()?.vat_number }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="store-hero-right">
+        <button 
+          class="btn" 
+          [class.btn-primary]="!isFollowing()" 
+          [class.btn-outline]="isFollowing()"
+          (click)="toggleFollow()"
+        >
+          <span class="material-icons-round">{{ isFollowing() ? 'check' : 'favorite' }}</span>
+          <span>{{ isFollowing() ? (currentLang() === 'en' ? 'Following Store' : 'متابع للمتجر') : (currentLang() === 'en' ? 'Follow Store' : 'متابعة المتجر') }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Store Navigation Tabs -->
+    <div class="store-tabs-bar">
+      <button 
+        class="store-tab-btn" 
+        [class.active]="activeTab() === 'offers'"
+        (click)="switchTab('offers')"
+      >
+        <span class="material-icons-round">local_offer</span>
+        <span>{{ currentLang() === 'en' ? 'Active Offers' : 'العروض النشطة' }} ({{ offers().length }})</span>
+      </button>
+      <button 
+        class="store-tab-btn" 
+        [class.active]="activeTab() === 'flyers'"
+        (click)="switchTab('flyers')"
+      >
+        <span class="material-icons-round">menu_book</span>
+        <span>{{ currentLang() === 'en' ? 'Weekly Flyers' : 'المنشورات الأسبوعية' }} ({{ flyers().length }})</span>
+      </button>
+      <button 
+        class="store-tab-btn" 
+        [class.active]="activeTab() === 'branches'"
+        (click)="switchTab('branches')"
+      >
+        <span class="material-icons-round">place</span>
+        <span>{{ currentLang() === 'en' ? 'Branches' : 'فروعنا' }} ({{ branches().length }})</span>
+      </button>
+    </div>
+
+    <!-- Tab Contents Viewport -->
+    <div class="store-tab-content">
+      
+      <!-- 1. Offers Grid -->
+      <div *ngIf="activeTab() === 'offers'">
+        <div class="grid-cards" *ngIf="offers().length > 0; else noOffers">
+          <div class="offer-grid-card card" *ngFor="let offer of offers()">
+            <span class="badge badge-discount discount-badge-float" *ngIf="offer.discountPct || offer.discount_pct">
+              -{{ offer.discountPct || offer.discount_pct }}%
+            </span>
+            <div class="offer-card-image">
+              <img 
+                [src]="getImageUrl(offer.product?.primaryImageUrl || offer.primaryImageUrl || offer.imageUrl)" 
+                [alt]="offer.titleEn || offer.title_en || 'Offer Image'"
+                (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300&auto=format&fit=crop&q=60'"
+              >
+            </div>
+            <div class="offer-card-body">
+              <h3 class="offer-title-main">
+                <a [routerLink]="['/offers-list']">{{ currentLang() === 'en' ? (offer.titleEn || offer.title_en) : (offer.titleAr || offer.title_ar || offer.titleEn) }}</a>
+              </h3>
+              <div class="price-row">
+                <span class="offer-price">{{ offer.offerPrice || offer.offer_price || offer.price }} SAR</span>
+                <span class="original-price" *ngIf="offer.originalPrice || offer.original_price">{{ offer.originalPrice || offer.original_price }} SAR</span>
+              </div>
+              <div class="offer-card-footer">
+                <span class="valid-date" *ngIf="offer.validUntil || offer.valid_until">
+                  {{ currentLang() === 'en' ? 'Ends:' : 'ينتهي:' }} {{ offer.validUntil || offer.valid_until }}
+                </span>
+                <span class="badge badge-flash" *ngIf="offer.isFlash || offer.is_flash">
+                  <span class="material-icons-round" style="font-size: 13px;">bolt</span> Flash
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ng-template #noOffers>
+          <div class="empty-state card">
+            <span class="material-icons-round empty-state-icon">local_offer</span>
+            <h3 class="empty-state-title">{{ currentLang() === 'en' ? 'No active offers' : 'لا توجد عروض نشطة حالياً' }}</h3>
+            <p class="empty-state-desc">{{ currentLang() === 'en' ? 'This store currently has no active discount offers published.' : 'لا توجد عروض تخفيض منشورة لهذا المتجر في الوقت الحالي.' }}</p>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- 2. Flyers Grid -->
+      <div *ngIf="activeTab() === 'flyers'">
+        <div class="grid-cards" *ngIf="flyers().length > 0; else noFlyers">
+          <div class="flyer-card card" *ngFor="let flyer of flyers()">
+            <div class="flyer-image-wrapper">
+              <img 
+                [src]="getImageUrl(flyer.coverImageUrl || flyer.cover_image_url)" 
+                [alt]="flyer.titleEn || flyer.title_en || 'Flyer'"
+                (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&auto=format&fit=crop&q=60'"
+              >
+              <div class="flyer-overlay">
+                <a [routerLink]="['/flyers', flyer.id]" class="btn btn-primary">
+                  <span class="material-icons-round">auto_stories</span>
+                  <span>{{ currentLang() === 'en' ? 'Open Flyer' : 'فتح البروشور' }}</span>
+                </a>
+              </div>
+            </div>
+            <div class="flyer-card-body">
+              <h3 class="flyer-title">
+                {{ currentLang() === 'en' ? (flyer.titleEn || flyer.title_en) : (flyer.titleAr || flyer.title_ar || flyer.titleEn) }}
+              </h3>
+              <p class="flyer-pages-count" *ngIf="flyer.totalPages || flyer.total_pages">
+                {{ flyer.totalPages || flyer.total_pages }} {{ currentLang() === 'en' ? 'Pages' : 'صفحات' }}
+              </p>
+            </div>
+          </div>
+        </div>
+        <ng-template #noFlyers>
+          <div class="empty-state card">
+            <span class="material-icons-round empty-state-icon">menu_book</span>
+            <h3 class="empty-state-title">{{ currentLang() === 'en' ? 'No flyers available' : 'لا توجد بروشورات متاحة' }}</h3>
+            <p class="empty-state-desc">{{ currentLang() === 'en' ? 'This store currently has no brochures or pamphlets active.' : 'لا توجد مجلات أو نشرات عروض نشطة لهذا المتجر حالياً.' }}</p>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- 3. Branches Grid -->
+      <div *ngIf="activeTab() === 'branches'">
+        <div class="grid-branches" *ngIf="branches().length > 0; else noBranches">
+          <div class="branch-card card" *ngFor="let b of branches()">
+            <div class="branch-header">
+              <span class="material-icons-round branch-icon">place</span>
+              <div class="branch-titles">
+                <h3 class="branch-name">{{ b.branchName || b.branch_name || b.name }}</h3>
+                <p class="branch-coords" *ngIf="b.latitude && b.longitude">
+                  Lat: {{ b.latitude }}, Long: {{ b.longitude }}
+                </p>
+              </div>
+            </div>
+            <div class="branch-body">
+              <div class="branch-info-row" *ngIf="b.openTime || b.open_time">
+                <span class="material-icons-round text-muted">schedule</span>
+                <span>{{ currentLang() === 'en' ? 'Open:' : 'أوقات العمل:' }} {{ (b.openTime || b.open_time || '').slice(0, 5) }} - {{ (b.closeTime || b.close_time || '').slice(0, 5) }}</span>
+              </div>
+              <div class="branch-info-row" *ngIf="b.cityNameEn || b.city">
+                <span class="material-icons-round text-muted">location_city</span>
+                <span>{{ currentLang() === 'en' ? (b.cityNameEn || b.city?.nameEn) : (b.cityNameAr || b.city?.nameAr || b.cityNameEn) }}</span>
+              </div>
+              <div class="branch-info-row">
+                <span class="material-icons-round text-success">check_circle</span>
+                <span class="text-success">{{ (b.isActive !== false && b.is_active !== 0) ? (currentLang() === 'en' ? 'Active Branch' : 'فرع نشط') : (currentLang() === 'en' ? 'Temporarily Closed' : 'مغلق مؤقتاً') }}</span>
+              </div>
+            </div>
+            <div class="branch-footer" *ngIf="b.latitude && b.longitude">
+              <a 
+                [href]="'https://www.google.com/maps/search/?api=1&query=' + b.latitude + ',' + b.longitude" 
+                target="_blank"
+                class="btn btn-outline w-full google-maps-btn"
+              >
+                <span class="material-icons-round">map</span>
+                <span>{{ currentLang() === 'en' ? 'Open in Google Maps' : 'فتح في خرائط جوجل' }}</span>
+              </a>
+            </div>
+          </div>
+        </div>
+        <ng-template #noBranches>
+          <div class="empty-state card">
+            <span class="material-icons-round empty-state-icon">place</span>
+            <h3 class="empty-state-title">{{ currentLang() === 'en' ? 'No branches registered' : 'لا توجد فروع مسجلة' }}</h3>
+            <p class="empty-state-desc">{{ currentLang() === 'en' ? 'This store has no physical locations saved in the directory.' : 'لم يتم تسجيل مواقع فروع فعلية لهذا المتجر بعد.' }}</p>
+          </div>
+        </ng-template>
+      </div>
+
+    </div>
+  </div>
+</div>

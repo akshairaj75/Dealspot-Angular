@@ -81,19 +81,32 @@ export class CategoriesCrud implements OnInit {
 
   openAddModal(): void {
     this.editingCategoryId = null;
-    this.catForm.reset({ isActive: true, sortOrder: 1, iconSlug: 'folder', parentId: null });
+    this.catForm.reset({
+      nameEn: '',
+      nameAr: '',
+      iconSlug: 'folder',
+      parentId: null,
+      sortOrder: 1,
+      isActive: true,
+      image: null
+    });
     this.isModalOpen = true;
   }
 
   openEditModal(cat: any): void {
     this.editingCategoryId = cat.id;
-    this.catForm.patchValue({
-      nameEn: cat.nameEn,
-      nameAr: cat.nameAr,
-      iconSlug: cat.iconSlug,
-      parentId: cat.parentId || null,
-      sortOrder: cat.sortOrder,
-      isActive: cat.is_active === 1 || cat.isActive === 1 || cat.is_active === true || cat.isActive === true
+    const isActive = cat.active !== undefined
+      ? !!cat.active
+      : (cat.is_active === 1 || cat.isActive === 1 || cat.is_active === true || cat.isActive === true);
+
+    this.catForm.reset({
+      nameEn: cat.nameEn || '',
+      nameAr: cat.nameAr || '',
+      iconSlug: cat.iconSlug || 'folder',
+      parentId: cat.parentId ?? null,
+      sortOrder: cat.sortOrder ?? 1,
+      isActive: isActive,
+      image: null
     });
     this.isModalOpen = true;
   }
@@ -110,98 +123,120 @@ export class CategoriesCrud implements OnInit {
   }
 
   onSubmit(): void {
-  if (this.catForm.invalid) {
-    this.catForm.markAllAsTouched();
-    return;
-  }
-
-  const formValue = this.catForm.value;
-
-  // Duplicate check
-  const isDuplicate = this.categories.some((cat: any) => {
-    if (this.editingCategoryId && cat.id === this.editingCategoryId) {
-      return false;
+    if (this.catForm.invalid) {
+      this.catForm.markAllAsTouched();
+      return;
     }
 
-    return (
-      cat.nameEn?.toLowerCase().trim() === formValue.nameEn.toLowerCase().trim() ||
-      cat.nameAr?.toLowerCase().trim() === formValue.nameAr.toLowerCase().trim()
-    );
-  });
+    const formValue = this.catForm.value;
 
-  if (isDuplicate) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Duplicate Category',
-      text: 'A category with this English or Arabic name already exists!',
-      confirmButtonColor: '#3085d6'
+    // Duplicate check
+    const isDuplicate = this.categories.some((cat: any) => {
+      if (this.editingCategoryId && cat.id === this.editingCategoryId) {
+        return false;
+      }
+
+      return (
+        cat.nameEn?.toLowerCase().trim() === formValue.nameEn?.toLowerCase().trim() ||
+        cat.nameAr?.toLowerCase().trim() === formValue.nameAr?.toLowerCase().trim()
+      );
     });
-    return;
-  }
 
-  const category = {
-    nameEn: formValue.nameEn,
-    nameAr: formValue.nameAr,
-    iconSlug: formValue.iconSlug,
-    sortOrder: formValue.sortOrder,
-    active: formValue.isActive ? 1 : 0,
-    parentId: formValue.parentId ? Number(formValue.parentId) : null
-  };
-
-  const formData = new FormData();
-
-  // Send JSON as "data"
-  formData.append(
-    'data',
-    new Blob([JSON.stringify(category)], {
-      type: 'application/json'
-    })
-  );
-
-  // Send image separately as "file"
-  if (formValue.image) {
-    formData.append('file', formValue.image);
-  }
-
-  const request = this.editingCategoryId
-    ? this.categoryService.updateCategory(this.editingCategoryId, formData)
-    : this.categoryService.createCategory(formData);
-
-  request.subscribe({
-    next: () => {
+    if (isDuplicate) {
       Swal.fire({
-        icon: 'success',
-        title: 'Success!',
-        text: this.editingCategoryId
-          ? 'Category updated successfully.'
-          : 'Category created successfully.',
-        timer: 2000,
-        showConfirmButton: false
+        icon: 'warning',
+        title: 'Duplicate Category',
+        text: 'A category with this English or Arabic name already exists!',
+        confirmButtonColor: '#3085d6'
       });
-
-      this.loadCategories();
-      this.closeModal();
-    },
-    error: (error) => {
-      console.error(error);
-
-      Swal.fire({
-        icon: 'error',
-        title: this.editingCategoryId ? 'Update Failed' : 'Creation Failed',
-        text: 'Something went wrong. Please try again.',
-        confirmButtonColor: '#d33'
-      });
+      return;
     }
-  });
-}
+
+    const category = {
+      nameEn: formValue.nameEn,
+      nameAr: formValue.nameAr,
+      iconSlug: formValue.iconSlug,
+      sortOrder: formValue.sortOrder,
+      active: !!formValue.isActive,
+      parentId: formValue.parentId ? Number(formValue.parentId) : null
+    };
+
+    const formData = new FormData();
+
+    // Send JSON as "data"
+    formData.append(
+      'data',
+      new Blob([JSON.stringify(category)], {
+        type: 'application/json'
+      })
+    );
+
+    // Send image separately as "file"
+    if (formValue.image) {
+      formData.append('file', formValue.image);
+    }
+
+    const request = this.editingCategoryId
+      ? this.categoryService.updateCategory(this.editingCategoryId, formData)
+      : this.categoryService.createCategory(formData);
+
+    request.subscribe({
+      next: () => {
+        Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          text: this.editingCategoryId
+            ? 'Category updated successfully.'
+            : 'Category created successfully.',
+          timer: 2000,
+          showConfirmButton: false
+        });
+
+        this.loadCategories();
+        this.closeModal();
+      },
+      error: (error) => {
+        console.error(error);
+
+        Swal.fire({
+          icon: 'error',
+          title: this.editingCategoryId ? 'Update Failed' : 'Creation Failed',
+          text: error?.error?.message || 'Something went wrong. Please try again.',
+          confirmButtonColor: '#d33'
+        });
+      }
+    });
+  }
 
   deleteCategory(id: number): void {
-    if (confirm('Are you sure you want to delete this category?')) {
-      this.categoryService.deleteCategory(id).subscribe(() => {
-        // this.adminService.logAction('category', id, 'DELETE', 1);
-        this.loadCategories();
-      });
-    }
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you want to delete this category?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.categoryService.deleteCategory(id).subscribe({
+          next: () => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Deleted!',
+              text: 'Category deleted successfully.',
+              timer: 1500,
+              showConfirmButton: false
+            });
+            this.loadCategories();
+          },
+          error: (err) => {
+            console.error(err);
+            Swal.fire('Error', err?.error?.message || 'Failed to delete category.', 'error');
+          }
+        });
+      }
+    });
   }
 }
 export { TranslationService } from '../../../core/services/translation.service';

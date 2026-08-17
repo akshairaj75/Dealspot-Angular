@@ -15,7 +15,7 @@
         type="text" 
         [(ngModel)]="searchQuery" 
         (ngModelChange)="applyFilter()"
-        [placeholder]="currentLang() === 'en' ? 'Search brands by name or ID...' : 'ابحث عن العلامات التجارية بالاسم أو المعرف...'" 
+        [placeholder]="currentLang() === 'en' ? 'Search brands by name, category or ID...' : 'ابحث عن العلامات التجارية بالاسم أو التصنيف أو المعرف...'" 
         class="search-input"
       />
     </div>
@@ -34,7 +34,8 @@
           <th>{{ currentLang() === 'en' ? 'Brand ID' : 'معرف الماركة' }}</th>
           <th>{{ currentLang() === 'en' ? 'Name (EN)' : 'الاسم (EN)' }}</th>
           <th>{{ currentLang() === 'en' ? 'Name (AR)' : 'الاسم (AR)' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Sort Order' : 'ترتيب الفرز' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Categories' : 'التصنيفات' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Website' : 'الموقع' }}</th>
           <th>{{ currentLang() === 'en' ? 'Status' : 'الحالة' }}</th>
           <th>{{ currentLang() === 'en' ? 'Actions' : 'الإجراءات' }}</th>
         </tr>
@@ -47,9 +48,33 @@
             </div>
           </td>
           <td>{{ b.id }}</td>
-          <td><strong>{{ b.nameEn }}</strong></td>
+          <td>
+            <div class="brand-name-cell">
+              <strong>{{ b.nameEn }}</strong>
+              <span class="brand-featured-tag" *ngIf="b.featured || b.isFeatured">★ Featured</span>
+            </div>
+          </td>
           <td>{{ b.nameAr }}</td>
-          <td><code>{{ b.sortOrder }}</code></td>
+          <td>
+            <div class="table-categories-list" *ngIf="b.categories && b.categories.length > 0; else noCats">
+              <span class="cat-pill" *ngFor="let c of b.categories.slice(0, 3)">
+                {{ currentLang() === 'en' ? c.nameEn : (c.nameAr || c.nameEn) }}
+              </span>
+              <span class="cat-pill more-pill" *ngIf="b.categories.length > 3">
+                +{{ b.categories.length - 3 }}
+              </span>
+            </div>
+            <ng-template #noCats>
+              <span class="text-muted" style="font-size: 12px;">{{ currentLang() === 'en' ? 'None' : 'لا يوجد' }}</span>
+            </ng-template>
+          </td>
+          <td>
+            <a *ngIf="b.websiteUrl" [href]="b.websiteUrl.startsWith('http') ? b.websiteUrl : 'https://' + b.websiteUrl" target="_blank" class="website-link" [title]="b.websiteUrl">
+              <span class="material-icons-round link-icon">language</span>
+              <span class="website-domain">{{ b.websiteUrl.replace('https://', '').replace('http://', '').replace('www.', '').split('/')[0] }}</span>
+            </a>
+            <span *ngIf="!b.websiteUrl" class="text-muted">-</span>
+          </td>
           <td>
             <span 
               class="badge" 
@@ -82,7 +107,7 @@
           </td>
         </tr>
         <tr *ngIf="filteredBrands().length === 0">
-          <td colspan="7" class="empty-table-cell">
+          <td colspan="8" class="empty-table-cell">
             <span class="material-icons-round empty-table-icon">loyalty</span>
             <p>{{ currentLang() === 'en' ? 'No brands found matching your search.' : 'لم يتم العثور على علامات تجارية تطابق بحثك.' }}</p>
           </td>
@@ -93,31 +118,115 @@
 
   <!-- Add/Edit Modal -->
   <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-content modal-content-lg" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>{{ editingBrandId ? (currentLang() === 'en' ? 'Edit Brand Partner' : 'تعديل العلامة التجارية') : (currentLang() === 'en' ? 'Add Brand Partner' : 'إضافة علامة تجارية') }}</h3>
         <button class="btn-icon border-none" (click)="closeModal()">
           <span class="material-icons-round">close</span>
         </button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body modal-scrollable">
         <form [formGroup]="brandForm" (submit)="onSubmit()" class="auth-form">
-          <div class="form-group">
-            <label class="form-label">{{ currentLang() === 'en' ? 'Brand Name (EN)' : 'اسم العلامة التجارية (EN)' }}</label>
-            <input type="text" formControlName="nameEn" class="form-control" placeholder="e.g. Samsung">
-            <div class="error-msg" *ngIf="brandForm.get('nameEn')?.touched && brandForm.get('nameEn')?.invalid">
-              {{ currentLang() === 'en' ? 'English brand name is required.' : 'الاسم بالإنجليزية مطلوب.' }}
+          <!-- 2 Column Row: Names -->
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Brand Name (EN) *' : 'اسم العلامة التجارية (EN) *' }}</label>
+              <input type="text" formControlName="nameEn" class="form-control" placeholder="e.g. Samsung">
+              <div class="error-msg" *ngIf="brandForm.get('nameEn')?.touched && brandForm.get('nameEn')?.invalid">
+                {{ currentLang() === 'en' ? 'English brand name is required.' : 'الاسم بالإنجليزية مطلوب.' }}
+              </div>
             </div>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label">{{ currentLang() === 'en' ? 'Brand Name (AR)' : 'اسم العلامة التجارية (AR)' }}</label>
-            <input type="text" formControlName="nameAr" class="form-control" placeholder="مثال: سامسونج">
-            <div class="error-msg" *ngIf="brandForm.get('nameAr')?.touched && brandForm.get('nameAr')?.invalid">
-              {{ currentLang() === 'en' ? 'Arabic brand name is required.' : 'الاسم بالعربية مطلوب.' }}
+            
+            <div class="form-group flex-1">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Brand Name (AR) *' : 'اسم العلامة التجارية (AR) *' }}</label>
+              <input type="text" formControlName="nameAr" class="form-control" placeholder="مثال: سامسونج">
+              <div class="error-msg" *ngIf="brandForm.get('nameAr')?.touched && brandForm.get('nameAr')?.invalid">
+                {{ currentLang() === 'en' ? 'Arabic brand name is required.' : 'الاسم بالعربية مطلوب.' }}
+              </div>
             </div>
           </div>
 
+          <!-- Website URL -->
+          <div class="form-group">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Website URL' : 'رابط الموقع الإلكتروني' }}</label>
+            <div class="input-with-icon">
+              <span class="material-icons-round input-icon">link</span>
+              <input type="url" formControlName="websiteUrl" class="form-control input-padded-left" placeholder="https://www.brand.com">
+            </div>
+          </div>
+
+          <!-- Categories Multi-Select Component -->
+          <div class="form-group">
+            <div class="multi-select-header">
+              <label class="form-label mb-0">{{ currentLang() === 'en' ? 'Select Categories' : 'اختر التصنيفات' }}</label>
+              <div class="multi-select-actions">
+                <button type="button" class="link-btn" (click)="selectAllCategories()">{{ currentLang() === 'en' ? 'Select All' : 'تحديد الكل' }}</button>
+                <span class="divider">•</span>
+                <button type="button" class="link-btn" (click)="clearAllCategories()">{{ currentLang() === 'en' ? 'Clear' : 'مسح' }}</button>
+              </div>
+            </div>
+
+            <!-- Multi Select Container Box -->
+            <div class="multi-select-box">
+              <!-- Selected Chips Display -->
+              <div class="selected-chips-area" (click)="toggleCategoryDropdown()">
+                <div *ngIf="getSelectedCategoryObjects().length === 0" class="chips-placeholder">
+                  {{ currentLang() === 'en' ? 'Click to select categories...' : 'انقر لاختيار التصنيفات...' }}
+                </div>
+                <div class="selected-chip" *ngFor="let cat of getSelectedCategoryObjects()">
+                  <span>{{ currentLang() === 'en' ? cat.nameEn : (cat.nameAr || cat.nameEn) }}</span>
+                  <button type="button" class="chip-remove" (click)="removeCategory(cat.id, $event)">×</button>
+                </div>
+                <span class="material-icons-round chips-dropdown-arrow" [class.rotated]="isCategoryDropdownOpen">expand_more</span>
+              </div>
+
+              <!-- Dropdown Menu -->
+              <div class="category-dropdown-panel" *ngIf="isCategoryDropdownOpen">
+                <div class="category-search-box">
+                  <span class="material-icons-round cat-search-icon">search</span>
+                  <input 
+                    type="text" 
+                    [(ngModel)]="categorySearch" 
+                    [ngModelOptions]="{standalone: true}"
+                    [placeholder]="currentLang() === 'en' ? 'Search categories...' : 'ابحث في التصنيفات...'"
+                    class="category-search-input"
+                    (click)="$event.stopPropagation()"
+                  >
+                </div>
+                <div class="category-options-list">
+                  <label class="category-option-item" *ngFor="let cat of getFilteredCategories()">
+                    <input 
+                      type="checkbox" 
+                      [checked]="isCategorySelected(cat.id)" 
+                      (change)="toggleCategory(cat.id)"
+                    >
+                    <span class="category-option-name">{{ currentLang() === 'en' ? cat.nameEn : (cat.nameAr || cat.nameEn) }}</span>
+                    <span class="category-parent-hint" *ngIf="cat.parentId">
+                      ({{ currentLang() === 'en' ? 'Sub' : 'فرعي' }})
+                    </span>
+                  </label>
+                  <div class="no-category-options" *ngIf="getFilteredCategories().length === 0">
+                    {{ currentLang() === 'en' ? 'No matching categories found' : 'لم يتم العثور على تصنيفات مطابقة' }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2 Column Row: Descriptions -->
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Description (EN)' : 'الوصف (EN)' }}</label>
+              <textarea rows="3" formControlName="descriptionEn" class="form-control" placeholder="Write a short summary about the brand in English..."></textarea>
+            </div>
+
+            <div class="form-group flex-1">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Description (AR)' : 'الوصف (AR)' }}</label>
+              <textarea rows="3" formControlName="descriptionAr" class="form-control" placeholder="اكتب وصفاً موجزاً عن العلامة التجارية بالعربية..."></textarea>
+            </div>
+          </div>
+
+          <!-- Logo Upload -->
           <div class="form-group">
             <label class="form-label">{{ currentLang() === 'en' ? 'Brand Logo Image' : 'صورة شعار العلامة التجارية' }}</label>
             <div class="file-upload-box">
@@ -135,22 +244,26 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">{{ currentLang() === 'en' ? 'Sort Order' : 'ترتيب الفرز' }}</label>
-            <input type="number" formControlName="sortOrder" class="form-control">
-            <div class="error-msg" *ngIf="brandForm.get('sortOrder')?.touched && brandForm.get('sortOrder')?.invalid">
-              {{ currentLang() === 'en' ? 'Sort order is required and must be 1 or higher.' : 'ترتيب الفرز مطلوب ويجب أن يكون 1 أو أكثر.' }}
-            </div>
+          <!-- Checkboxes Row -->
+          <div class="checkbox-row">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="isActive">
+              <span>{{ currentLang() === 'en' ? 'Active Brand Partner' : 'شريك علامة تجارية نشط' }}</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="isFeatured">
+              <span>{{ currentLang() === 'en' ? 'Featured Brand (Highlights)' : 'علامة تجارية مميزة (تسليط الضوء)' }}</span>
+            </label>
           </div>
 
-          <div class="form-group checkbox-label">
-            <input type="checkbox" formControlName="isActive">
-            <span>{{ currentLang() === 'en' ? 'Active Brand Partner' : 'شريك علامة تجارية نشط' }}</span>
+          <div class="modal-footer-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">
+              {{ currentLang() === 'en' ? 'Cancel' : 'إلغاء' }}
+            </button>
+            <button type="submit" [disabled]="brandForm.invalid" class="btn btn-primary">
+              {{ currentLang() === 'en' ? 'Save Changes' : 'حفظ التغييرات' }}
+            </button>
           </div>
-
-          <button type="submit" [disabled]="brandForm.invalid" class="btn btn-primary w-full">
-            {{ currentLang() === 'en' ? 'Save Changes' : 'حفظ التغييرات' }}
-          </button>
         </form>
       </div>
     </div>

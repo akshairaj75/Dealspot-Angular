@@ -12,6 +12,7 @@ import { ProductsCrudComponent } from './features/admin/products-crud/products-c
 import { BrandsCrudComponent } from './features/admin/brands-crud/brands-crud.component';
 import { ProductSpecsCrudComponent } from './features/admin/product-specs-crud/product-specs-crud.component';
 import { StoreListComponent } from './features/store/store-list/store-list.component';
+import { StoreDetailComponent } from './features/store/store-detail/store-detail.component';
 
 export const routes: Routes = [
 
@@ -30,7 +31,8 @@ export const routes: Routes = [
                 component: LoginComponent
             },
             { path: 'offers-list', component: OfferListComponent },
-            { path: 'stores', component: StoreListComponent }
+            { path: 'stores', component: StoreListComponent },
+            { path: 'stores/:id', component: StoreDetailComponent }
 
         ]
     },
@@ -47,10 +49,10 @@ export const routes: Routes = [
             { path: 'stores', component: StoresCrudComponent },
             { path: 'products', component: ProductsCrudComponent },
             { path: 'brands', component: BrandsCrudComponent },
-{
-  path: 'product-specs/:productId/details',
-  component: ProductSpecsCrudComponent
-}        ]
+            {
+                path: 'product-specs/:productId/details',
+                component: ProductSpecsCrudComponent
+            }]
     },
 
     {
