@@ -11,6 +11,7 @@ import { StoresCrudComponent } from './features/admin/stores-crud/stores-crud.co
 import { ProductsCrudComponent } from './features/admin/products-crud/products-crud.component';
 import { BrandsCrudComponent } from './features/admin/brands-crud/brands-crud.component';
 import { ProductSpecsCrudComponent } from './features/admin/product-specs-crud/product-specs-crud.component';
+import { BranchesCrudComponent } from './features/admin/branches-crud/branches-crud.component';
 import { StoreListComponent } from './features/store/store-list/store-list.component';
 import { StoreDetailComponent } from './features/store/store-detail/store-detail.component';
 
@@ -47,6 +48,7 @@ export const routes: Routes = [
             { path: 'cities', component: CitiesCrudComponent },
             { path: 'categories', component: CategoriesCrud },
             { path: 'stores', component: StoresCrudComponent },
+            { path: 'stores/:id/branches', component: BranchesCrudComponent },
             { path: 'products', component: ProductsCrudComponent },
             { path: 'brands', component: BrandsCrudComponent },
             {
