@@ -1,0 +1,150 @@
+<div class="crud-container">
+  <div class="crud-header">
+    <h2>Manage Retailers</h2>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <span class="material-icons-round">add</span>
+      <span>Add Store</span>
+    </button>
+  </div>
+
+  <!-- Table list -->
+  <div class="card table-wrapper">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Logo</th>
+          <th>Store ID</th>
+          <th>Name (EN)</th>
+          <th>Name (AR)</th>
+          <th>CR / VAT Codes</th>
+          <th>Verified</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of stores()">
+  <td>
+    <img [src]="filePath + s.logoUrl" class="admin-table-logo" alt="logo">
+  </td>
+
+  <td>{{ s.id }}</td>
+
+  <td>{{ s.nameEn }}</td>
+
+  <td>{{ s.nameAr }}</td>
+
+  <td>
+    <div class="code-column-desc">
+      <span>CR: <code>{{ s.crNumber || 'N/A' }}</code></span>
+      <span>VAT: <code>{{ s.vatNumber || 'N/A' }}</code></span>
+    </div>
+  </td>
+
+  <td>
+    <span class="material-icons-round verified-icon" *ngIf="s.verified">
+      verified
+    </span>
+
+    <span class="text-muted" *ngIf="!s.verified">
+      No
+    </span>
+
+    
+  </td>
+
+  <td>
+    <span
+      class="badge"
+      [class.badge-featured]="s.active"
+      [class.badge-discount]="!s.active">
+
+      {{ s.active ? 'Active' : 'Inactive' }}
+    </span>
+  </td>
+
+  <td>
+    <div class="action-buttons-cell">
+      <button
+        class="btn-icon"
+        (click)="openEditModal(s)"
+        title="Edit Store Profile">
+        <span class="material-icons-round">edit</span>
+      </button>
+
+      <a
+        [routerLink]="['/admin/stores', s.id, 'branches']"
+        class="btn-icon text-primary"
+        title="Manage Branches">
+        <span class="material-icons-round">storefront</span>
+      </a>
+
+      <button
+        class="btn-icon text-danger"
+        title="Delete Shop">
+        <span class="material-icons-round">delete</span>
+      </button>
+    </div>
+  </td>
+</tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ editingStoreId ? 'Edit Store Profile' : 'Add Store' }}</h3>
+        <button class="btn-icon border-none" (click)="closeModal()"><span class="material-icons-round">close</span></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="storeForm" (submit)="onSubmit()" class="auth-form">
+          <div class="form-group">
+            <label class="form-label">Store Name (EN)</label>
+            <input type="text" formControlName="name_en" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Store Name (AR)</label>
+            <input type="text" formControlName="name_ar" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Logo Image URL</label>
+            <input type="text" formControlName="logo_url" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Primary City</label>
+            <select formControlName="city_id" class="form-control">
+              <option value="" disabled>Select City</option>
+              <option *ngFor="let c of cities()" [value]="c.id">{{ c.name_en }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Primary Category</label>
+            <select formControlName="category_id" class="form-control">
+              <option value="" disabled>Select Category</option>
+              <option *ngFor="let cat of categories()" [value]="cat.id">{{ cat.name_en }}</option>
+            </select>
+          </div>
+          <div class="form-group"> 
+            <label class="form-label">CR Number (Commercial Register)</label>
+            <input type="text" formControlName="cr_number" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">VAT Number</label>
+            <input type="text" formControlName="vat_number" class="form-control">
+          </div>
+          <div class="form-group checkbox-label">
+            <input type="checkbox" formControlName="is_verified">
+            <span>Verified Partner badge</span>
+          </div>
+          <div class="form-group checkbox-label">
+            <input type="checkbox" formControlName="is_active">
+            <span>Active Status</span>
+          </div>
+          <button type="submit" [disabled]="storeForm.invalid" class="btn btn-primary w-full">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,160 @@
+<div class="auth-wrapper">
+  <div class="auth-card card">
+    <!-- Header with tab switchers -->
+    <div class="auth-tabs">
+      <button 
+        [class.active]="mode === 'login'" 
+        (click)="setMode('login')"
+        class="auth-tab-btn"
+      >
+        {{ currentLang() === 'en' ? 'User Login' : 'دخول المستخدم' }}
+      </button>
+      <button 
+        [class.active]="mode === 'register'" 
+        (click)="setMode('register')"
+        class="auth-tab-btn"
+      >
+        {{ currentLang() === 'en' ? 'Register' : 'تسجيل جديد' }}
+      </button>
+      <button 
+        [class.active]="mode === 'admin'" 
+        (click)="setMode('admin')"
+        class="auth-tab-btn"
+      >
+        {{ currentLang() === 'en' ? 'Admin Portal' : 'لوحة الإشراف' }}
+      </button>
+    </div>
+
+    <div class="auth-body">
+      <!-- Error Message Alert -->
+      <div class="auth-alert text-danger" *ngIf="errorMessage">
+        <span class="material-icons-round">error</span>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <!-- 1. Customer Login Form -->
+      <form *ngIf="mode === 'login'" [formGroup]="loginForm" (submit)="onLoginSubmit()" class="auth-form">
+        <div class="form-group">
+          <label class="form-label">{{ currentLang() === 'en' ? 'Email Address' : 'البريد الإلكتروني' }}</label>
+          <input 
+            type="email" 
+            formControlName="email" 
+            class="form-control" 
+            [placeholder]="currentLang() === 'en' ? 'name@example.com' : 'mail@example.com'"
+          >
+          <span class="error-label" *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.hasError('email')">
+            Invalid email address
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">{{ currentLang() === 'en' ? 'Password' : 'كلمة المرور' }}</label>
+          <input 
+            type="password" 
+            formControlName="password" 
+            class="form-control" 
+            placeholder="••••••••"
+          >
+          <span class="error-label" *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.hasError('required')">
+            Password is required
+          </span>
+        </div>
+
+        <button  type="submit" [disabled]="loginForm.invalid || loading" class="btn btn-primary w-full">
+          <span *ngIf="!loading">{{ currentLang() === 'en' ? 'Login' : 'تسجيل الدخول' }}</span>
+          <span class="spinner-small" *ngIf="loading"></span>
+        </button>
+        
+        <p class="auth-helper">
+
+          {{ currentLang() === 'en' ? "Don't have an account?" : "ليس لديك حساب؟" }}
+          <a href="javascript:void(0)" (click)="setMode('register')">{{ currentLang() === 'en' ? 'Sign Up' : 'سجل الآن' }}</a>
+        </p>
+      </form>
+
+
+      <!-- 2. Customer Register Form -->
+      <form *ngIf="mode === 'register'" [formGroup]="registerForm" (submit)="onRegisterSubmit()" class="auth-form">
+        <div class="form-group">
+          <label class="form-label">{{ currentLang() === 'en' ? 'Full Name' : 'الاسم الكامل' }}</label>
+          <input 
+            type="text" 
+            formControlName="fullName" 
+            class="form-control" 
+            [placeholder]="currentLang() === 'en' ? 'Mohammed Al-Saudi' : 'محمد السعودي'"
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">{{ currentLang() === 'en' ? 'Email Address' : 'البريد الإلكتروني' }}</label>
+          <input 
+            type="email" 
+            formControlName="email" 
+            class="form-control" 
+            placeholder="name@example.com"
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">{{ currentLang() === 'en' ? 'Phone Number' : 'رقم الجوال' }}</label>
+          <input 
+            type="text" 
+            formControlName="phone" 
+            class="form-control" 
+            placeholder="+966500000000"
+          >
+          <span class="error-label" *ngIf="registerForm.get('phone')?.touched && registerForm.get('phone')?.invalid">
+            Include country code, e.g. +966500000000
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">{{ currentLang() === 'en' ? 'Home City' : 'المدينة' }}</label>
+          <select formControlName="cityId" class="form-control">
+            <option value="" disabled>{{ currentLang() === 'en' ? 'Select City' : 'اختر المدينة' }}</option>
+            <option *ngFor="let c of cities" [value]="c.id">{{ c | translate:'name' }}</option>
+          </select>
+        </div>
+
+        <button type="submit" [disabled]="registerForm.invalid || loading" class="btn btn-primary w-full">
+          <span *ngIf="!loading">{{ currentLang() === 'en' ? 'Create Account' : 'إنشاء الحساب' }}</span>
+          <span class="spinner-small" *ngIf="loading"></span>
+        </button>
+
+        <p class="auth-helper">
+          {{ currentLang() === 'en' ? 'Already have an account?' : 'لديك حساب بالفعل؟' }}
+          <a href="javascript:void(0)" (click)="setMode('login')">{{ currentLang() === 'en' ? 'Sign In' : 'دخول' }}</a>
+        </p>
+      </form>
+
+      <!-- 3. Admin Login Form -->
+      <form *ngIf="mode === 'admin'" [formGroup]="adminLoginForm" (submit)="onAdminLoginSubmit()" class="auth-form">
+        <div class="form-group">
+          <label class="form-label">{{ currentLang() === 'en' ? 'Admin Email' : 'البريد الإلكتروني للإدارة' }}</label>
+          <input 
+            type="email" 
+            formControlName="email" 
+            class="form-control" 
+            placeholder="admin@dealspot.com"
+            
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">{{ currentLang() === 'en' ? 'Access Password' : 'رمز الدخول' }}</label>
+          <input 
+            type="password" 
+            formControlName="password" 
+            class="form-control" 
+            placeholder="••••••••"
+          >
+        </div>
+
+        <button type="submit" [disabled]="adminLoginForm.invalid || loading" class="btn btn-primary w-full">
+          <span *ngIf="!loading">{{ currentLang() === 'en' ? 'Admin Access' : 'دخول الإدارة' }}</span>
+          <span class="spinner-small" *ngIf="loading"></span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

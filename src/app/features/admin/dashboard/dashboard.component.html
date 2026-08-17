@@ -1,0 +1,127 @@
+<div class="dashboard-container" *ngIf="!loading">
+  <!-- Top header -->
+  <div class="dash-welcome">
+    <h1>Welcome, Administrator</h1>
+    <p>Here is an overview of active catalogs, retail partners, discount statistics, and audit trails.</p>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid" *ngIf="stats()">
+    <div class="stat-card card">
+      <span class="material-icons-round stat-icon color-green">store</span>
+      <div class="stat-details">
+        <span class="stat-num">{{ stats().stores }}</span>
+        <span class="stat-label">Retail Stores</span>
+      </div>
+    </div>
+    <div class="stat-card card">
+      <span class="material-icons-round stat-icon color-blue">local_offer</span>
+      <div class="stat-details">
+        <span class="stat-num">{{ stats().offers }}</span>
+        <span class="stat-label">Active Offers</span>
+      </div>
+    </div>
+    <div class="stat-card card">
+      <span class="material-icons-round stat-icon color-gold">menu_book</span>
+      <div class="stat-details">
+        <span class="stat-num">{{ stats().flyers }}</span>
+        <span class="stat-label">Catalog Flyers</span>
+      </div>
+    </div>
+    <div class="stat-card card">
+      <span class="material-icons-round stat-icon color-red">bookmark</span>
+      <div class="stat-details">
+        <span class="stat-num">{{ stats().saves }}</span>
+        <span class="stat-label">Offer Saves</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Double column workspace -->
+  <div class="dashboard-workspace">
+    <!-- Left Column: Quick links -->
+    <div class="workspace-panel card">
+      <div class="panel-header">
+        <span class="material-icons-round">edit_note</span>
+        <h3>Quick Catalog Management</h3>
+      </div>
+      <div class="panel-body">
+        <div class="management-shortcuts">
+          <a routerLink="/admin/stores" class="shortcut-item">
+            <span class="material-icons-round icon">store</span>
+            <div>
+              <h4>Manage Retailers</h4>
+              <p>Configure VAT numbers, CR, logos, and verification status.</p>
+            </div>
+          </a>
+          <a routerLink="/admin/brands" class="shortcut-item">
+            <span class="material-icons-round icon">loyalty</span>
+            <div>
+              <h4>Brand Partners</h4>
+              <p>Configure brand names, logos, search tags, and status.</p>
+            </div>
+          </a>
+          <a routerLink="/admin/products" class="shortcut-item">
+            <span class="material-icons-round icon">shopping_bag</span>
+            <div>
+              <h4>Product Catalog</h4>
+              <p>Manage product dimensions, brand details, barcodes, and SKUs.</p>
+            </div>
+          </a>
+          <a routerLink="/admin/offers" class="shortcut-item">
+            <span class="material-icons-round icon">local_offer</span>
+            <div>
+              <h4>Active Promotions</h4>
+              <p>Add featured, flash, and BOGO deals with automatic percentages.</p>
+            </div>
+          </a>
+          <a routerLink="/admin/flyers" class="shortcut-item">
+            <span class="material-icons-round icon">menu_book</span>
+            <div>
+              <h4>Brochures & Flyers</h4>
+              <p>Configure flyer validity periods and scanned flyer pages.</p>
+            </div>
+          </a>
+          <a routerLink="/admin/coupons" class="shortcut-item">
+            <span class="material-icons-round icon">confirmation_number</span>
+            <div>
+              <h4>Coupon Codes</h4>
+              <p>Manage discount values, usage thresholds, and validity states.</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Recent Audits -->
+    <div class="workspace-panel card">
+      <div class="panel-header">
+        <span class="material-icons-round">history_edu</span>
+        <h3>Recent Modifications</h3>
+      </div>
+      <div class="panel-body">
+        <!-- <div class="audit-timeline" *ngIf="recentLogs().length > 0; else noLogs">
+          <div class="timeline-item" *ngFor="let log of recentLogs()">
+            <div class="timeline-marker" [ngClass]="log.action.toLowerCase()"></div>
+            <div class="timeline-content">
+              <div class="timeline-title-row">
+                <span class="log-action">{{ log.action }}</span>
+                <span class="log-entity">{{ log.entity_type }} (ID: {{ log.entity_id }})</span>
+                <span class="log-date">{{ log.created_at.slice(11, 19) }}</span>
+              </div>
+              <p class="log-actor">Performed by User ID: {{ log.performed_by }} &bull; IP: {{ log.ip_address }}</p>
+              <pre class="log-payload" *ngIf="log.payload">{{ log.payload | json }}</pre>
+            </div>
+          </div>
+        </div> -->
+        
+        <ng-template #noLogs>
+          <div class="empty-state">
+            <span class="material-icons-round empty-state-icon">history</span>
+            <p class="empty-state-desc">No changes recorded in the system logs yet.</p>
+          </div> 
+        </ng-template> 
+      </div>
+    </div> 
+  </div>
+</div>

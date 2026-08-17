@@ -1,0 +1,229 @@
+<div class="home-container">
+  <!-- Hero Section -->
+  <section class="hero-banner">
+    <div class="hero-content">
+      <h1 class="hero-title">
+        Discover the Best Deals & Flyers in <span>Riyadh</span>
+        <!-- Discover the Best Deals & Flyers in <spa/n>{{ cityService.selectedCity() | translate:'name' }}</span> -->
+      </h1>
+      <p class="hero-desc">
+        Browse active discounts, store brochures, and coupon codes from hypermarkets, bookstores, restaurants, and electronics centers.
+      </p>
+      <div class="hero-cta">
+        <a routerLink="/offers" class="btn btn-primary">
+          <span class="material-icons-round">explore</span>
+          <span>Explore All Offers</span>
+        </a>
+        <a routerLink="/flyers" class="btn btn-outline">
+          <span class="material-icons-round">menu_book</span>
+          <span>View Weekly Flyers</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Categories Horizontal Scroll -->
+  <section class="home-section">
+    <div class="section-header">
+      <h2 class="section-title">Browse by Category</h2>
+    </div>
+    <div class="categories-scroll">
+      <a 
+        *ngFor="let cat of categories()" 
+        [routerLink]="['/offers']" 
+        [queryParams]="{category: cat.id}"
+        class="category-scroll-item interactive-hover"
+      >
+        <div class="category-icon-wrapper">
+          <span class="material-icons-round">{{ cat.icon_slug || 'folder' }}</span>
+        </div>
+        <span class="category-label">{{ cat | translate:'name' }}</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Flash Deals Slider -->
+  <section class="home-section" *ngIf="flashDeals().length > 0">
+    <div class="section-header">
+      <div class="title-with-badge">
+        <h2 class="section-title">Flash Deals</h2>
+        <span class="badge badge-flash">Limited Time</span>
+      </div>
+      <a routerLink="/offers" [queryParams]="{flash: true}" class="see-all-link">See All</a>
+    </div>
+
+  
+
+    <div class="deals-horizontal-scroll">
+      <div class="deal-horizontal-card card" *ngFor="let deal of flashDeals()">
+        <!-- Discount Badge -->
+        <span class="badge badge-discount discount-badge-float">-{{ deal.discount_pct }}%</span>
+        
+        <div class="deal-card-image">
+          <img [src]="deal.product?.primary_image_url" [alt]="deal | translate:'title'">
+          <button class="save-btn-float" (click)="toggleSaveOffer(deal, $event)" [class.saved]="isSaved(deal.id)">
+            <span class="material-icons-round">{{ isSaved(deal.id) ? 'bookmark' : 'bookmark_border' }}</span>
+          </button>
+        </div>
+
+        <div class="deal-card-body">
+          <a [routerLink]="['/stores', deal.store_id]" class="store-badge-row">
+            <img [src]="deal.store?.logo_url" class="mini-store-logo">
+            <span>{{ deal.store | translate:'name' }}</span>
+          </a>
+          <h3 class="deal-card-title">
+            <a [routerLink]="['/offers', deal.id]">{{ deal | translate:'title' }}</a>
+          </h3>
+          <div class="price-row">
+            <span class="offer-price">{{ deal.offer_price }} SAR</span>
+            <span class="original-price">{{ deal.original_price }} SAR</span>
+          </div>
+          <div class="valid-until-row">
+            <span class="material-icons-round tiny-icon">schedule</span>
+            <span>Ends: {{ deal.valid_until }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Flyers Grid -->
+  <section class="home-section" *ngIf="activeFlyers().length > 0">
+    <div class="section-header">
+      <h2 class="section-title">Weekly Flyers & Brochures</h2>
+      <a routerLink="/flyers" class="see-all-link">See All</a>
+    </div>
+
+    <div class="grid-flyers">
+      <div class="flyer-card card" *ngFor="let flyer of activeFlyers()">
+        <div class="flyer-image-wrapper">
+          <img [src]="flyer.cover_image_url" [alt]="flyer | translate:'title'">
+          <div class="flyer-overlay">
+            <a [routerLink]="['/flyers', flyer.id]" class="btn btn-primary">
+              <span class="material-icons-round">auto_stories</span>
+              <span>Open Flyer</span>
+            </a>
+          </div>
+        </div>
+        <div class="flyer-card-body">
+          <a [routerLink]="['/stores', flyer.store_id]" class="store-badge-row">
+            <img [src]="flyer.store?.logo_url" class="mini-store-logo">
+            <span>{{ flyer.store | translate:'name' }}</span>
+          </a>  
+          <h3 class="flyer-title">
+            <a [routerLink]="['/flyers', flyer.id]">{{ flyer | translate:'title' }}</a>
+          </h3>
+          <p class="flyer-pages-count">{{ flyer.total_pages }} Pages</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Offers Grid -->
+  <section class="home-section" *ngIf="featuredOffers().length > 0">
+    <div class="section-header">
+      <div class="title-with-badge">
+        <h2 class="section-title">Featured Offers</h2>
+        <span class="badge badge-featured">Best Savings</span>
+      </div>
+      <a routerLink="/offers" [queryParams]="{featured: true}" class="see-all-link">See All</a>
+    </div>
+
+    <div class="grid-cards">
+      <div class="offer-grid-card card" *ngFor="let offer of featuredOffers()">
+        <span class="badge badge-discount discount-badge-float">-{{ offer.discount_pct }}%</span>
+        
+        <div class="offer-card-image">
+          <img [src]="offer.product?.primary_image_url" [alt]="offer | translate:'title'">
+          <button class="save-btn-float" (click)="toggleSaveOffer(offer, $event)" [class.saved]="isSaved(offer.id)">
+            <span class="material-icons-round">{{ isSaved(offer.id) ? 'bookmark' : 'bookmark_border' }}</span>
+          </button>
+        </div>
+
+        <div class="offer-card-body">
+          <div class="offer-store-header">
+            <a [routerLink]="['/stores', offer.store_id]" class="store-badge-row">
+              <img [src]="offer.store?.logo_url" class="mini-store-logo">
+              <span>{{ offer.store | translate:'name' }}</span>
+            </a>
+            <span class="material-icons-round verified-icon" *ngIf="offer.store?.is_verified === 1">verified</span>
+          </div>
+
+          <h3 class="offer-title-main">
+            <a [routerLink]="['/offers', offer.id]">{{ offer | translate:'title' }}</a>
+          </h3>
+
+          <div class="price-row">
+            <span class="offer-price">{{ offer.offer_price }} SAR</span>
+            <span class="original-price">{{ offer.original_price }} SAR</span>
+          </div>
+          
+          <div class="offer-card-footer">
+            <span class="valid-date">Valid to: {{ offer.valid_until }}</span>
+            <span class="badge badge-featured" style="padding: 2px 8px; font-size: 9px;">Featured</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Latest Offers Grid -->
+  <section class="home-section">
+    <div class="section-header">
+      <h2 class="section-title">Latest Discounts</h2>
+      <a routerLink="/offers" class="see-all-link">View All</a>
+    </div>
+
+    <div class="grid-cards" *ngIf="latestOffers().length > 0; else noDeals">
+      <div class="offer-grid-card card" *ngFor="let offer of latestOffers()">
+        <span class="badge badge-discount discount-badge-float">-{{ offer.discount_pct }}%</span>
+        
+        <div class="offer-card-image">
+          <img [src]="offer.product?.primary_image_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300&auto=format&fit=crop&q=60'" [alt]="offer | translate:'title'">
+          <button class="save-btn-float" (click)="toggleSaveOffer(offer, $event)" [class.saved]="isSaved(offer.id)">
+            <span class="material-icons-round">{{ isSaved(offer.id) ? 'bookmark' : 'bookmark_border' }}</span>
+          </button>
+        </div>
+
+        <div class="offer-card-body">
+          <div class="offer-store-header">
+            <a [routerLink]="['/stores', offer.store_id]" class="store-badge-row">
+              <img [src]="offer.store?.logo_url" class="mini-store-logo">
+              <span>{{ offer.store | translate:'name' }}</span>
+            </a>
+            <span class="material-icons-round verified-icon" *ngIf="offer.store?.is_verified === 1">verified</span>
+          </div>
+
+          <h3 class="offer-title-main">
+            <a [routerLink]="['/offers', offer.id]">{{ offer | translate:'title' }}</a>
+          </h3>
+
+          <div class="price-row">
+            <span class="offer-price">{{ offer.offer_price }} SAR</span>
+            <span class="original-price">{{ offer.original_price }} SAR</span>
+          </div>
+          
+          <div class="offer-card-footer">
+            <span class="valid-date">Until: {{ offer.valid_until }}</span>
+            <span class="badge badge-flash" *ngIf="offer.is_flash === 1" style="padding: 2px 8px; font-size: 9px;">Flash</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+
+    <ng-template #noDeals>
+      <div class="empty-state">
+        <span class="material-icons-round empty-state-icon">local_offer</span>
+        <h3 class="empty-state-title">No offers found</h3>
+        <p class="empty-state-desc">There are no active offers in Riyadh at this time. Try changing your city selection.</p>
+        <!-- <p class="empty-state-desc">There are no active offers in {{ cityService.selectedCity() | translate:'name' }} at this time. Try changing your city selection.</p> -->
+      </div>
+
+      <div>
+
+      </div>
+    </ng-template>
+  </section>
+</div>

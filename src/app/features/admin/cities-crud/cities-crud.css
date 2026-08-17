@@ -1,0 +1,59 @@
+.crud-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.crud-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 13px;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.admin-table th {
+    font-weight: 700;
+    color: var(--text-secondary);
+    background: var(--surface-hover);
+}
+
+.admin-table td {
+    color: var(--text-primary);
+}
+
+.action-buttons-cell {
+    display: flex;
+    gap: 8px;
+}
+
+.action-buttons-cell button {
+    width: 30px;
+    height: 30px;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.border-none {
+    border: none;
+}

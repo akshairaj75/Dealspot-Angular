@@ -1,0 +1,72 @@
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-header">
+      <span class="material-icons-round admin-logo-icon">admin_panel_settings</span>
+      <div class="sidebar-header-text">
+        <span class="admin-logo-title">DealSpot Admin</span>
+        <span class="admin-logo-subtitle">{{ currentLang() === 'en' ? 'Control Panel' : 'لوحة التحكم' }}</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a 
+        *ngFor="let item of menuItems" 
+        [routerLink]="item.route" 
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{exact: item.route === '/admin'}"
+        class="nav-menu-item"
+      >
+        <span class="material-icons-round nav-icon">{{ item.icon }}</span>
+        <span>{{ currentLang() === 'en' ? item.label_en : item.label_ar }}</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a routerLink="/" class="btn-sidebar-view-site">
+        <span class="material-icons-round">visibility</span>
+        <span>{{ currentLang() === 'en' ? 'View Website' : 'عرض الموقع' }}</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Area -->
+  <div class="admin-main-container">
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <h2 class="admin-page-title">
+          {{ currentLang() === 'en' ? 'Dashboard Control' : 'لوحة الإدارة' }}
+        </h2>
+      </div>
+
+      <div class="topbar-right">
+        <!-- Language Switcher -->
+        <button class="lang-toggle btn-icon" (click)="toggleLanguage()">
+          <span class="lang-label">{{ currentLang() === 'en' ? 'AR' : 'EN' }}</span>
+        </button>
+
+        <!-- Admin user information -->
+        <div class="admin-user-profile">
+          <div class="admin-user-avatar">
+            <span class="material-icons-round">manage_accounts</span>
+          </div>
+          <!-- <div class="admin-user-info">
+            <p class="admin-name">{{ adminUser()?.full_name || 'Administrator' }}</p>
+            <p class="admin-role">{{ adminUser()?.role || 'Super Admin' }}</p>
+          </div> -->
+        </div>
+
+        <!-- Logout button -->
+        <button (click)="logout()" class="btn-logout btn-icon text-danger" [title]="currentLang() === 'en' ? 'Logout' : 'تسجيل الخروج'">
+          <span class="material-icons-round">logout</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="admin-content-viewport">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

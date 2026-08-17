@@ -1,0 +1,183 @@
+<div class="app-layout" (click)="closeDropdowns()">
+  <!-- Sticky Header -->
+  <header class="glass-header">
+    <div class="header-container">
+      <!-- Logo -->
+      <a routerLink="/" class="logo-area">
+        <span class="material-icons-round logo-icon">local_offer</span>
+        <div class="logo-text">
+          <span class="logo-title">DealSpot</span>
+          <span class="logo-subtitle" *ngIf="currentLang() === 'en'">Saudi Arabia</span>
+          <span class="logo-subtitle" *ngIf="currentLang() === 'ar'">المملكة العربية السعودية</span>
+        </div>
+      </a>
+
+      <!-- Search Bar -->
+      <form class="search-form" (submit)="onSearchSubmit()">
+        <input 
+          type="text" 
+          name="search" 
+          [(ngModel)]="searchQuery" 
+          [placeholder]="currentLang() === 'en' ? 'Search offers, stores, brands...' : 'ابحث عن العروض، المتاجر، الماركات...'"
+          class="search-input"
+        >
+        <button type="submit" class="search-btn">
+          <span class="material-icons-round">search</span>
+        </button>
+      </form>
+
+      <!-- Navigation & Quick Links -->
+      <nav class="nav-links">
+        <a routerLink="/offers-list" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">{{ currentLang() === 'en' ? 'Offers' : 'العروض' }}</a>
+        <a routerLink="/stores" routerLinkActive="active">{{ currentLang() === 'en' ? 'Stores' : 'المتاجر' }}</a>
+        <a routerLink="/flyers" routerLinkActive="active">{{ currentLang() === 'en' ? 'Flyers' : 'المنشورات' }}</a>
+      </nav>
+
+      
+
+      <!-- Header Action Controls -->
+      <div class="header-actions">
+        <!-- City Selector -->
+        <button class="city-selector btn-outline btn" (click)="isCityModalOpen = true; $event.stopPropagation()">
+          <span class="material-icons-round">place</span>
+          <span class="city-name">{{ activeCity() | translate:'name' }}</span>
+        </button>
+
+        <!-- Language Selector -->
+        <button class="lang-toggle btn-icon" (click)="toggleLanguage()">
+          <span class="lang-label">{{ currentLang() === 'en' ? 'AR' : 'EN' }}</span>
+        </button>
+
+        
+
+        <!-- Notification Bell -->
+        <a routerLink="/notifications" class="notification-btn btn-icon">
+          <span class="material-icons-round">notifications</span>
+          <span class="badge-count" *ngIf="unreadNotificationsCount() > 0">{{ unreadNotificationsCount() }}</span>
+        </a>
+
+        <!-- User Menu -->
+        <div class="profile-dropdown-wrapper">
+          <button class="profile-avatar btn-icon" (click)="toggleProfileDropdown($event)">
+            <span class="material-icons-round">person</span>
+          </button>
+
+          <!-- Dropdown List -->
+          <div class="profile-dropdown-menu" *ngIf="isProfileOpen" (click)="$event.stopPropagation()">
+            <ng-container *ngIf="isLoggedIn(); else guestMenu">
+              <div class="dropdown-header">
+                <p class="user-name">{{ currentUser()?.full_name }}</p>
+                <p class="user-email">{{ currentUser()?.email }}</p>
+              </div>
+              <a routerLink="/saved-offers" (click)="closeDropdowns()" class="dropdown-item">
+                <span class="material-icons-round">bookmark</span>
+                {{ currentLang() === 'en' ? 'Saved Offers' : 'العروض المحفوظة' }}
+              </a>
+              <a></a>
+              <a routerLink="/followed-stores" (click)="closeDropdowns()" class="dropdown-item">
+                <span class="material-icons-round">favorite</span>
+                {{ currentLang() === 'en' ? 'Followed Stores' : 'المتاجر المتابعة' }}
+              </a>
+              <a routerLink="/profile" (click)="closeDropdowns()" class="dropdown-item">
+                <span class="material-icons-round">settings</span>
+                {{ currentLang() === 'en' ? 'My Profile' : 'الملف الشخصي' }}
+              </a>
+              <hr class="dropdown-divider">
+              <button (click)="logout()" class="dropdown-item text-danger">
+                <span class="material-icons-round">logout</span>
+                {{ currentLang() === 'en' ? 'Logout' : 'تسجيل الخروج' }}
+              </button>
+            </ng-container>
+
+            <ng-template #guestMenu>
+              <a routerLink="/login" (click)="closeDropdowns()" class="dropdown-item font-semibold">
+                <span class="material-icons-round">login</span>
+                {{ currentLang() === 'en' ? 'Login / Register' : 'الدخول / التسجيل' }}
+              </a>
+              <hr class="dropdown-divider">
+              <a routerLink="/login" [queryParams]="{admin: true}" (click)="closeDropdowns()" class="dropdown-item">
+                <span class="material-icons-round">admin_panel_settings</span>
+                {{ currentLang() === 'en' ? 'Admin Portal' : 'لوحة الإشراف' }}
+              </a>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Router Outlet Container -->
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Public Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-section">
+        <div class="footer-logo">
+          <span class="material-icons-round">local_offer</span>
+          <span>DealSpot</span>
+        </div>
+        <p class="footer-description">
+          {{ currentLang() === 'en' ? 'Your premium Saudi discount and flyer platform. Save smart, live well.' : 'منصتك المميزة للعروض والمنشورات الترويجية في المملكة. تسوق بذكاء ووفر أكثر.' }}
+        </p>
+      </div>
+
+      <div class="footer-section">
+        <h4>{{ currentLang() === 'en' ? 'Explore' : 'استكشف' }}</h4>
+        <ul class="footer-links">
+          <li><a routerLink="/offers">{{ currentLang() === 'en' ? 'All Offers' : 'جميع العروض' }}</a></li>
+          <li><a routerLink="/stores">{{ currentLang() === 'en' ? 'Shops & Stores' : 'المتاجر والمحلات' }}</a></li>
+          <li><a routerLink="/flyers">{{ currentLang() === 'en' ? 'Latest Flyers' : 'أحدث المنشورات' }}</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">  
+        <h4>{{ currentLang() === 'en' ? 'Support' : 'الدعم والمساعدة' }}</h4>
+        <ul class="footer-links">
+          <li><a routerLink="/login">{{ currentLang() === 'en' ? 'User Login' : 'تسجيل دخول المستخدم' }}</a></li>
+          <li><a routerLink="/login" [queryParams]="{admin: true}">{{ currentLang() === 'en' ? 'Admin Portal' : 'بوابة المسؤول' }}</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>{{ currentLang() === 'en' ? 'Active City' : 'المدينة النشطة' }}</h4>
+        <div class="footer-city-info">
+          <span class="material-icons-round text-primary">place</span>
+          <span>{{ activeCity() | translate:'name' }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 DealSpot KSA. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- City Selection Modal/Dialog -->
+  <div class="modal-backdrop" *ngIf="isCityModalOpen" (click)="isCityModalOpen = false">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ currentLang() === 'en' ? 'Select Your City' : 'اختر مدينتك' }}</h3>
+        <button class="btn-icon border-none" (click)="isCityModalOpen = false">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">{{ currentLang() === 'en' ? 'Select a city to discover deals and flyers near you.' : 'اختر مدينة لتصفح العروض والكتالوجات الأقرب إليك.' }}</p>
+        <div class="cities-grid">
+          <button 
+            *ngFor="let c of cities()" 
+            class="city-btn" 
+            [class.active]="c.id === activeCity()?.id"
+            (click)="selectCity(c)"
+          >
+            <span class="material-icons-round">location_city</span>
+            <span class="city-name-btn">{{ c | translate:'name' }}</span>
+            <span class="material-icons-round check-icon" *ngIf="c.id === activeCity()?.id">check_circle</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,95 @@
+<div class="store-list-container">
+  <!-- Section Title -->
+  <div class="store-list-header">
+    <h1 class="page-title">{{ currentLang() === 'en' ? 'Store Directory' : 'دليل المتاجر' }}</h1>
+    <p class="page-subtitle">{{ currentLang() === 'en' ? 'Browse and follow your favorite shops in Saudi Arabia' : 'تصفح وتابع المتاجر المفضلة لديك في المملكة' }}</p>
+  </div>
+
+  <!-- Search & Category Filters -->
+  <div class="store-filters card">
+    <div class="search-field">
+      <span class="material-icons-round search-field-icon">search</span>
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery" 
+        [placeholder]="currentLang() === 'en' ? 'Search store names...' : 'ابحث عن اسم المتجر...'" 
+        class="form-control"
+      >
+    </div>
+
+    <div class="category-filter-tags">
+      <button  
+        (click)="selectedCategoryId = null"
+        [class.active]="selectedCategoryId === null"
+        class="tag-btn"
+      >
+        {{ currentLang() === 'en' ? 'All Categories' : 'جميع الأقسام' }}
+      </button>
+      <button
+  *ngFor="let cat of categories"
+  (click)="selectedCategoryId = cat.id"
+  [class.active]="selectedCategoryId === cat.id"
+  class="tag-btn">
+  {{ cat.nameEn  }}
+</button>
+    </div>
+  </div>
+
+  <!-- Spinner state -->
+  <div class="spinner-container" *ngIf="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && getFilteredStores().length === 0">
+    <span class="material-icons-round empty-state-icon">storefront</span>
+    <h3 class="empty-state-title">No stores found</h3>
+    <p class="empty-state-desc">Try clearing your filters or search query to find all active retailers.</p>
+  </div>
+
+  <!-- Stores Directory Grid -->
+  <div class="grid-cards" *ngIf="!loading && getFilteredStores().length > 0">
+    <div class="store-grid-card card" *ngFor="let store of getFilteredStores()">
+      <!-- verified overlay label -->
+      <span class="badge badge-verified verified-badge-float" *ngIf="store.verified">Verified</span>
+
+      <div class="store-logo-panel">
+<img [src]="filePath + store.logoUrl" [alt]="currentLang() === 'en' ? store.nameEn : store.nameAr">      </div>
+
+      <div class="store-body-panel">
+        <h3 class="store-title-main">
+          <a [routerLink]="['/stores', store.id]">{{ currentLang() === 'en' ? store.nameEn : store.nameAr }}</a>
+        </h3>
+        <p class="store-category-desc">{{ currentLang() === 'en'
+    ? store.categoryNameEn
+    : store.categoryNameAr }}</p>
+        
+        <div class="store-counts-row">
+          <div class="count-tag">
+            <span class="material-icons-round">local_offer</span>
+            <span>{{ getOffersCount(store.id) }} Offers</span>
+          </div>
+          <div class="count-tag">
+            <span class="material-icons-round">place</span>
+            <span>Branches</span>
+          </div>
+        </div>
+
+        <div class="store-card-actions">
+          <button 
+            class="btn w-full"
+            [class.btn-primary]="!isFollowing(store.id)"
+            [class.btn-outline]="isFollowing(store.id)"
+            (click)="toggleFollow(store, $event)"
+          >
+            <span class="material-icons-round">{{ isFollowing(store.id) ? 'check' : 'favorite' }}</span>
+            <span>{{ isFollowing(store.id) ? 'Following' : 'Follow' }}</span>
+          </button>
+          <a [routerLink]="['/stores', store.id]" class="btn btn-outline btn-icon-only">
+            <span class="material-icons-round">chevron_right</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

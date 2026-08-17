@@ -1,0 +1,149 @@
+<div class="crud-container">
+  <div class="crud-header">
+    <h2>{{ currentLang() === 'en' ? 'Manage Brand Partners' : 'إدارة العلامات التجارية الشريكة' }}</h2>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <span class="material-icons-round">add</span>
+      <span>{{ currentLang() === 'en' ? 'Add Brand' : 'إضافة علامة تجارية' }}</span>
+    </button>
+  </div>
+
+  <!-- Search and Stats Row -->
+  <div class="search-stats-row">
+    <div class="search-box-wrapper">
+      <span class="material-icons-round search-icon">search</span>
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery" 
+        (ngModelChange)="applyFilter()"
+        [placeholder]="currentLang() === 'en' ? 'Search brands by name or ID...' : 'ابحث عن العلامات التجارية بالاسم أو المعرف...'" 
+        class="search-input"
+      />
+    </div>
+    <div class="stats-badge">
+      <span class="material-icons-round">analytics</span>
+      <span>{{ currentLang() === 'en' ? 'Total Brands: ' : 'إجمالي الماركات: ' }} <strong>{{ brands().length }}</strong></span>
+    </div>
+  </div>
+
+  <!-- Table list -->
+  <div class="card table-wrapper">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>{{ currentLang() === 'en' ? 'Logo' : 'الشعار' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Brand ID' : 'معرف الماركة' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Name (EN)' : 'الاسم (EN)' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Name (AR)' : 'الاسم (AR)' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Sort Order' : 'ترتيب الفرز' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Status' : 'الحالة' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Actions' : 'الإجراءات' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let b of filteredBrands()">
+          <td>
+            <div class="brand-logo-container">
+              <img [src]="filePath + b.logoUrl" class="brand-table-logo" alt="brand logo" (error)="b.logoUrl = 'https://placehold.co/100x100?text=No+Logo'">
+            </div>
+          </td>
+          <td>{{ b.id }}</td>
+          <td><strong>{{ b.nameEn }}</strong></td>
+          <td>{{ b.nameAr }}</td>
+          <td><code>{{ b.sortOrder }}</code></td>
+          <td>
+            <span 
+              class="badge" 
+              [class.badge-featured]="b.active === 1 || b.active === true || b.isActive === 1 || b.isActive === true"
+              [class.badge-discount]="b.active === 0 || b.active === false || b.isActive === 0 || b.isActive === false"
+            >
+              {{ (b.active === 1 || b.active === true || b.isActive === 1 || b.isActive === true) 
+                 ? (currentLang() === 'en' ? 'Active' : 'نشط') 
+                 : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') 
+              }}
+            </span>
+          </td>
+          <td>
+            <div class="action-buttons-cell">
+              <button 
+                class="btn-icon" 
+                (click)="openEditModal(b)" 
+                [title]="currentLang() === 'en' ? 'Edit Brand' : 'تعديل العلامة التجارية'"
+              >
+                <span class="material-icons-round">edit</span>
+              </button>
+              <button 
+                class="btn-icon text-danger" 
+                (click)="deleteBrand(b.id)" 
+                [title]="currentLang() === 'en' ? 'Delete Brand' : 'حذف العلامة التجارية'"
+              >
+                <span class="material-icons-round">delete</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="filteredBrands().length === 0">
+          <td colspan="7" class="empty-table-cell">
+            <span class="material-icons-round empty-table-icon">loyalty</span>
+            <p>{{ currentLang() === 'en' ? 'No brands found matching your search.' : 'لم يتم العثور على علامات تجارية تطابق بحثك.' }}</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ editingBrandId ? (currentLang() === 'en' ? 'Edit Brand Partner' : 'تعديل العلامة التجارية') : (currentLang() === 'en' ? 'Add Brand Partner' : 'إضافة علامة تجارية') }}</h3>
+        <button class="btn-icon border-none" (click)="closeModal()">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="brandForm" (submit)="onSubmit()" class="auth-form">
+          <div class="form-group">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Brand Name (EN)' : 'اسم العلامة التجارية (EN)' }}</label>
+            <input type="text" formControlName="nameEn" class="form-control" placeholder="e.g. Samsung">
+            <div class="error-msg" *ngIf="brandForm.get('nameEn')?.touched && brandForm.get('nameEn')?.invalid">
+              {{ currentLang() === 'en' ? 'English brand name is required.' : 'الاسم بالإنجليزية مطلوب.' }}
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Brand Name (AR)' : 'اسم العلامة التجارية (AR)' }}</label>
+            <input type="text" formControlName="nameAr" class="form-control" placeholder="مثال: سامسونج">
+            <div class="error-msg" *ngIf="brandForm.get('nameAr')?.touched && brandForm.get('nameAr')?.invalid">
+              {{ currentLang() === 'en' ? 'Arabic brand name is required.' : 'الاسم بالعربية مطلوب.' }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Logo Image URL' : 'رابط صورة الشعار' }}</label>
+            <input type="text" formControlName="logoUrl" class="form-control" placeholder="https://example.com/logo.png">
+            <div class="error-msg" *ngIf="brandForm.get('logoUrl')?.touched && brandForm.get('logoUrl')?.invalid">
+              {{ currentLang() === 'en' ? 'Logo image URL is required.' : 'رابط صورة الشعار مطلوب.' }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Sort Order' : 'ترتيب الفرز' }}</label>
+            <input type="number" formControlName="sortOrder" class="form-control">
+            <div class="error-msg" *ngIf="brandForm.get('sortOrder')?.touched && brandForm.get('sortOrder')?.invalid">
+              {{ currentLang() === 'en' ? 'Sort order is required and must be 1 or higher.' : 'ترتيب الفرز مطلوب ويجب أن يكون 1 أو أكثر.' }}
+            </div>
+          </div>
+
+          <div class="form-group checkbox-label">
+            <input type="checkbox" formControlName="isActive">
+            <span>{{ currentLang() === 'en' ? 'Active Brand Partner' : 'شريك علامة تجارية نشط' }}</span>
+          </div>
+
+          <button type="submit" [disabled]="brandForm.invalid" class="btn btn-primary w-full">
+            {{ currentLang() === 'en' ? 'Save Changes' : 'حفظ التغييرات' }}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

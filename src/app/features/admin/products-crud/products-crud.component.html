@@ -1,0 +1,168 @@
+<div class="crud-container">
+  <div class="crud-header">
+    <h2>Product Catalogue</h2>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <span class="material-icons-round">add</span>
+      <span>Add Product</span>
+    </button>
+  </div>
+  <!-- Search and Stats Row -->
+  <div class="search-stats-row">
+    <div class="search-box-wrapper">
+      <span class="material-icons-round search-icon">search</span>
+      <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="applyFilter()"
+        placeholder="Search products by name, brand, SKU, UPC..." class="search-input" />
+    </div>
+    <div class="stats-badge">
+      <span class="material-icons-round">analytics</span>
+      <span>Total Products: <strong>{{ products().length }}</strong></span>
+    </div>
+  </div>
+
+  <!-- Table list -->
+  <div class="card table-wrapper">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Image</th>
+          <th>Product ID</th>
+          <th>Brand</th>
+          <th>Name (EN)</th>
+          <th>SKU / Barcode</th>
+          <th>Measurement Unit</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of filteredProducts()">
+          <td>
+            <img [src]="filePath + p.images[0].imageUrl" class="admin-table-product-img" alt="product">
+          </td>
+          <td>{{ p.id }}</td>
+          <td><code>{{ p.brand }}</code></td>
+          <td>{{ p.nameEn }}</td>
+          <td>
+            <div class="code-column-desc">
+              <span>SKU: <code>{{ p.sku }}</code></span>
+              <span>UPC: <code>{{ p.barcode }}</code></span>
+            </div>
+          </td>
+          <td>{{ p.unit_size }} {{ p.unit }}</td>
+          <td>
+            <span class="badge" [class.badge-featured]="p.is_active === 1" [class.badge-discount]="p.is_active === 0">
+              {{ p.is_active === 1 ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+          <td>
+            <div class="action-buttons-cell">
+              <button class="btn-icon" (click)="openEditModal(p)" title="Edit Product Info"><span
+                  class="material-icons-round">edit</span></button>
+              <a [routerLink]="['/admin/product-specs', p.id, 'details']" class="btn-icon text-primary"
+                title="Technical Specs"><span class="material-icons-round">list_alt</span></a>
+              <a [routerLink]="['/admin/products', p.id, 'images']" class="btn-icon text-primary"
+                title="Product Image Gallery"><span class="material-icons-round">image</span></a>
+              <button class="btn-icon text-danger" (click)="deleteProduct(p.id)" title="Delete Item"><span
+                  class="material-icons-round">delete</span></button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ editingProductId ? 'Edit Product Catalogue Item' : 'Add Product' }}</h3>
+        <button class="btn-icon border-none" (click)="closeModal()"><span
+            class="material-icons-round">close</span></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="productForm" (submit)="onSubmit()" class="auth-form">
+          <div class="form-group">
+            <label class="form-label">Brand</label>
+
+            <select formControlName="brandId" class="form-control">
+              <option [ngValue]="null">Select Brand</option>
+
+              <option *ngFor="let brand of brands" [ngValue]="brand.id">
+                {{ brand.nameEn }} | {{ brand.nameAr }}
+              </option>
+            </select>
+          </div>
+          <!-- <div class="form-group">
+            <label class="form-label">Brand Name (AR)</label>
+            <input type="text" formControlName="brand_ar" class="form-control">
+          </div> -->
+          <div class="form-group">
+            <label class="form-label">Product Name (EN)</label>
+            <input type="text" formControlName="name_en" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Product Name (AR)</label>
+            <input type="text" formControlName="name_ar" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">SKU (Stock Keeping Unit)</label>
+            <input type="text" formControlName="sku" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Barcode (EAN/UPC)</label>
+            <input type="text" formControlName="barcode" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Product Image</label>
+            <div class="file-upload-box">
+              <input type="file" (change)="onFileSelected($event)" accept="image/*">
+            </div>
+            <div *ngIf="previewUrl" style="margin-top: 10px; display: flex; align-items: center; gap: 12px;">
+              <img [src]="previewUrl" style="max-height: 100px; border-radius: 8px; border: 1px solid var(--border);"
+                alt="Preview">
+              <span class="text-muted" style="font-size: 12px;">Current Image Preview</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select formControlName="category_id" class="form-control">
+              <option value="" disabled>Select Category</option>
+              <option *ngFor="let cat of categories()" [value]="cat.id">{{ cat.nameEn || cat.name_en }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Measurement Unit</label>
+            <select formControlName="unit" class="form-control">
+              <option value="EACH">Pieces (pcs)</option>
+              <option value="KG">Kilograms (kg)</option>
+              <option value="GRAM">Grams (g)</option>
+              <option value="LITRE">Liters (l)</option>
+              <option value="ML">Milliliters (ml)</option>
+              <option value="PACK">Pack</option>
+              <option value="BOX">Box</option>
+              <option value="PAIR">Pair</option>
+              <option value="SET">Set</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unit Size / Capacity</label>
+            <input type="number" step="0.01" formControlName="unit_size" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description (EN)</label>
+            <textarea formControlName="description_en" class="form-control" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description (AR)</label>
+            <textarea formControlName="description_ar" class="form-control" rows="2"></textarea>
+          </div>
+          <div class="form-group checkbox-label">
+            <input type="checkbox" formControlName="is_active">
+            <span>Active Status</span>
+          </div>
+          <button type="submit" class="btn btn-primary w-full">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

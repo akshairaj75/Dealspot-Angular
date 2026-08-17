@@ -1,0 +1,210 @@
+/* Offer Directory Layout Stylesheet */
+
+.offers-page-layout {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+}
+
+/* Filters Sidebar */
+.filters-sidebar {
+  width: 280px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: calc(var(--header-height) + 20px);
+  z-index: 10;
+}
+
+.filters-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filters-header h3 {
+  font-size: 15px;
+  font-weight: 700;
+  flex: 1;
+  color: var(--text-primary);
+}
+
+.btn-reset {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: var(--transition-fast);
+}
+.btn-reset:hover {
+  color: var(--primary);
+}
+
+.filters-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.search-input-wrapper {
+  position: relative;
+}
+
+.search-inside-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 18px;
+}
+
+.rtl .search-inside-icon {
+  right: auto;
+  left: 12px;
+}
+
+.range-slider {
+  width: 100%;
+  accent-color: var(--primary);
+  margin-top: 8px;
+}
+
+.range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.filter-group-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.checkbox-label input {
+  accent-color: var(--primary);
+  width: 16px;
+  height: 16px;
+}
+
+/* Offers Grid */
+.offers-grid-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.offers-grid-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 14px 20px;
+  border-radius: var(--radius-md);
+}
+
+.results-count {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.spinner-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+}
+
+/* Share Button on card image */
+.share-btn-float {
+  position: absolute;
+  top: 12px;
+  right: 50px;
+  z-index: 10;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text-secondary);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-fast);
+}
+
+.rtl .share-btn-float {
+  right: auto;
+  left: 50px;
+}
+
+.share-btn-float:hover {
+  transform: scale(1.1);
+  background: #ffffff;
+  color: var(--primary);
+}
+
+.flash-badge-float {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+}
+
+.rtl .flash-badge-float {
+  right: auto;
+  left: 12px;
+}
+
+/* Responsive adjustment for filters stack */
+@media (max-width: 991px) {
+  .offers-page-layout {
+    flex-direction: column;
+  }
+  
+  .filters-sidebar {
+    width: 100%;
+    position: static;
+  }
+
+  .filters-body {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+
+  .filter-group-checkboxes {
+    grid-column: 1 / -1;
+    border-top: none;
+    padding-top: 0;
+    flex-direction: row;
+    gap: 20px;
+  }
+}
