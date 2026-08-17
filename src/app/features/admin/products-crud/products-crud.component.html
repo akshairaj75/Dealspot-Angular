@@ -1,21 +1,27 @@
 <div class="crud-container">
   <div class="crud-header">
-    <h2>Product Catalogue</h2>
+    <h2>{{ currentLang() === 'en' ? 'Product Catalogue' : 'دليل المنتجات' }}</h2>
     <button class="btn btn-primary" (click)="openAddModal()">
       <span class="material-icons-round">add</span>
-      <span>Add Product</span>
+      <span>{{ currentLang() === 'en' ? 'Add Product' : 'إضافة منتج' }}</span>
     </button>
   </div>
+
   <!-- Search and Stats Row -->
   <div class="search-stats-row">
     <div class="search-box-wrapper">
       <span class="material-icons-round search-icon">search</span>
-      <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="applyFilter()"
-        placeholder="Search products by name, brand, SKU, UPC..." class="search-input" />
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery" 
+        (ngModelChange)="applyFilter()"
+        [placeholder]="currentLang() === 'en' ? 'Search products by name, brand, SKU, UPC...' : 'ابحث عن المنتجات بالاسم، الماركة، الباركود...'" 
+        class="search-input" 
+      />
     </div>
     <div class="stats-badge">
       <span class="material-icons-round">analytics</span>
-      <span>Total Products: <strong>{{ products().length }}</strong></span>
+      <span>{{ currentLang() === 'en' ? 'Total Products:' : 'إجمالي المنتجات:' }} <strong>{{ products().length }}</strong></span>
     </div>
   </div>
 
@@ -24,47 +30,75 @@
     <table class="admin-table">
       <thead>
         <tr>
-          <th>Image</th>
-          <th>Product ID</th>
-          <th>Brand</th>
-          <th>Name (EN)</th>
-          <th>SKU / Barcode</th>
-          <th>Measurement Unit</th>
-          <th>Status</th>
-          <th>Actions</th>
+          <th>{{ currentLang() === 'en' ? 'Image' : 'الصورة' }}</th>
+          <th>ID</th>
+          <th>{{ currentLang() === 'en' ? 'Brand' : 'الماركة' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Product Name' : 'اسم المنتج' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Category' : 'القسم' }}</th>
+          <th>{{ currentLang() === 'en' ? 'SKU / Barcode' : 'الرمز / الباركود' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Unit' : 'الوحدة' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Status' : 'الحالة' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Actions' : 'الإجراءات' }}</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let p of filteredProducts()">
           <td>
-            <img [src]="filePath + p.images[0].imageUrl" class="admin-table-product-img" alt="product">
+            <img 
+              *ngIf="p.images && p.images.length > 0" 
+              [src]="filePath + p.images[0].imageUrl" 
+              class="admin-table-product-img" 
+              alt="product"
+              (error)="$any($event.target).src = 'https://placehold.co/60x60?text=No+Img'"
+            >
+            <span *ngIf="!p.images || p.images.length === 0" class="no-img-placeholder">
+              <span class="material-icons-round">inventory_2</span>
+            </span>
           </td>
           <td>{{ p.id }}</td>
-          <td><code>{{ p.brand }}</code></td>
-          <td>{{ p.nameEn }}</td>
+          <td><code>{{ currentLang() === 'en' ? (p.brand || p.brandNameEn) : (p.brandAr || p.brand || p.brandNameEn) }}</code></td>
           <td>
-            <div class="code-column-desc">
-              <span>SKU: <code>{{ p.sku }}</code></span>
-              <span>UPC: <code>{{ p.barcode }}</code></span>
+            <div class="product-names-cell">
+              <strong>{{ currentLang() === 'en' ? p.nameEn : (p.nameAr || p.nameEn) }}</strong>
+              <span class="text-muted text-xs" *ngIf="currentLang() === 'en' && p.nameAr">{{ p.nameAr }}</span>
+              <span class="text-muted text-xs" *ngIf="currentLang() === 'ar' && p.nameEn">{{ p.nameEn }}</span>
             </div>
           </td>
-          <td>{{ p.unit_size }} {{ p.unit }}</td>
           <td>
-            <span class="badge" [class.badge-featured]="p.is_active === 1" [class.badge-discount]="p.is_active === 0">
-              {{ p.is_active === 1 ? 'Active' : 'Inactive' }}
+            <span class="category-badge">
+              {{ getCategoryDisplayName(p.categoryId || p.category_id) }}
+            </span>
+          </td>
+          <td>
+            <div class="code-column-desc">
+              <span>SKU: <code>{{ p.sku || '-' }}</code></span>
+              <span>UPC: <code>{{ p.barcode || '-' }}</code></span>
+            </div>
+          </td>
+          <td>{{ p.unit_size || p.unitSize }} {{ p.unit }}</td>
+          <td>
+            <span class="badge" [class.badge-featured]="p.is_active === 1 || p.active === true || p.isActive === true" [class.badge-discount]="p.is_active === 0 || p.active === false || p.isActive === false">
+              {{ (p.is_active === 1 || p.active === true || p.isActive === true) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}
             </span>
           </td>
           <td>
             <div class="action-buttons-cell">
-              <button class="btn-icon" (click)="openEditModal(p)" title="Edit Product Info"><span
-                  class="material-icons-round">edit</span></button>
-              <a [routerLink]="['/admin/product-specs', p.id, 'details']" class="btn-icon text-primary"
-                title="Technical Specs"><span class="material-icons-round">list_alt</span></a>
-              <a [routerLink]="['/admin/products', p.id, 'images']" class="btn-icon text-primary"
-                title="Product Image Gallery"><span class="material-icons-round">image</span></a>
-              <button class="btn-icon text-danger" (click)="deleteProduct(p.id)" title="Delete Item"><span
-                  class="material-icons-round">delete</span></button>
+              <button class="btn-icon" (click)="openEditModal(p)" [title]="currentLang() === 'en' ? 'Edit Product' : 'تعديل المنتج'">
+                <span class="material-icons-round">edit</span>
+              </button>
+              <a [routerLink]="['/admin/product-specs', p.id, 'details']" class="btn-icon text-primary" [title]="currentLang() === 'en' ? 'Technical Specs' : 'المواصفات الفنية'">
+                <span class="material-icons-round">list_alt</span>
+              </a>
+              <button class="btn-icon text-danger" (click)="deleteProduct(p.id)" [title]="currentLang() === 'en' ? 'Delete Item' : 'حذف المنتج'">
+                <span class="material-icons-round">delete</span>
+              </button>
             </div>
+          </td>
+        </tr>
+        <tr *ngIf="filteredProducts().length === 0">
+          <td colspan="9" class="empty-table-cell">
+            <span class="material-icons-round empty-table-icon">inventory_2</span>
+            <p>{{ currentLang() === 'en' ? 'No products found matching your search.' : 'لا توجد منتجات مطابقة لعملية البحث.' }}</p>
           </td>
         </tr>
       </tbody>
@@ -73,94 +107,201 @@
 
   <!-- Add/Edit Modal -->
   <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-content modal-content-lg" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>{{ editingProductId ? 'Edit Product Catalogue Item' : 'Add Product' }}</h3>
-        <button class="btn-icon border-none" (click)="closeModal()"><span
-            class="material-icons-round">close</span></button>
+        <h3>{{ editingProductId ? (currentLang() === 'en' ? 'Edit Product Item' : 'تعديل بيانات المنتج') : (currentLang() === 'en' ? 'Add New Product' : 'إضافة منتج جديد') }}</h3>
+        <button class="btn-icon border-none" (click)="closeModal()">
+          <span class="material-icons-round">close</span>
+        </button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body modal-scrollable">
         <form [formGroup]="productForm" (submit)="onSubmit()" class="auth-form">
+          <!-- Row 1: Brand & Names -->
           <div class="form-group">
-            <label class="form-label">Brand</label>
-
+            <label class="form-label">{{ currentLang() === 'en' ? 'Brand *' : 'الماركة *' }}</label>
             <select formControlName="brandId" class="form-control">
-              <option [ngValue]="null">Select Brand</option>
-
+              <option [ngValue]="null" disabled>{{ currentLang() === 'en' ? '-- Select Brand --' : '-- اختر الماركة --' }}</option>
               <option *ngFor="let brand of brands" [ngValue]="brand.id">
-                {{ brand.nameEn }} | {{ brand.nameAr }}
+                {{ currentLang() === 'en' ? brand.nameEn : (brand.nameAr || brand.nameEn) }}
               </option>
             </select>
+            <div class="error-msg" *ngIf="productForm.get('brandId')?.touched && productForm.get('brandId')?.invalid">
+              {{ currentLang() === 'en' ? 'Brand is required.' : 'الماركة مطلوبة.' }}
+            </div>
           </div>
-          <!-- <div class="form-group">
-            <label class="form-label">Brand Name (AR)</label>
-            <input type="text" formControlName="brand_ar" class="form-control">
-          </div> -->
-          <div class="form-group">
-            <label class="form-label">Product Name (EN)</label>
-            <input type="text" formControlName="name_en" class="form-control">
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Product Name (English) *' : 'اسم المنتج (الإنجليزية) *' }}</label>
+              <input type="text" formControlName="name_en" class="form-control" placeholder="e.g. Almarai Fresh Milk 2L">
+              <div class="error-msg" *ngIf="productForm.get('name_en')?.touched && productForm.get('name_en')?.invalid">
+                {{ currentLang() === 'en' ? 'English name is required.' : 'الاسم بالإنجليزية مطلوب.' }}
+              </div>
+            </div>
+
+            <div class="form-group flex-1">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Product Name (Arabic) *' : 'اسم المنتج (العربية) *' }}</label>
+              <input type="text" formControlName="name_ar" class="form-control" placeholder="مثال: حليب المراعي طازج 2 لتر">
+              <div class="error-msg" *ngIf="productForm.get('name_ar')?.touched && productForm.get('name_ar')?.invalid">
+                {{ currentLang() === 'en' ? 'Arabic name is required.' : 'الاسم بالعربية مطلوب.' }}
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Product Name (AR)</label>
-            <input type="text" formControlName="name_ar" class="form-control">
+
+          <!-- Step-Wise / Hierarchical Category Selection -->
+          <div class="category-selection-card">
+            <div class="category-card-header">
+              <span class="material-icons-round header-cat-icon">account_tree</span>
+              <div>
+                <h4 class="category-card-title">{{ currentLang() === 'en' ? 'Category Hierarchy' : 'هيكلية وتصنيف الأقسام' }}</h4>
+                <p class="category-card-sub">{{ currentLang() === 'en' ? 'Select the main department first, then refine to a subcategory.' : 'اختر القسم الرئيسي أولاً، ثم حدد القسم الفرعي التابع له.' }}</p>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <!-- Step 1: Main Category -->
+              <div class="form-group flex-1">
+                <label class="form-label">
+                  <span class="step-badge">1</span>
+                  <span>{{ currentLang() === 'en' ? 'Main Category *' : 'القسم الرئيسي *' }}</span>
+                </label>
+                <select 
+                  [ngModel]="selectedMainCategoryId" 
+                  [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="onMainCategoryChange($event)" 
+                  class="form-control category-select"
+                >
+                  <option [ngValue]="null" disabled>
+                    {{ currentLang() === 'en' ? '-- Select Main Category --' : '-- اختر القسم الرئيسي --' }}
+                  </option>
+                  <option *ngFor="let mainCat of mainCategories()" [ngValue]="mainCat.id">
+                    {{ currentLang() === 'en' ? mainCat.nameEn : (mainCat.nameAr || mainCat.nameEn) }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Step 2: Subcategory -->
+              <div class="form-group flex-1">
+                <label class="form-label">
+                  <span class="step-badge">2</span>
+                  <span>{{ currentLang() === 'en' ? 'Subcategory' : 'القسم الفرعي' }}</span>
+                  <span class="count-pill" *ngIf="selectedMainCategoryId">
+                    {{ availableSubcategories().length }} {{ currentLang() === 'en' ? 'subcategories' : 'أقسام فرعية' }}
+                  </span>
+                </label>
+                <select 
+                  [ngModel]="selectedSubCategoryId" 
+                  [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="onSubCategoryChange($event)" 
+                  class="form-control category-select"
+                  [disabled]="!selectedMainCategoryId || availableSubcategories().length === 0"
+                >
+                  <option [ngValue]="null">
+                    {{ availableSubcategories().length === 0 ? (currentLang() === 'en' ? '-- No Subcategories (Main Category Applied) --' : '-- لا توجد أقسام فرعية (سيتم تطبيق القسم الرئيسي) --') : (currentLang() === 'en' ? '-- Select Subcategory (Optional) --' : '-- اختر القسم الفرعي (اختياري) --') }}
+                  </option>
+                  <option *ngFor="let subCat of availableSubcategories()" [ngValue]="subCat.id">
+                    {{ currentLang() === 'en' ? subCat.nameEn : (subCat.nameAr || subCat.nameEn) }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Visual Path Preview Badge -->
+            <div class="category-applied-banner" *ngIf="getSelectedCategoryPath()">
+              <span class="material-icons-round banner-icon">verified</span>
+              <span class="banner-title">{{ currentLang() === 'en' ? 'Assigned Category:' : 'القسم المخصص للمنتج:' }}</span>
+              <span class="banner-badge">{{ getSelectedCategoryPath() }}</span>
+            </div>
+
+            <div class="error-msg" *ngIf="productForm.get('category_id')?.touched && productForm.get('category_id')?.invalid">
+              {{ currentLang() === 'en' ? 'Please select a main category.' : 'يرجى اختيار القسم الرئيسي على الأقل.' }}
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">SKU (Stock Keeping Unit)</label>
-            <input type="text" formControlName="sku" class="form-control">
+
+          <!-- Row 3: SKU & Barcode -->
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label class="form-label">{{ currentLang() === 'en' ? 'SKU (Stock Keeping Unit) *' : 'رمز المنتج (SKU) *' }}</label>
+              <input type="text" formControlName="sku" class="form-control" placeholder="e.g. MILK-ALM-2L">
+              <div class="error-msg" *ngIf="productForm.get('sku')?.touched && productForm.get('sku')?.invalid">
+                {{ currentLang() === 'en' ? 'SKU is required.' : 'رمز SKU مطلوب.' }}
+              </div>
+            </div>
+
+            <div class="form-group flex-1">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Barcode (EAN / UPC) *' : 'الباركود (Barcode) *' }}</label>
+              <input type="text" formControlName="barcode" class="form-control" placeholder="e.g. 6281007010012">
+              <div class="error-msg" *ngIf="productForm.get('barcode')?.touched && productForm.get('barcode')?.invalid">
+                {{ currentLang() === 'en' ? 'Barcode is required.' : 'الباركود مطلوب.' }}
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Barcode (EAN/UPC)</label>
-            <input type="text" formControlName="barcode" class="form-control">
+
+          <!-- Row 4: Unit & Unit Size -->
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Measurement Unit' : 'وحدة القياس' }}</label>
+              <select formControlName="unit" class="form-control">
+                <option value="EACH">{{ currentLang() === 'en' ? 'Pieces (pcs / each)' : 'حبة / قطعة' }}</option>
+                <option value="KG">{{ currentLang() === 'en' ? 'Kilograms (kg)' : 'كيلوجرام (كجم)' }}</option>
+                <option value="GRAM">{{ currentLang() === 'en' ? 'Grams (g)' : 'جرام (جم)' }}</option>
+                <option value="LITRE">{{ currentLang() === 'en' ? 'Liters (L)' : 'لتر' }}</option>
+                <option value="ML">{{ currentLang() === 'en' ? 'Milliliters (ml)' : 'مليلتر' }}</option>
+                <option value="PACK">{{ currentLang() === 'en' ? 'Pack' : 'عبوة / باقة' }}</option>
+                <option value="BOX">{{ currentLang() === 'en' ? 'Box' : 'صندوق / كرتون' }}</option>
+                <option value="PAIR">{{ currentLang() === 'en' ? 'Pair' : 'زوج' }}</option>
+                <option value="SET">{{ currentLang() === 'en' ? 'Set' : 'طقم / مجموعة' }}</option>
+              </select>
+            </div>
+
+            <div class="form-group flex-1">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Unit Size / Capacity' : 'حجم / سعة الوحدة' }}</label>
+              <input type="number" step="0.01" formControlName="unit_size" class="form-control" placeholder="1">
+            </div>
           </div>
+
+          <!-- Product Image -->
           <div class="form-group">
-            <label class="form-label">Product Image</label>
+            <label class="form-label">{{ currentLang() === 'en' ? 'Product Primary Image' : 'صورة المنتج الرئيسية' }}</label>
             <div class="file-upload-box">
               <input type="file" (change)="onFileSelected($event)" accept="image/*">
             </div>
-            <div *ngIf="previewUrl" style="margin-top: 10px; display: flex; align-items: center; gap: 12px;">
-              <img [src]="previewUrl" style="max-height: 100px; border-radius: 8px; border: 1px solid var(--border);"
-                alt="Preview">
-              <span class="text-muted" style="font-size: 12px;">Current Image Preview</span>
+            <div *ngIf="previewUrl" class="image-preview-wrapper">
+              <img [src]="previewUrl" class="image-preview-thumbnail" alt="Preview">
+              <span class="text-muted text-xs">{{ currentLang() === 'en' ? 'Selected Image Preview' : 'معاينة الصورة المحددة' }}</span>
             </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Category</label>
-            <select formControlName="category_id" class="form-control">
-              <option value="" disabled>Select Category</option>
-              <option *ngFor="let cat of categories()" [value]="cat.id">{{ cat.nameEn || cat.name_en }}</option>
-            </select>
+
+          <!-- Descriptions -->
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Description (English)' : 'الوصف (الإنجليزية)' }}</label>
+              <textarea formControlName="description_en" class="form-control" rows="2" placeholder="Product details in English..."></textarea>
+            </div>
+
+            <div class="form-group flex-1">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Description (Arabic)' : 'الوصف (العربية)' }}</label>
+              <textarea formControlName="description_ar" class="form-control" rows="2" placeholder="تفاصيل ومميزات المنتج بالعربية..."></textarea>
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Measurement Unit</label>
-            <select formControlName="unit" class="form-control">
-              <option value="EACH">Pieces (pcs)</option>
-              <option value="KG">Kilograms (kg)</option>
-              <option value="GRAM">Grams (g)</option>
-              <option value="LITRE">Liters (l)</option>
-              <option value="ML">Milliliters (ml)</option>
-              <option value="PACK">Pack</option>
-              <option value="BOX">Box</option>
-              <option value="PAIR">Pair</option>
-              <option value="SET">Set</option>
-            </select>
+
+          <!-- Active Status -->
+          <div class="checkbox-row">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="is_active">
+              <span>{{ currentLang() === 'en' ? 'Active Product in Catalogue' : 'منتج نشط ومتاح في الدليل' }}</span>
+            </label>
           </div>
-          <div class="form-group">
-            <label class="form-label">Unit Size / Capacity</label>
-            <input type="number" step="0.01" formControlName="unit_size" class="form-control">
+
+          <!-- Modal Actions -->
+          <div class="modal-footer-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">
+              {{ currentLang() === 'en' ? 'Cancel' : 'إلغاء' }}
+            </button>
+            <button type="submit" [disabled]="productForm.invalid" class="btn btn-primary">
+              {{ currentLang() === 'en' ? 'Save Product' : 'حفظ المنتج' }}
+            </button>
           </div>
-          <div class="form-group">
-            <label class="form-label">Description (EN)</label>
-            <textarea formControlName="description_en" class="form-control" rows="2"></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Description (AR)</label>
-            <textarea formControlName="description_ar" class="form-control" rows="2"></textarea>
-          </div>
-          <div class="form-group checkbox-label">
-            <input type="checkbox" formControlName="is_active">
-            <span>Active Status</span>
-          </div>
-          <button type="submit" class="btn btn-primary w-full">Save Changes</button>
         </form>
       </div>
     </div>
