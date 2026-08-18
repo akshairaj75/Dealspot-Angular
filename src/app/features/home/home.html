@@ -61,7 +61,9 @@
         <span class="badge badge-discount discount-badge-float">-{{ deal.discountPct || deal.discount_pct || 0 }}%</span>
         
         <div class="deal-card-image">
-          <img [src]="getImageUrl(deal.imageUrl || deal.thumbnailUrl || deal.image_url || deal.product?.primary_image_url || deal.productImageUrl)" [alt]="deal | translate:'title'">
+          <a [routerLink]="['/offers', deal.id]" class="offer-card-img-link">
+            <img [src]="getImageUrl(deal.imageUrl || deal.thumbnailUrl || deal.image_url || deal.product?.primary_image_url || deal.productImageUrl)" [alt]="deal | translate:'title'">
+          </a>
           <button class="save-btn-float" (click)="toggleSaveOffer(deal, $event)" [class.saved]="isSaved(deal.id)">
             <span class="material-icons-round">{{ isSaved(deal.id) ? 'bookmark' : 'bookmark_border' }}</span>
           </button>
@@ -73,7 +75,7 @@
             <span>{{ deal.store ? (deal.store | translate:'name') : (currentLang() === 'en' ? (deal.storeNameEn || deal.store_name_en) : (deal.storeNameAr || deal.store_name_ar || deal.storeNameEn)) }}</span>
           </a>
           <h3 class="deal-card-title">
-            <a [routerLink]="['/offers-list']">{{ deal | translate:'title' }}</a>
+            <a [routerLink]="['/offers', deal.id]">{{ deal | translate:'title' }}</a>
           </h3>
           <div class="price-row">
             <span class="offer-price">{{ deal.offerPrice || deal.offer_price }} SAR</span>
@@ -137,7 +139,9 @@
         <span class="badge badge-discount discount-badge-float">-{{ offer.discountPct || offer.discount_pct || 0 }}%</span>
         
         <div class="offer-card-image">
-          <img [src]="getImageUrl(offer.imageUrl || offer.thumbnailUrl || offer.image_url || offer.product?.primary_image_url || offer.productImageUrl)" [alt]="offer | translate:'title'">
+          <a [routerLink]="['/offers', offer.id]" class="offer-card-img-link">
+            <img [src]="getImageUrl(offer.imageUrl || offer.thumbnailUrl || offer.image_url || offer.product?.primary_image_url || offer.productImageUrl)" [alt]="offer | translate:'title'">
+          </a>
           <button class="save-btn-float" (click)="toggleSaveOffer(offer, $event)" [class.saved]="isSaved(offer.id)">
             <span class="material-icons-round">{{ isSaved(offer.id) ? 'bookmark' : 'bookmark_border' }}</span>
           </button>
@@ -153,7 +157,7 @@
           </div>
 
           <h3 class="offer-title-main">
-            <a [routerLink]="['/offers-list']">{{ offer | translate:'title' }}</a>
+            <a [routerLink]="['/offers', offer.id]">{{ offer | translate:'title' }}</a>
           </h3>
 
           <div class="price-row">
@@ -182,7 +186,9 @@
         <span class="badge badge-discount discount-badge-float">-{{ offer.discountPct || offer.discount_pct || 0 }}%</span>
         
         <div class="offer-card-image">
-          <img [src]="getImageUrl(offer.imageUrl || offer.thumbnailUrl || offer.image_url || offer.product?.primary_image_url || offer.productImageUrl)" [alt]="offer | translate:'title'">
+          <a [routerLink]="['/offers', offer.id]" class="offer-card-img-link">
+            <img [src]="getImageUrl(offer.imageUrl || offer.thumbnailUrl || offer.image_url || offer.product?.primary_image_url || offer.productImageUrl)" [alt]="offer | translate:'title'">
+          </a>
           <button class="save-btn-float" (click)="toggleSaveOffer(offer, $event)" [class.saved]="isSaved(offer.id)">
             <span class="material-icons-round">{{ isSaved(offer.id) ? 'bookmark' : 'bookmark_border' }}</span>
           </button>
@@ -198,7 +204,7 @@
           </div>
 
           <h3 class="offer-title-main">
-            <a [routerLink]="['/offers-list']">{{ offer | translate:'title' }}</a>
+            <a [routerLink]="['/offers', offer.id]">{{ offer | translate:'title' }}</a>
           </h3>
 
           <div class="price-row">

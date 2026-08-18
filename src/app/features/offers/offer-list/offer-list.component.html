@@ -135,7 +135,9 @@
         <span class="badge badge-featured flash-badge-float" *ngIf="(offer.featured === true || offer.badgeType === 'FEATURED' || offer.is_featured === 1) && !offer.flash && offer.badgeType !== 'FLASH'">Featured</span>
         
         <div class="offer-card-image">
-          <img [src]="getImageUrl(offer.imageUrl || offer.thumbnailUrl || offer.image_url || offer.product?.primary_image_url || offer.productImageUrl)" [alt]="offer | translate:'title'">
+          <a [routerLink]="['/offers', offer.id]" class="offer-card-img-link">
+            <img [src]="getImageUrl(offer.imageUrl || offer.thumbnailUrl || offer.image_url || offer.product?.primary_image_url || offer.productImageUrl)" [alt]="offer | translate:'title'">
+          </a>
           
           <!-- Save / Bookmark Button -->
           <button class="save-btn-float" (click)="toggleSave(offer, $event)" [class.saved]="isSaved(offer.id)" [title]="isSaved(offer.id) ? 'Saved' : 'Save offer'">
@@ -158,7 +160,7 @@
           </div>
 
           <h3 class="offer-title-main">
-            <span>{{ offer | translate:'title' }}</span>
+            <a [routerLink]="['/offers', offer.id]">{{ offer | translate:'title' }}</a>
           </h3>
 
           <div class="price-row">

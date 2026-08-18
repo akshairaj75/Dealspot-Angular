@@ -5,6 +5,7 @@ import { LoginComponent } from './features/auth/login/login';
 import { AdminLayoutComponent } from './layout/admin-layout/admin-layout.component';
 import { DashboardComponent } from './features/admin/dashboard/dashboard.component';
 import { OfferListComponent } from './features/offers/offer-list/offer-list.component';
+import { OfferDetailComponent } from './features/offers/offer-detail/offer-detail.component';
 import { CitiesCrudComponent } from './features/admin/cities-crud/cities-crud';
 import { CategoriesCrud } from './features/admin/categories-crud/categories-crud';
 import { StoresCrudComponent } from './features/admin/stores-crud/stores-crud.component';
@@ -38,6 +39,7 @@ export const routes: Routes = [
                 component: LoginComponent
             },
             { path: 'offers-list', component: OfferListComponent },
+            { path: 'offers/:id', component: OfferDetailComponent },
             { path: 'offers', redirectTo: 'offers-list', pathMatch: 'full' },
             { path: 'stores', component: StoreListComponent },
             { path: 'stores/:id', component: StoreDetailComponent },

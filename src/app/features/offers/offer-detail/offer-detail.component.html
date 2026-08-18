@@ -1,0 +1,241 @@
+<!-- Loading Spinner -->
+<div class="spinner-container" *ngIf="loading()">
+  <div class="spinner"></div>
+</div>
+
+<!-- Main Offer Detail View -->
+<div class="offer-detail-container" *ngIf="!loading() && offer()">
+  
+  <!-- Back Navigation & Breadcrumb -->
+  <div class="detail-navigation">
+    <a routerLink="/offers-list" class="btn btn-outline btn-back">
+      <span class="material-icons-round">arrow_back</span>
+      <span>{{ currentLang() === 'en' ? 'Back to Offers Directory' : 'العودة لدليل العروض' }}</span>
+    </a>
+  </div>
+
+  <div class="detail-grid">
+    <!-- =========================================================================
+         Left Column: Image Gallery & Partner Store Card
+         ========================================================================= -->
+    <div class="detail-left">
+      
+      <!-- Image Gallery Card -->
+      <div class="gallery-wrapper card">
+        <div class="main-image">
+          <img [src]="activeImage()" [alt]="offer() | translate:'title'">
+          <span class="badge badge-discount main-img-discount-badge">-{{ offer()?.discountPct || offer()?.discount_pct || 0 }}%</span>
+        </div>
+
+        <!-- Thumbnails row if multiple images exist -->
+        <div class="thumbnails-list" *ngIf="images().length > 1">
+          <button 
+            *ngFor="let img of images()" 
+            (click)="activeImage.set(img)"
+            class="thumb-btn"
+            [class.active]="activeImage() === img"
+          >
+            <img [src]="img" alt="Thumbnail">
+          </button>
+        </div>
+      </div>
+
+      <!-- Retail Partner Store Card -->
+      <div class="store-panel card">
+        <div class="store-panel-header">
+          <img [src]="getStoreLogoUrl(offer()?.storeLogoUrl || offer()?.store?.logo_url)" class="store-panel-logo" [alt]="offer()?.storeNameEn || 'Store'">
+          <div class="store-panel-info">
+            <div class="store-name-row">
+              <h3>
+                <a [routerLink]="['/stores', offer()?.storeId || offer()?.store_id]">
+                  {{ offer()?.store ? (offer()?.store | translate:'name') : (currentLang() === 'en' ? (offer()?.storeNameEn || offer()?.store_name_en) : (offer()?.storeNameAr || offer()?.store_name_ar || offer()?.storeNameEn)) }}
+                </a>
+              </h3>
+              <span class="material-icons-round verified-icon" *ngIf="offer()?.store?.is_verified === 1 || offer()?.storeVerified" title="Verified Partner">verified</span>
+            </div>
+            <p class="store-panel-desc">{{ currentLang() === 'en' ? 'Official Verified Partner' : 'متجر شريك معتمد لدى ديل سبوت' }}</p>
+          </div>
+        </div>
+
+        <div class="store-panel-actions">
+          <a [routerLink]="['/stores', offer()?.storeId || offer()?.store_id]" class="btn btn-primary w-full">
+            <span class="material-icons-round">storefront</span>
+            <span>{{ currentLang() === 'en' ? 'Visit Store Catalog' : 'زيارة صفحة المتجر' }}</span>
+          </a>
+        </div>
+
+        <!-- Branches Quick list if available -->
+        <div class="branches-quick-list" *ngIf="branches().length > 0">
+          <h4>{{ currentLang() === 'en' ? 'Store Branches:' : 'فروع المتجر:' }}</h4>
+          <div class="branch-item-quick" *ngFor="let b of branches().slice(0, 3)">
+            <span class="material-icons-round text-primary font-sm">place</span>
+            <div class="branch-quick-desc">
+              <p class="branch-quick-name">{{ currentLang() === 'en' ? (b.branchNameEn || b.branch_name || b.nameEn) : (b.branchNameAr || b.branch_name || b.nameAr || b.nameEn) }}</p>
+              <p class="branch-quick-hours" *ngIf="b.openTime || b.open_time">{{ b.openTime || b.open_time }} - {{ b.closeTime || b.close_time }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- =========================================================================
+         Right Column: Offer Info, Pricing, Coupons, Descriptions, Specs
+         ========================================================================= -->
+    <div class="detail-right">
+      
+      <!-- Badges Row -->
+      <div class="badge-row-detail">
+        <span class="badge badge-discount">-{{ offer()?.discountPct || offer()?.discount_pct || 0 }}% OFF</span>
+        <span class="badge badge-flash" *ngIf="offer()?.flash === true || offer()?.badgeType === 'FLASH' || offer()?.is_flash === 1">
+          <span class="material-icons-round" style="font-size: 14px;">bolt</span>
+          <span>Flash Deal</span>
+        </span>
+        <span class="badge badge-featured" *ngIf="offer()?.featured === true || offer()?.badgeType === 'FEATURED' || offer()?.is_featured === 1">
+          <span class="material-icons-round" style="font-size: 14px;">star</span>
+          <span>Featured Promotion</span>
+        </span>
+        <span class="badge badge-cat-pill" *ngIf="offer()?.categoryNameEn || offer()?.category?.nameEn">
+          {{ currentLang() === 'en' ? (offer()?.categoryNameEn || offer()?.category?.nameEn) : (offer()?.categoryNameAr || offer()?.category?.nameAr || offer()?.categoryNameEn) }}
+        </span>
+      </div>
+
+      <!-- Bilingual Title -->
+      <h1 class="offer-title-detail">{{ offer() | translate:'title' }}</h1>
+      <p class="offer-subtitle-arabic" *ngIf="currentLang() === 'en' && offer()?.titleAr">{{ offer()?.titleAr }}</p>
+
+      <!-- Price Box Card -->
+      <div class="price-box-detail card">
+        <div class="price-row-detail">
+          <span class="detail-offer-price">{{ offer()?.offerPrice || offer()?.offer_price }} SAR</span>
+          <span class="detail-original-price" *ngIf="offer()?.originalPrice || offer()?.original_price">{{ offer()?.originalPrice || offer()?.original_price }} SAR</span>
+          <span class="detail-discount-tag" *ngIf="offer()?.discountPct || offer()?.discount_pct">SAVE {{ offer()?.discountPct || offer()?.discount_pct }}%</span>
+        </div>
+        <p class="savings-text" *ngIf="(offer()?.originalPrice || offer()?.original_price) > (offer()?.offerPrice || offer()?.offer_price)">
+          {{ currentLang() === 'en' ? 'Total estimated savings:' : 'إجمالي مبلغ التوفير:' }} 
+          <strong>{{ getSavingsAmount() }} SAR</strong>
+        </p>
+      </div>
+
+      <!-- Action Buttons (Save / Share) -->
+      <div class="actions-box-detail">
+        <button class="btn btn-primary btn-save-action" (click)="toggleSave()" [class.btn-outline]="isSaved()">
+          <span class="material-icons-round">{{ isSaved() ? 'bookmark' : 'bookmark_border' }}</span>
+          <span>{{ isSaved() ? (currentLang() === 'en' ? 'Saved in Bookmarks' : 'محفوظ في المفضلة') : (currentLang() === 'en' ? 'Save Offer' : 'حفظ العرض') }}</span>
+        </button>
+        <button class="btn btn-outline btn-share-action" (click)="shareOffer()" [title]="currentLang() === 'en' ? 'Share Offer Link' : 'مشاركة الرابط'">
+          <span class="material-icons-round">{{ linkCopied ? 'check' : 'share' }}</span>
+          <span>{{ linkCopied ? (currentLang() === 'en' ? 'Link Copied!' : 'تم نسخ الرابط!') : (currentLang() === 'en' ? 'Share' : 'مشاركة') }}</span>
+        </button>
+      </div>
+
+      <!-- Offer Duration / Validity Card -->
+      <div class="timeline-box card">
+        <div class="timeline-header">
+          <span class="material-icons-round">calendar_today</span>
+          <span>{{ currentLang() === 'en' ? 'Offer Validity Duration' : 'فترة سريان العرض' }}</span>
+        </div>
+        <div class="timeline-body">
+          <div class="timeline-dates">
+            <div class="date-col">
+              <p class="timeline-date-label">{{ currentLang() === 'en' ? 'Valid From' : 'ساري من' }}</p>
+              <p class="timeline-date-val">{{ offer()?.validFrom || offer()?.valid_from }}</p>
+            </div>
+            <div class="timeline-arrow">
+              <span class="material-icons-round">arrow_forward</span>
+            </div>
+            <div class="date-col">
+              <p class="timeline-date-label">{{ currentLang() === 'en' ? 'Valid Until' : 'ساري حتى' }}</p>
+              <p class="timeline-date-val text-danger">{{ offer()?.validUntil || offer()?.valid_until }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description & Terms -->
+      <div class="description-card card" *ngIf="offer()?.descriptionEn || offer()?.descriptionAr || offer()?.termsEn || offer()?.termsAr">
+        <div class="desc-header">
+          <span class="material-icons-round">description</span>
+          <h4>{{ currentLang() === 'en' ? 'Offer Details & Terms' : 'تفاصيل وشروط العرض' }}</h4>
+        </div>
+        <div class="desc-body">
+          <p class="desc-text" *ngIf="offer()?.descriptionEn || offer()?.descriptionAr">
+            {{ currentLang() === 'en' ? (offer()?.descriptionEn || offer()?.descriptionAr) : (offer()?.descriptionAr || offer()?.descriptionEn) }}
+          </p>
+          <div class="terms-box" *ngIf="offer()?.termsEn || offer()?.termsAr">
+            <h5 class="terms-title">{{ currentLang() === 'en' ? 'Terms & Conditions:' : 'الشروط والأحكام:' }}</h5>
+            <p class="terms-text">{{ currentLang() === 'en' ? (offer()?.termsEn || offer()?.termsAr) : (offer()?.termsAr || offer()?.termsEn) }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coupon Code Reveal Box (if coupon is available) -->
+      <div class="coupon-box card" *ngIf="coupon()">
+        <div class="coupon-icon-header">
+          <span class="material-icons-round coupon-badge-icon">confirmation_number</span>
+          <div class="coupon-header-content">
+            <h4>{{ currentLang() === 'en' ? 'Extra Discount Voucher Available' : 'كوبون خصم إضافي متاح' }}</h4>
+            <p *ngIf="coupon()?.discountType === 'PERCENT' || coupon()?.discount_type === 'PERCENT' || coupon()?.discountType === 'PERCENTAGE'">
+              {{ coupon()?.discountValue || coupon()?.discount_value }}% {{ currentLang() === 'en' ? 'discount on orders over ' : 'خصم على الطلبات فوق ' }}{{ coupon()?.minCartValue || coupon()?.min_cart_value || 0 }} SAR
+            </p>
+            <p *ngIf="coupon()?.discountType === 'FIXED_SAR' || coupon()?.discount_type === 'FIXED_SAR' || coupon()?.discountType === 'FIXED'">
+              {{ coupon()?.discountValue || coupon()?.discount_value }} SAR {{ currentLang() === 'en' ? 'off orders over ' : 'خصم على الطلبات فوق ' }}{{ coupon()?.minCartValue || coupon()?.min_cart_value || 0 }} SAR
+            </p>
+          </div>
+        </div>
+
+        <div class="coupon-action-area">
+          <button class="btn btn-primary w-full btn-reveal" *ngIf="!couponRevealed" (click)="revealCoupon()">
+            <span class="material-icons-round">visibility</span>
+            <span>{{ currentLang() === 'en' ? 'Reveal Coupon Code' : 'إظهار كود الخصم' }}</span>
+          </button>
+
+          <div class="revealed-coupon-wrapper" *ngIf="couponRevealed">
+            <span class="coupon-code-label">{{ coupon()?.code }}</span>
+            <button class="btn btn-primary btn-copy" (click)="copyCouponCode(coupon()!.code)">
+              <span class="material-icons-round">{{ couponCopied ? 'check' : 'content_copy' }}</span>
+              <span>{{ couponCopied ? (currentLang() === 'en' ? 'Copied!' : 'تم النسخ!') : (currentLang() === 'en' ? 'Copy Code' : 'نسخ الكود') }}</span>
+            </button>
+          </div>
+        </div>
+        <p class="coupon-note" *ngIf="coupon()?.validUntil || coupon()?.valid_until">
+          {{ currentLang() === 'en' ? 'Coupon valid until: ' : 'الكوبون ساري حتى: ' }}{{ coupon()?.validUntil || coupon()?.valid_until }}
+        </p>
+      </div>
+
+      <!-- Linked Product Specs (if product linked) -->
+      <div class="product-panel card" *ngIf="offer()?.productId || offer()?.product">
+        <div class="product-panel-header">
+          <span class="material-icons-round">shopping_bag</span>
+          <h4>{{ currentLang() === 'en' ? 'Catalog Product Specifications' : 'مواصفات المنتج في الدليل' }}</h4>
+        </div>
+        <div class="product-panel-body">
+          <div class="product-meta-item" *ngIf="offer()?.productNameEn || offer()?.product?.nameEn">
+            <span class="meta-name">{{ currentLang() === 'en' ? 'Product Name:' : 'اسم المنتج:' }}</span>
+            <span class="meta-val">{{ currentLang() === 'en' ? (offer()?.productNameEn || offer()?.product?.nameEn) : (offer()?.productNameAr || offer()?.product?.nameAr || offer()?.productNameEn) }}</span>
+          </div>
+          <div class="product-meta-item" *ngIf="offer()?.categoryNameEn || offer()?.category?.nameEn">
+            <span class="meta-name">{{ currentLang() === 'en' ? 'Category:' : 'القسم:' }}</span>
+            <span class="meta-val">{{ currentLang() === 'en' ? (offer()?.categoryNameEn || offer()?.category?.nameEn) : (offer()?.categoryNameAr || offer()?.category?.nameAr) }}</span>
+          </div>
+          <div class="product-meta-item" *ngIf="offer()?.cityNameEn || offer()?.city?.nameEn">
+            <span class="meta-name">{{ currentLang() === 'en' ? 'City Coverage:' : 'تغطية المدينة:' }}</span>
+            <span class="meta-val">{{ currentLang() === 'en' ? (offer()?.cityNameEn || offer()?.city?.nameEn) : (offer()?.cityNameAr || offer()?.city?.nameAr) }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Empty State if Offer not found -->
+<div class="empty-state card" *ngIf="!loading() && !offer()">
+  <span class="material-icons-round empty-state-icon">error_outline</span>
+  <h3 class="empty-state-title">{{ currentLang() === 'en' ? 'Offer not found' : 'العرض غير موجود' }}</h3>
+  <p class="empty-state-desc">{{ currentLang() === 'en' ? 'The promotion you are looking for has expired or is no longer available.' : 'العرض الترويجي الذي تبحث عنه قد انتهى أو لم يعد متوفراً.' }}</p>
+  <a routerLink="/offers-list" class="btn btn-primary">
+    <span class="material-icons-round">arrow_back</span>
+    <span>{{ currentLang() === 'en' ? 'Go to Offers Directory' : 'الذهاب لدليل العروض' }}</span>
+  </a>
+</div>
