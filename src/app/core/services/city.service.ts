@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { environment } from '../../environment/environment';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -10,7 +10,17 @@ export class CityService {
 
   private apiUrl = environment.apiUrl + '/cities';
 
+  selectedCity = signal<any>({
+    id: 1,
+    nameEn: 'Riyadh',
+    nameAr: 'الرياض'
+  });
+
   constructor(private http: HttpClient) {}
+
+  setSelectedCity(city: any): void {
+    this.selectedCity.set(city);
+  }
 
   getCities(): Observable<any[]> {
     return this.http.get<any[]>(this.apiUrl + '/fetch-all');

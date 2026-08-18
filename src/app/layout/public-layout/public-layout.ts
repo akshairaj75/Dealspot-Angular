@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   Router,
@@ -9,6 +9,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../shared/pipes/translate-pipe';
 import { TranslationService } from '../../core/services/translation.service';
+import { CityService } from '../../core/services/city.service';
 
 
 @Component({
@@ -47,34 +48,26 @@ export class PublicLayoutComponent {
     email: 'arjun@gmail.com'
   });
 
-  cities = signal([
-    {
-      id: 1,
-      nameEn: 'Riyadh',
-      nameAr: 'الرياض'
-    },
-    {
-      id: 2,
-      nameEn: 'Jeddah',
-      nameAr: 'جدة'
-    },
-    {
-      id: 3,
-      nameEn: 'Dammam',
-      nameAr: 'الدمام'
-    },
-    {
-      id: 4,
-      nameEn: 'Mecca',
-      nameAr: 'مكة'
-    }
-  ]);
+  cityService = inject(CityService);
 
-  activeCity = signal({
-    id: 1,
-    nameEn: 'Riyadh',
-    nameAr: 'الرياض'
-  });
+  activeCity = this.cityService.selectedCity;
+  cities = signal<any[]>([]);
+
+  ngOnInit(): void {
+    this.cityService.getCities().subscribe({
+      next: (res) => {
+        if (res && res.length > 0) {
+          this.cities.set(res);
+          // If activeCity not set or not in list, pick first
+          const current = this.cityService.selectedCity();
+          if (!current || !res.find((c: any) => c.id === current.id)) {
+            this.cityService.setSelectedCity(res[0]);
+          }
+        }
+      },
+      error: (err) => console.error('Failed to load cities:', err)
+    });
+  }
 
   toggleProfileDropdown(event: MouseEvent) {
     event.stopPropagation();
@@ -86,11 +79,8 @@ export class PublicLayoutComponent {
   }
 
   selectCity(city: any) {
-
-    this.activeCity.set(city);
-
+    this.cityService.setSelectedCity(city);
     this.isCityModalOpen = false;
-
   }
 
   onSearchSubmit() {

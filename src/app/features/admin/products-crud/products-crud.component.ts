@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CategoryService } from '../../../core/services/category.service';
-import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
 import { ProductService } from '../../../core/services/product.service';
 import { BrandService } from '../../../core/services/brand.service';
 import { TranslationService } from '../../../core/services/translation.service';
@@ -13,7 +12,7 @@ import { environment } from '../../../environment/environment';
 @Component({
   selector: 'app-products-crud',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, TranslatePipe],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
   templateUrl: './products-crud.component.html',
   styleUrls: ['./products-crud.component.css']
 })

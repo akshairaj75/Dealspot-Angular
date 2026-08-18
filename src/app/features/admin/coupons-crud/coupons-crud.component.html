@@ -1,0 +1,300 @@
+<div class="crud-container">
+  <!-- Header with Title & Action Button -->
+  <div class="crud-header">
+    <div class="header-titles">
+      <h2>{{ currentLang() === 'en' ? 'Manage Promo Coupons' : 'إدارة كوبونات وقسائم الخصم' }}</h2>
+      <p class="header-desc">{{ currentLang() === 'en' ? 'Create discount coupon codes, usage limits, and minimum cart thresholds' : 'إنشاء وتعديل أكواد الخصم الترويجية وضبط حدود الاستخدام والحد الأدنى للطلب' }}</p>
+    </div>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <span class="material-icons-round">add</span>
+      <span>{{ currentLang() === 'en' ? 'Add Coupon' : 'إضافة كوبون جديد' }}</span>
+    </button>
+  </div>
+
+  <!-- Filters & Search Toolbar -->
+  <div class="card filters-toolbar">
+    <div class="search-input-wrapper">
+      <span class="material-icons-round search-icon">search</span>
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery" 
+        (ngModelChange)="applyFilter()" 
+        [placeholder]="currentLang() === 'en' ? 'Search coupon code, store, or offer...' : 'ابحث بكود الخصم، المتجر، أو العرض...'"
+        class="form-control"
+      >
+      <button class="clear-search-btn" *ngIf="searchQuery" (click)="searchQuery = ''; applyFilter()">
+        <span class="material-icons-round">close</span>
+      </button>
+    </div>
+
+    <div class="filter-dropdowns">
+      <select [(ngModel)]="selectedStoreFilter" (ngModelChange)="applyFilter()" class="form-control select-filter">
+        <option value="">{{ currentLang() === 'en' ? 'All Partner Stores' : 'جميع المتاجر' }}</option>
+        <option *ngFor="let s of stores()" [value]="s.id">{{ currentLang() === 'en' ? (s.nameEn || s.name_en) : (s.nameAr || s.name_ar || s.nameEn) }}</option>
+      </select>
+
+      <select [(ngModel)]="selectedDiscountTypeFilter" (ngModelChange)="applyFilter()" class="form-control select-filter">
+        <option value="">{{ currentLang() === 'en' ? 'All Discount Types' : 'جميع أنواع الخصم' }}</option>
+        <option value="PERCENT">{{ currentLang() === 'en' ? 'Percentage (%)' : 'نسبة مئوية (%)' }}</option>
+        <option value="FIXED_SAR">{{ currentLang() === 'en' ? 'Fixed Amount (SAR)' : 'مبلغ ثابت (ر.س)' }}</option>
+      </select>
+
+      <select [(ngModel)]="selectedStatusFilter" (ngModelChange)="applyFilter()" class="form-control select-filter">
+        <option value="">{{ currentLang() === 'en' ? 'All Statuses' : 'جميع الحالات' }}</option>
+        <option value="active">{{ currentLang() === 'en' ? 'Active' : 'نشط' }}</option>
+        <option value="inactive">{{ currentLang() === 'en' ? 'Inactive' : 'معطل' }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div class="spinner-container" *ngIf="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Coupons Table -->
+  <div class="card table-wrapper" *ngIf="!loading">
+    <table class="admin-table" *ngIf="filteredCoupons().length > 0; else noCoupons">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>{{ currentLang() === 'en' ? 'Coupon Code' : 'كود الخصم' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Retail Partner' : 'المتجر الشريك' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Linked Offer / Item' : 'العرض / المنتج المرتبط' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Discount Value' : 'قيمة الخصم' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Min Cart' : 'الحد الأدنى' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Usage Stats' : 'إحصائيات الاستخدام' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Validity' : 'الصلاحية' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Status' : 'الحالة' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Actions' : 'الإجراءات' }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of filteredCoupons()">
+          <td class="id-cell">#{{ c.id }}</td>
+          <td>
+            <div class="coupon-code-badge-box">
+              <code class="coupon-code-tag">{{ c.code }}</code>
+              <button 
+                type="button" 
+                class="btn-copy-code" 
+                (click)="copyCode(c.code, c.id)" 
+                [title]="currentLang() === 'en' ? 'Copy Code' : 'نسخ الكود'">
+                <span class="material-icons-round">{{ copiedCouponId === c.id ? 'check' : 'content_copy' }}</span>
+              </button>
+            </div>
+          </td>
+          <td>
+            <div class="store-cell">
+              <span class="store-name-text">{{ currentLang() === 'en' ? (c.storeNameEn || c.store?.nameEn || c.store?.name_en || 'Store #' + c.storeId) : (c.storeNameAr || c.store?.nameAr || c.store?.name_ar || c.storeNameEn || 'متجر #' + c.storeId) }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="linked-offer-cell">
+              <span class="offer-subtext" *ngIf="c.offerTitleEn || c.offer?.titleEn">
+                <span class="material-icons-round link-icon">local_offer</span>
+                <span>{{ currentLang() === 'en' ? (c.offerTitleEn || c.offer?.titleEn) : (c.offerTitleAr || c.offer?.titleAr || c.offerTitleEn) }}</span>
+              </span>
+              <span class="product-subtext" *ngIf="c.productNameEn || c.product?.nameEn">
+                <span class="material-icons-round link-icon">shopping_bag</span>
+                <span>{{ currentLang() === 'en' ? (c.productNameEn || c.product?.nameEn) : (c.productNameAr || c.product?.nameAr || c.productNameEn) }}</span>
+              </span>
+              <span class="text-muted italic-text" *ngIf="!c.offerTitleEn && !c.offer?.titleEn && !c.productNameEn && !c.product?.nameEn">
+                {{ currentLang() === 'en' ? 'Store-wide promotion' : 'شامل لجميع منتجات المتجر' }}
+              </span>
+            </div>
+          </td>
+          <td>
+            <div class="discount-val-cell">
+              <span class="discount-num" *ngIf="c.discountType === 'PERCENT' || c.discount_type === 'PERCENT' || c.discountType === 'PERCENTAGE' || c.discount_type === 'PERCENTAGE'">
+                {{ c.discountValue || c.discount_value }}%
+              </span>
+              <span class="discount-num" *ngIf="c.discountType === 'FIXED_SAR' || c.discount_type === 'FIXED_SAR' || c.discountType === 'FIXED' || c.discount_type === 'FIXED'">
+                {{ c.discountValue || c.discount_value }} SAR
+              </span>
+              <span class="discount-type-label">{{ (c.discountType === 'PERCENT' || c.discount_type === 'PERCENT' || c.discountType === 'PERCENTAGE' || c.discount_type === 'PERCENTAGE') ? 'PERCENT' : 'FIXED_SAR' }}</span>
+            </div>
+          </td>
+          <td>
+            <span class="min-cart-text">{{ (c.minCartValue || c.min_cart_value || 0) > 0 ? (c.minCartValue || c.min_cart_value) + ' SAR' : (currentLang() === 'en' ? 'No min.' : 'بدون حد') }}</span>
+          </td>
+          <td>
+            <div class="usage-stats-cell">
+              <span class="usage-numbers"><strong>{{ c.usedCount || c.used_count || 0 }}</strong> / {{ c.maxUses || c.max_uses ? (c.maxUses || c.max_uses) : '∞' }}</span>
+              <div class="usage-progress-bar" *ngIf="c.maxUses || c.max_uses">
+                <div class="usage-progress-fill" [style.width.%]="(((c.usedCount || c.used_count || 0) / (c.maxUses || c.max_uses)) * 100) > 100 ? 100 : (((c.usedCount || c.used_count || 0) / (c.maxUses || c.max_uses)) * 100)"></div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="validity-cell">
+              <span>{{ currentLang() === 'en' ? 'From:' : 'من:' }} <strong>{{ c.validFrom || c.valid_from }}</strong></span>
+              <span>{{ currentLang() === 'en' ? 'Until:' : 'إلى:' }} <strong class="text-danger">{{ c.validUntil || c.valid_until }}</strong></span>
+            </div>
+          </td>
+          <td>
+            <span class="badge" [class.badge-active]="c.active === true || c.is_active === 1 || c.active === 1" [class.badge-inactive]="c.active === false || c.is_active === 0 || c.active === 0">
+              {{ (c.active === true || c.is_active === 1 || c.active === 1) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'معطل') }}
+            </span>
+          </td>
+          <td>
+            <div class="action-buttons-cell">
+              <button class="btn-icon" (click)="openEditModal(c)" [title]="currentLang() === 'en' ? 'Edit Coupon' : 'تعديل الكوبون'">
+                <span class="material-icons-round">edit</span>
+              </button>
+              <button class="btn-icon text-danger" (click)="deleteCoupon(c.id)" [title]="currentLang() === 'en' ? 'Delete Coupon' : 'حذف الكوبون'">
+                <span class="material-icons-round">delete</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <ng-template #noCoupons>
+      <div class="empty-state">
+        <span class="material-icons-round empty-state-icon">confirmation_number</span>
+        <h3 class="empty-state-title">{{ currentLang() === 'en' ? 'No coupon codes created' : 'لا توجد كوبونات خصم مسجلة' }}</h3>
+        <p class="empty-state-desc">{{ currentLang() === 'en' ? 'Click "Add Coupon" to create your first voucher discount code.' : 'انقر على "إضافة كوبون جديد" لإنشاء أول كود خصم ترويجي في النظام.' }}</p>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
+    <div class="modal-content card" (click)="$event.stopPropagation()">
+      
+      <div class="modal-header">
+        <div class="modal-title-row">
+          <span class="material-icons-round modal-icon">confirmation_number</span>
+          <h3>{{ editingCouponId ? (currentLang() === 'en' ? 'Edit Promo Coupon' : 'تعديل كود الخصم') : (currentLang() === 'en' ? 'Create New Promo Coupon' : 'إنشاء كود خصم جديد') }}</h3>
+        </div>
+        <button class="btn-icon border-none" (click)="closeModal()">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form [formGroup]="couponForm" (submit)="onSubmit()" class="coupon-form">
+          
+          <!-- Coupon Code & Partner Store -->
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Coupon Code (UPPERCASE) *' : 'كود الخصم (أحرف إنجليزية وأرقام) *' }}</label>
+              <div class="code-input-wrapper">
+                <span class="material-icons-round code-prefix-icon">tag</span>
+                <input type="text" formControlName="code" class="form-control code-input" placeholder="e.g. EXTRA20">
+              </div>
+              <span class="field-error" *ngIf="couponForm.get('code')?.touched && couponForm.get('code')?.invalid">
+                {{ currentLang() === 'en' ? 'Valid coupon code is required (letters & numbers only)' : 'كود الخصم مطلوب (أحرف وأرقام فقط)' }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Retail Partner Store *' : 'المتجر الشريك *' }}</label>
+              <select formControlName="store_id" class="form-control">
+                <option value="" disabled>{{ currentLang() === 'en' ? 'Select Store' : 'اختر المتجر' }}</option>
+                <option *ngFor="let s of stores()" [value]="s.id">{{ currentLang() === 'en' ? (s.nameEn || s.name_en) : (s.nameAr || s.name_ar || s.nameEn) }}</option>
+              </select>
+              <span class="field-error" *ngIf="couponForm.get('store_id')?.touched && couponForm.get('store_id')?.invalid">
+                {{ currentLang() === 'en' ? 'Store is required' : 'المتجر مطلوب' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Linked Offer and Product (Optional) -->
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Linked Offer / Promotion (Optional)' : 'ربط بعرض ترويجي (اختياري)' }}</label>
+              <select formControlName="offer_id" class="form-control">
+                <option [ngValue]="null">{{ currentLang() === 'en' ? 'Store-wide (No specific offer link)' : 'شامل للمتجر (بدون ربط بعرض محدد)' }}</option>
+                <option *ngFor="let o of offers()" [value]="o.id">{{ currentLang() === 'en' ? (o.titleEn || o.title_en) : (o.titleAr || o.title_ar || o.titleEn) }} (#{{ o.id }})</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Linked Catalog Product (Optional)' : 'ربط بمنتج محدد (اختياري)' }}</label>
+              <select formControlName="product_id" class="form-control">
+                <option [ngValue]="null">{{ currentLang() === 'en' ? 'All Products (No product link)' : 'جميع المنتجات (بدون ربط بمنتج محدد)' }}</option>
+                <option *ngFor="let p of products()" [value]="p.id">{{ currentLang() === 'en' ? (p.nameEn || p.name_en) : (p.nameAr || p.name_ar || p.nameEn) }}</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Discount Parameters -->
+          <div class="discount-config-card card">
+            <div class="form-row-3">
+              <div class="form-group">
+                <label class="form-label">{{ currentLang() === 'en' ? 'Discount Type *' : 'نوع الخصم *' }}</label>
+                <select formControlName="discount_type" class="form-control">
+                  <option value="PERCENT">{{ currentLang() === 'en' ? 'PERCENT (%)' : 'نسبة مئوية (%)' }}</option>
+                  <option value="FIXED_SAR">{{ currentLang() === 'en' ? 'FIXED VALUE (SAR)' : 'مبلغ ثابت (ر.س)' }}</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  {{ currentLang() === 'en' ? 'Discount Value *' : 'قيمة الخصم *' }}
+                  <span class="text-muted" *ngIf="couponForm.get('discount_type')?.value === 'PERCENT'">(%)</span>
+                  <span class="text-muted" *ngIf="couponForm.get('discount_type')?.value === 'FIXED_SAR'">(SAR)</span>
+                </label>
+                <input type="number" step="0.01" min="0" formControlName="discount_value" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">{{ currentLang() === 'en' ? 'Min. Cart Value (SAR)' : 'الحد الأدنى لقيمة الطلب (ر.س)' }}</label>
+                <input type="number" step="0.01" min="0" formControlName="min_cart_value" class="form-control" placeholder="0 for no minimum">
+              </div>
+            </div>
+          </div>
+
+          <!-- Validity Dates & Usage Limit -->
+          <div class="form-row-3">
+            <div class="form-group">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Maximum Uses Allowed' : 'أقصى عدد للاستخدام' }}</label>
+              <input type="number" min="1" formControlName="max_uses" class="form-control" placeholder="e.g. 500">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Valid From *' : 'ساري من تاريخ *' }}</label>
+              <input type="date" formControlName="valid_from" class="form-control">
+              <span class="field-error" *ngIf="couponForm.get('valid_from')?.touched && couponForm.get('valid_from')?.invalid">
+                {{ currentLang() === 'en' ? 'Start date is required' : 'تاريخ البداية مطلوب' }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Valid Until *' : 'ساري حتى تاريخ *' }}</label>
+              <input type="date" formControlName="valid_until" class="form-control">
+              <span class="field-error" *ngIf="couponForm.get('valid_until')?.touched && couponForm.get('valid_until')?.invalid">
+                {{ currentLang() === 'en' ? 'End date is required' : 'تاريخ الانتهاء مطلوب' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Active Toggle -->
+          <div class="status-toggle-card card">
+            <label class="checkbox-container">
+              <input type="checkbox" formControlName="is_active">
+              <span class="checkmark"></span>
+              <span class="checkbox-text font-bold">{{ currentLang() === 'en' ? 'Coupon Active & Usable' : 'تفعيل كود الخصم وإتاحته للمستخدمين' }}</span>
+            </label>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" (click)="closeModal()">
+              {{ currentLang() === 'en' ? 'Cancel' : 'إلغاء' }}
+            </button>
+            <button type="submit" [disabled]="couponForm.invalid" class="btn btn-primary btn-save">
+              <span class="material-icons-round">save</span>
+              <span>{{ editingCouponId ? (currentLang() === 'en' ? 'Save Changes' : 'حفظ التعديلات') : (currentLang() === 'en' ? 'Create Coupon' : 'إنشاء الكوبون') }}</span>
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
