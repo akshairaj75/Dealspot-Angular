@@ -1,17 +1,14 @@
-import { Component, inject, signal, OnInit, effect } from '@angular/core';
+import { Component, inject, signal, OnInit, effect, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-// import { OfferService, OfferFilters } from '../../../core/services/offer.service';
+import { OfferService } from '../../../core/services/offer.service';
 import { CategoryService } from '../../../core/services/category.service';
-// import { StoreService } from '../../../core/services/store.service';
+import { StoreService } from '../../../core/services/store.service';
 import { CityService } from '../../../core/services/city.service';
-// import { SavedOfferService } from '../../../core/services/saved-offer.service';
-import { AuthService } from '../../../core/services/auth.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
-// import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
-// import { Offer, Category, Store, City } from '../../../core/models';
+import { environment } from '../../../environment/environment';
 
 @Component({
   selector: 'app-offer-list',
@@ -21,17 +18,19 @@ import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
   styleUrls: ['./offer-list.component.css']
 })
 export class OfferListComponent implements OnInit {
-  // private offerService = inject(OfferService);
-  // private categoryService = inject(CategoryService);
-  // private storeService = inject(StoreService);
-  // private cityService = inject(CityService);
-  // private savedOfferService = inject(SavedOfferService);
-  private authService = inject(AuthService);
+  private offerService = inject(OfferService);
+  private categoryService = inject(CategoryService);
+  private storeService = inject(StoreService);
+  private cityService = inject(CityService);
+  private translationService = inject(TranslationService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private cd = inject(ChangeDetectorRef);
 
-  currentLang = inject(TranslationService).currentLang;
+  currentLang = this.translationService.currentLang;
+  filePath = environment.filePath;
 
+  rawOffers = signal<any[]>([]);
   offers = signal<any[]>([]);
   categories = signal<any[]>([]);
   stores = signal<any[]>([]);
@@ -48,37 +47,25 @@ export class OfferListComponent implements OnInit {
   searchQuery = '';
 
   loading = false;
+  copiedOfferId: number | null = null;
 
-  // constructor() {
-  //   // Monitor active city signal globally
-  //   effect(() => {
-  //     const city = this.cityService.selectedCity();
-  //     if (city) {
-  //       this.selectedCityId = city.id;
-  //       this.applyFilters();
-  //     }
-  //   });
-
-  //   // Monitor login status to sync saves
-  //   effect(() => {
-  //     const user = this.authService.currentUser();
-  //     if (user) {
-  //       this.savedOfferService.getSavedOffers(user.id).subscribe(saves => {
-  //         this.savedOfferIds.set(saves.map(s => s.offer_id));
-  //       });
-  //     } else {
-  //       this.savedOfferIds.set([]);
-  //     }
-  //   });
-  // }
+  constructor() {
+    // Monitor global active city signal
+    effect(() => {
+      const city = this.cityService.selectedCity();
+      if (city && this.selectedCityId === null) {
+        this.selectedCityId = city.id;
+        this.applyFilters();
+      }
+    });
+  }
 
   ngOnInit(): void {
-    // Load dropdown options
-    // this.categoryService.getCategories().subscribe(c => this.categories.set(c));
-    // this.storeService.getStores().subscribe(s => this.stores.set(s));
-    // this.cityService.getCities().subscribe(c => this.cities.set(c));
+    this.loadSavedOffers();
+    this.loadDropdowns();
+    this.loadOffers();
 
-    // Handle query parameters (e.g. from Home page clicks)
+    // Handle query parameters (from Home page or direct links)
     this.route.queryParams.subscribe(params => {
       if (params['category']) {
         this.selectedCategoryId = Number(params['category']);
@@ -87,10 +74,10 @@ export class OfferListComponent implements OnInit {
         this.selectedStoreId = Number(params['store']);
       }
       if (params['flash']) {
-        this.showFlashOnly = params['flash'] === 'true';
+        this.showFlashOnly = params['flash'] === 'true' || params['flash'] === true;
       }
       if (params['featured']) {
-        this.showFeaturedOnly = params['featured'] === 'true';
+        this.showFeaturedOnly = params['featured'] === 'true' || params['featured'] === true;
       }
       if (params['search']) {
         this.searchQuery = params['search'];
@@ -98,33 +85,110 @@ export class OfferListComponent implements OnInit {
       if (params['city']) {
         this.selectedCityId = Number(params['city']);
       }
-      
+
       this.applyFilters();
     });
   }
 
-  applyFilters(): void {
-    this.loading = true;
-    const filterParams: any = {
-      cityId: this.selectedCityId || undefined,
-      categoryId: this.selectedCategoryId || undefined,
-      storeId: this.selectedStoreId || undefined,
-      minDiscount: this.selectedDiscountRange || undefined,
-      isFlash: this.showFlashOnly ? true : undefined,
-      isFeatured: this.showFeaturedOnly ? true : undefined,
-      search: this.searchQuery || undefined
-    };
-    console.log(filterParams);
+  loadDropdowns(): void {
+    this.categoryService.getCategories().subscribe({
+      next: (c: any) => {
+        const list = Array.isArray(c) ? c : (c?.data || []);
+        this.categories.set(list);
+        this.cd.detectChanges();
+      },
+      error: (err) => console.error('Failed to load categories:', err)
+    });
 
-    // this.offerService.getOffers(filterParams).subscribe({
-    //   next: (res) => {
-    //     this.offers.set(res);
-    //     this.loading = false;
-    //   },
-    //   error: () => {
-    //     this.loading = false;
-    //   }
-    // });
+    this.storeService.getStores().subscribe({
+      next: (s) => {
+        this.stores.set(s || []);
+        this.cd.detectChanges();
+      },
+      error: (err) => console.error('Failed to load stores:', err)
+    });
+
+    this.cityService.getCities().subscribe({
+      next: (c) => {
+        this.cities.set(c || []);
+        this.cd.detectChanges();
+      },
+      error: (err) => console.error('Failed to load cities:', err)
+    });
+  }
+
+  loadOffers(): void {
+    this.loading = true;
+    this.offerService.getAllOffers().subscribe({
+      next: (res) => {
+        this.rawOffers.set(res || []);
+        this.applyFilters();
+        this.loading = false;
+        this.cd.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load offers:', err);
+        this.loading = false;
+        this.cd.detectChanges();
+      }
+    });
+  }
+
+  applyFilters(): void {
+    let list = this.rawOffers();
+
+    // City Filter
+    if (this.selectedCityId) {
+      list = list.filter(o => !o.cityId || o.cityId === Number(this.selectedCityId) || o.city_id === Number(this.selectedCityId));
+    }
+
+    // Category Filter
+    if (this.selectedCategoryId) {
+      list = list.filter(o => o.categoryId === Number(this.selectedCategoryId) || o.category_id === Number(this.selectedCategoryId));
+    }
+
+    // Store Filter
+    if (this.selectedStoreId) {
+      list = list.filter(o => o.storeId === Number(this.selectedStoreId) || o.store_id === Number(this.selectedStoreId));
+    }
+
+    // Minimum Discount Range
+    if (this.selectedDiscountRange > 0) {
+      list = list.filter(o => {
+        const pct = o.discountPct !== undefined ? o.discountPct : (o.discount_pct || 0);
+        return pct >= this.selectedDiscountRange;
+      });
+    }
+
+    // Flash Deals Only
+    if (this.showFlashOnly) {
+      list = list.filter(o => o.flash === true || o.badgeType === 'FLASH' || o.is_flash === 1 || o.is_flash === true);
+    }
+
+    // Featured Deals Only
+    if (this.showFeaturedOnly) {
+      list = list.filter(o => o.featured === true || o.badgeType === 'FEATURED' || o.is_featured === 1 || o.is_featured === true);
+    }
+
+    // Search Query
+    if (this.searchQuery && this.searchQuery.trim()) {
+      const q = this.searchQuery.toLowerCase().trim();
+      list = list.filter(o =>
+        (o.titleEn && o.titleEn.toLowerCase().includes(q)) ||
+        (o.titleAr && o.titleAr.toLowerCase().includes(q)) ||
+        (o.title_en && o.title_en.toLowerCase().includes(q)) ||
+        (o.title_ar && o.title_ar.toLowerCase().includes(q)) ||
+        (o.storeNameEn && o.storeNameEn.toLowerCase().includes(q)) ||
+        (o.storeNameAr && o.storeNameAr.toLowerCase().includes(q)) ||
+        (o.store?.nameEn && o.store.nameEn.toLowerCase().includes(q)) ||
+        (o.store?.nameAr && o.store.nameAr.toLowerCase().includes(q)) ||
+        (o.categoryNameEn && o.categoryNameEn.toLowerCase().includes(q)) ||
+        (o.descriptionEn && o.descriptionEn.toLowerCase().includes(q)) ||
+        (o.descriptionAr && o.descriptionAr.toLowerCase().includes(q))
+      );
+    }
+
+    this.offers.set(list);
   }
 
   resetFilters(): void {
@@ -135,49 +199,83 @@ export class OfferListComponent implements OnInit {
     this.showFeaturedOnly = false;
     this.searchQuery = '';
     
-    // Maintain city selection but clear route parameters
+    // Clear route query parameters
     this.router.navigate([], { queryParams: {} });
     this.applyFilters();
   }
 
-  toggleSave(offer: any, event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
+  // Image & Logo Helpers
+  getImageUrl(url: string | null | undefined): string {
+    if (!url) {
+      return 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&auto=format&fit=crop&q=60';
+    }
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+      return url;
+    }
+    return this.filePath + url;
+  }
 
-    // const user = this.authService.currentUser();
-    // if (!user) {
-    //   alert('Please login to save offers.');
-    //   return;
-    // }
+  getStoreLogoUrl(url: string | null | undefined): string {
+    if (!url) {
+      return 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=100&auto=format&fit=crop&q=60';
+    }
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+      return url;
+    }
+    return this.filePath + url;
+  }
 
-    const isSaved = this.savedOfferIds().includes(offer.id);
-    // if (isSaved) {
-    //   this.savedOfferService.unsaveOffer(user.id, offer.id).subscribe(() => {
-    //     this.savedOfferIds.update(ids => ids.filter(id => id !== offer.id));
-    //   });
-    // } else {
-    //   this.savedOfferService.saveOffer(user.id, offer.id).subscribe(() => {
-    //     this.savedOfferIds.update(ids => [...ids, offer.id]);
-    //   });
-    // }
+  // Saved / Bookmarking Logic
+  private loadSavedOffers(): void {
+    try {
+      const stored = localStorage.getItem('dealspot_saved_offers');
+      if (stored) {
+        this.savedOfferIds.set(JSON.parse(stored));
+      }
+    } catch {
+      this.savedOfferIds.set([]);
+    }
   }
 
   isSaved(offerId: number): boolean {
     return this.savedOfferIds().includes(offerId);
   }
 
+  toggleSave(offer: any, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const id = offer.id;
+    const current = [...this.savedOfferIds()];
+    const index = current.indexOf(id);
+
+    if (index >= 0) {
+      current.splice(index, 1);
+    } else {
+      current.push(id);
+    }
+
+    this.savedOfferIds.set(current);
+    try {
+      localStorage.setItem('dealspot_saved_offers', JSON.stringify(current));
+    } catch (e) {
+      console.error('Failed to save to localStorage', e);
+    }
+  }
+
   shareOffer(offer: any, event: Event): void {
     event.preventDefault();
     event.stopPropagation();
     
-    const shareUrl = `${window.location.origin}/offers/${offer.id}`;
+    const shareUrl = `${window.location.origin}/offers-list?search=${encodeURIComponent(offer.titleEn || offer.title_en || '')}`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(shareUrl).then(() => {
-        alert('Share link copied to clipboard!');
+        this.copiedOfferId = offer.id;
+        setTimeout(() => {
+          this.copiedOfferId = null;
+          this.cd.detectChanges();
+        }, 2000);
       });
-    } else {
-      alert(`Share this offer: ${shareUrl}`);
     }
   }
 }
-

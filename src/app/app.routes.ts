@@ -38,6 +38,7 @@ export const routes: Routes = [
                 component: LoginComponent
             },
             { path: 'offers-list', component: OfferListComponent },
+            { path: 'offers', redirectTo: 'offers-list', pathMatch: 'full' },
             { path: 'stores', component: StoreListComponent },
             { path: 'stores/:id', component: StoreDetailComponent },
             { path: 'flyers', component: FlyerListComponent },

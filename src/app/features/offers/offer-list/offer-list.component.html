@@ -2,9 +2,9 @@
   <!-- Sidebar Filters Panel -->
   <aside class="filters-sidebar">
     <div class="filters-header">
-      <span class="material-icons-round">filter_alt</span>
-      <h3>{{ currentLang() === 'en' ? 'Filters' : 'تصفية العروض' }}</h3>
-      <button class="btn-reset" (click)="resetFilters()">{{ currentLang() === 'en' ? 'Clear' : 'إعادة تعيين' }}</button>
+      <span class="material-icons-round filter-header-icon">filter_alt</span>
+      <h3>{{ currentLang() === 'en' ? 'Filter Offers' : 'تصفية العروض' }}</h3>
+      <button class="btn-reset" (click)="resetFilters()">{{ currentLang() === 'en' ? 'Reset' : 'إعادة ضبط' }}</button>
     </div>
 
     <div class="filters-body">
@@ -26,7 +26,7 @@
       <!-- City Selector -->
       <div class="filter-group">
         <label class="form-label">{{ currentLang() === 'en' ? 'Filter by City' : 'المدينة' }}</label>
-        <select [(ngModel)]="selectedCityId" (change)="applyFilters()" class="form-control">
+        <select [(ngModel)]="selectedCityId" (ngModelChange)="applyFilters()" class="form-control">
           <option [ngValue]="null">{{ currentLang() === 'en' ? 'All Cities' : 'جميع المدن' }}</option>
           <option *ngFor="let c of cities()" [value]="c.id">{{ c | translate:'name' }}</option>
         </select>
@@ -35,7 +35,7 @@
       <!-- Category Filter -->
       <div class="filter-group">
         <label class="form-label">{{ currentLang() === 'en' ? 'Category' : 'القسم' }}</label>
-        <select [(ngModel)]="selectedCategoryId" (change)="applyFilters()" class="form-control">
+        <select [(ngModel)]="selectedCategoryId" (ngModelChange)="applyFilters()" class="form-control">
           <option [ngValue]="null">{{ currentLang() === 'en' ? 'All Categories' : 'جميع الأقسام' }}</option>
           <option *ngFor="let cat of categories()" [value]="cat.id">{{ cat | translate:'name' }}</option>
         </select>
@@ -43,8 +43,8 @@
 
       <!-- Store Filter -->
       <div class="filter-group">
-        <label class="form-label">{{ currentLang() === 'en' ? 'Store / Brand' : 'المتجر' }}</label>
-        <select [(ngModel)]="selectedStoreId" (change)="applyFilters()" class="form-control">
+        <label class="form-label">{{ currentLang() === 'en' ? 'Retail Store' : 'المتجر الشريك' }}</label>
+        <select [(ngModel)]="selectedStoreId" (ngModelChange)="applyFilters()" class="form-control">
           <option [ngValue]="null">{{ currentLang() === 'en' ? 'All Stores' : 'جميع المتاجر' }}</option>
           <option *ngFor="let s of stores()" [value]="s.id">{{ s | translate:'name' }}</option>
         </select>
@@ -52,17 +52,17 @@
 
       <!-- Discount Percentage Slider -->
       <div class="filter-group">
-        <label class="form-label">
-          {{ currentLang() === 'en' ? 'Min Discount:' : 'الحد الأدنى للخصم:' }} 
-          <strong>{{ selectedDiscountRange }}%</strong>
-        </label>
+        <div class="filter-group-title-row">
+          <label class="form-label">{{ currentLang() === 'en' ? 'Min Discount:' : 'الحد الأدنى للخصم:' }}</label>
+          <strong class="discount-range-val">{{ selectedDiscountRange }}%</strong>
+        </div>
         <input 
           type="range" 
           min="0" 
           max="70" 
           step="5" 
           [(ngModel)]="selectedDiscountRange" 
-          (change)="applyFilters()" 
+          (ngModelChange)="applyFilters()" 
           class="range-slider"
         >
         <div class="range-labels">
@@ -75,11 +75,11 @@
       <!-- Toggle Deals types -->
       <div class="filter-group-checkboxes">
         <label class="checkbox-label">
-          <input type="checkbox" [(ngModel)]="showFlashOnly" (change)="applyFilters()">
-          <span>{{ currentLang() === 'en' ? 'Flash Deals Only' : 'عروض فلاش فقط' }}</span>
+          <input type="checkbox" [(ngModel)]="showFlashOnly" (ngModelChange)="applyFilters()">
+          <span>{{ currentLang() === 'en' ? 'Flash Deals Only' : 'عروض خاطفة فقط' }}</span>
         </label>
         <label class="checkbox-label">
-          <input type="checkbox" [(ngModel)]="showFeaturedOnly" (change)="applyFilters()">
+          <input type="checkbox" [(ngModel)]="showFeaturedOnly" (ngModelChange)="applyFilters()">
           <span>{{ currentLang() === 'en' ? 'Featured Only' : 'العروض المميزة فقط' }}</span>
         </label>
       </div>
@@ -89,28 +89,38 @@
   <!-- Offers Grid Section -->
   <section class="offers-grid-section">
     <!-- Active Filters Summary Bar -->
-    <div class="offers-grid-header">
-      <p class="results-count" *ngIf="!loading">
-        Found <strong>{{ offers().length }}</strong> {{ currentLang() === 'en' ? 'offers' : 'عرض' }}
-      </p>
-      <p class="results-count" *ngIf="loading">
-        {{ currentLang() === 'en' ? 'Searching offers...' : 'جاري البحث عن العروض...' }}
-      </p>
+    <div class="offers-grid-header card">
+      <div class="header-left-info">
+        <span class="material-icons-round header-info-icon">local_offer</span>
+        <p class="results-count" *ngIf="!loading">
+          {{ currentLang() === 'en' ? 'Found' : 'تم العثور على' }} <strong>{{ offers().length }}</strong> {{ currentLang() === 'en' ? 'promotional offers' : 'عرض ترويجي' }}
+        </p>
+        <p class="results-count" *ngIf="loading">
+          {{ currentLang() === 'en' ? 'Searching active deals...' : 'جاري جلب العروض الترويجية...' }}
+        </p>
+      </div>
+
+      <div class="active-chips" *ngIf="selectedCategoryId || selectedStoreId || showFlashOnly || showFeaturedOnly || selectedDiscountRange > 0 || searchQuery">
+        <button class="btn-clear-all-chips" (click)="resetFilters()">
+          <span class="material-icons-round">close</span>
+          <span>{{ currentLang() === 'en' ? 'Clear Filters' : 'مسح الفلاتر' }}</span>
+        </button>
+      </div>
     </div>
 
     <!-- Spinner state -->
-    <!-- <div class="spinner-container" *ngIf="loading">
+    <div class="spinner-container" *ngIf="loading">
       <div class="spinner"></div>
-    </div> -->
+    </div>
 
     <!-- Empty State -->
-    <div class="empty-state" *ngIf="!loading && offers().length === 0">
-      <span class="material-icons-round empty-state-icon">sentiment_dissatisfied</span>
-      <h3 class="empty-state-title">{{ currentLang() === 'en' ? 'No offers match your filters' : 'لم نجد عروضاً تطابق هذه الفلاتر' }}</h3>
-      <p class="empty-state-desc">{{ currentLang() === 'en' ? 'Try adjusting or clearing your search filters to view more active promotions.' : 'يرجى تغيير أو إعادة تعيين الفلاتر لعرض العروض النشطة.' }}</p>
+    <div class="empty-state card" *ngIf="!loading && offers().length === 0">
+      <span class="material-icons-round empty-state-icon">local_offer</span>
+      <h3 class="empty-state-title">{{ currentLang() === 'en' ? 'No offers match your criteria' : 'لم نجد عروضاً تطابق هذه الفلاتر' }}</h3>
+      <p class="empty-state-desc">{{ currentLang() === 'en' ? 'Try adjusting or clearing your search filters to view more active promotions.' : 'يرجى تغيير أو إعادة ضبط الفلاتر لعرض العروض النشطة.' }}</p>
       <button class="btn btn-primary" (click)="resetFilters()">
         <span class="material-icons-round">refresh</span>
-        <span>Clear Filters</span>
+        <span>{{ currentLang() === 'en' ? 'Reset All Filters' : 'إعادة ضبط جميع الفلاتر' }}</span>
       </button>
     </div>
 
@@ -118,46 +128,51 @@
     <div class="grid-cards" *ngIf="!loading && offers().length > 0">
       <div class="offer-grid-card card" *ngFor="let offer of offers()">
         <!-- Discount badge -->
-        <span class="badge badge-discount discount-badge-float">-{{ offer.discount_pct }}%</span>
+        <span class="badge badge-discount discount-badge-float">-{{ offer.discountPct || offer.discount_pct || 0 }}%</span>
         
         <!-- Flash indicator -->
-        <span class="badge badge-flash flash-badge-float" *ngIf="offer.is_flash === 1">Flash</span>
+        <span class="badge badge-flash flash-badge-float" *ngIf="offer.flash === true || offer.badgeType === 'FLASH' || offer.is_flash === 1">Flash</span>
+        <span class="badge badge-featured flash-badge-float" *ngIf="(offer.featured === true || offer.badgeType === 'FEATURED' || offer.is_featured === 1) && !offer.flash && offer.badgeType !== 'FLASH'">Featured</span>
         
         <div class="offer-card-image">
-          <img [src]="offer.product?.primary_image_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300&auto=format&fit=crop&q=60'" [alt]="offer | translate:'title'">
+          <img [src]="getImageUrl(offer.imageUrl || offer.thumbnailUrl || offer.image_url || offer.product?.primary_image_url || offer.productImageUrl)" [alt]="offer | translate:'title'">
           
-          <!-- Save Button -->
-          <button class="save-btn-float" (click)="toggleSave(offer, $event)" [class.saved]="isSaved(offer.id)">
+          <!-- Save / Bookmark Button -->
+          <button class="save-btn-float" (click)="toggleSave(offer, $event)" [class.saved]="isSaved(offer.id)" [title]="isSaved(offer.id) ? 'Saved' : 'Save offer'">
             <span class="material-icons-round">{{ isSaved(offer.id) ? 'bookmark' : 'bookmark_border' }}</span>
           </button>
           
           <!-- Share Button -->
-          <button class="share-btn-float" (click)="shareOffer(offer, $event)" title="Share offer">
-            <span class="material-icons-round">share</span>
+          <button class="share-btn-float" (click)="shareOffer(offer, $event)" [title]="currentLang() === 'en' ? 'Share offer' : 'مشاركة العرض'">
+            <span class="material-icons-round">{{ copiedOfferId === offer.id ? 'check' : 'share' }}</span>
           </button>
         </div>
 
         <div class="offer-card-body">
           <div class="offer-store-header">
-            <a [routerLink]="['/stores', offer.store_id]" class="store-badge-row">
-              <img [src]="offer.store?.logo_url" class="mini-store-logo">
-              <span>{{ offer.store | translate:'name' }}</span>
+            <a [routerLink]="['/stores', offer.storeId || offer.store_id]" class="store-badge-row">
+              <img [src]="getStoreLogoUrl(offer.storeLogoUrl || offer.store?.logo_url)" class="mini-store-logo">
+              <span>{{ offer.store ? (offer.store | translate:'name') : (currentLang() === 'en' ? (offer.storeNameEn || offer.store_name_en) : (offer.storeNameAr || offer.store_name_ar || offer.storeNameEn)) }}</span>
             </a>
-            <span class="material-icons-round verified-icon" *ngIf="offer.store?.is_verified === 1" title="Verified Store">verified</span>
+            <span class="material-icons-round verified-icon" *ngIf="offer.store?.is_verified === 1 || offer.storeVerified" title="Verified Store">verified</span>
           </div>
 
           <h3 class="offer-title-main">
-            <a [routerLink]="['/offers', offer.id]">{{ offer | translate:'title' }}</a>
+            <span>{{ offer | translate:'title' }}</span>
           </h3>
 
           <div class="price-row">
-            <span class="offer-price">{{ offer.offer_price }} SAR</span>
-            <span class="original-price">{{ offer.original_price }} SAR</span>
+            <span class="offer-price">{{ offer.offerPrice || offer.offer_price }} SAR</span>
+            <span class="original-price" *ngIf="offer.originalPrice || offer.original_price">{{ offer.originalPrice || offer.original_price }} SAR</span>
           </div>
           
           <div class="offer-card-footer">
-            <span class="valid-date">Valid: {{ offer.valid_from }} - {{ offer.valid_until }}</span>
-            <span class="badge badge-featured" style="padding: 2px 8px; font-size: 9px;" *ngIf="offer.is_featured === 1">Featured</span>
+            <span class="valid-date" *ngIf="offer.validUntil || offer.valid_until">
+              {{ currentLang() === 'en' ? 'Until: ' : 'حتى: ' }}{{ offer.validUntil || offer.valid_until }}
+            </span>
+            <span class="badge-cat-tag" *ngIf="offer.categoryNameEn || offer.category?.nameEn">
+              {{ currentLang() === 'en' ? (offer.categoryNameEn || offer.category?.nameEn) : (offer.categoryNameAr || offer.category?.nameAr || offer.categoryNameEn) }}
+            </span>
           </div>
         </div>
       </div>
