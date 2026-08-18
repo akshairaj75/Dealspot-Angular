@@ -30,8 +30,9 @@ export class OfferDetailComponent implements OnInit {
   filePath = environment.filePath;
 
   offer = signal<any | null>(null);
+  product = signal<any | null>(null);
   coupon = signal<any | null>(null);
-  productSpecs = signal<any | null>(null);
+  productSpecs = signal<any[]>([]);
   branches = signal<any[]>([]);
   images = signal<string[]>([]);
   activeImage = signal<string>('');
@@ -71,14 +72,19 @@ export class OfferDetailComponent implements OnInit {
         if (data.imageUrls && Array.isArray(data.imageUrls) && data.imageUrls.length > 0) {
           data.imageUrls.forEach((img: any) => {
             const url = typeof img === 'string' ? img : (img.imageUrl || img.image_url);
-            if (url) imgList.push(this.getImageUrl(url));
+            if (url) {
+              const resolved = this.getImageUrl(url);
+              if (!imgList.includes(resolved)) imgList.push(resolved);
+            }
           });
         }
-        if (data.imageUrl && !imgList.includes(this.getImageUrl(data.imageUrl))) {
-          imgList.unshift(this.getImageUrl(data.imageUrl));
+        if (data.imageUrl) {
+          const resolved = this.getImageUrl(data.imageUrl);
+          if (!imgList.includes(resolved)) imgList.unshift(resolved);
         }
-        if (data.productImageUrl && !imgList.includes(this.getImageUrl(data.productImageUrl))) {
-          imgList.push(this.getImageUrl(data.productImageUrl));
+        if (data.productImageUrl) {
+          const resolved = this.getImageUrl(data.productImageUrl);
+          if (!imgList.includes(resolved)) imgList.push(resolved);
         }
 
         if (imgList.length === 0) {
@@ -116,13 +122,63 @@ export class OfferDetailComponent implements OnInit {
           });
         }
 
-        // Load product details if productId exists
+        // Load product details & images if productId exists
         const productId = data.productId || data.product_id;
         if (productId) {
+          this.productService.getProductById(productId).subscribe({
+            next: (prod) => {
+              if (prod) {
+                this.product.set(prod);
+
+                const prodImages: string[] = [];
+                if (prod.primaryImageUrl) {
+                  const resolved = this.getImageUrl(prod.primaryImageUrl);
+                  if (!this.images().includes(resolved) && !prodImages.includes(resolved)) {
+                    prodImages.push(resolved);
+                  }
+                }
+                if (prod.images && Array.isArray(prod.images)) {
+                  prod.images.forEach((imgObj: any) => {
+                    const raw = typeof imgObj === 'string' ? imgObj : (imgObj.imageUrl || imgObj.image_url);
+                    if (raw) {
+                      const resolved = this.getImageUrl(raw);
+                      if (!this.images().includes(resolved) && !prodImages.includes(resolved)) {
+                        prodImages.push(resolved);
+                      }
+                    }
+                  });
+                }
+
+                if (prodImages.length > 0) {
+                  this.images.update(existing => {
+                    // Remove default unsplash placeholder if real product images are found
+                    const filtered = existing.filter(img => !img.includes('images.unsplash.com'));
+                    const merged = [...filtered, ...prodImages];
+                    return merged.length > 0 ? merged : existing;
+                  });
+
+                  if (!this.activeImage() || this.activeImage().includes('images.unsplash.com')) {
+                    if (this.images().length > 0) {
+                      this.activeImage.set(this.images()[0]);
+                    }
+                  }
+                }
+
+                if (prod.details && Array.isArray(prod.details) && prod.details.length > 0) {
+                  this.productSpecs.set(prod.details);
+                }
+                this.cd.detectChanges();
+              }
+            },
+            error: (err) => console.error('Failed to load product info:', err)
+          });
+
           this.productService.getProductSpecs(productId).subscribe({
             next: (specs) => {
-              this.productSpecs.set(specs);
-              this.cd.detectChanges();
+              if (specs && Array.isArray(specs) && specs.length > 0) {
+                this.productSpecs.set(specs);
+                this.cd.detectChanges();
+              }
             },
             error: () => {}
           });
@@ -170,7 +226,7 @@ export class OfferDetailComponent implements OnInit {
       url = url.substring(1);
     }
 
-    let base = this.filePath || 'http://192.168.1.110:8080/';
+    let base = this.filePath || environment.filePath;
     if (!base.endsWith('/')) {
       base += '/';
     }
@@ -205,7 +261,7 @@ export class OfferDetailComponent implements OnInit {
       url = url.substring(1);
     }
 
-    let base = this.filePath || 'http://192.168.1.110:8080/';
+    let base = this.filePath || environment.filePath;
     if (!base.endsWith('/')) {
       base += '/';
     }

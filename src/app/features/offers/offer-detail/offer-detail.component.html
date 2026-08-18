@@ -203,24 +203,59 @@
         </p>
       </div>
 
-      <!-- Linked Product Specs (if product linked) -->
-      <div class="product-panel card" *ngIf="offer()?.productId || offer()?.product">
+      <!-- Linked Product Specs & Details -->
+      <div class="product-panel card" *ngIf="offer()?.productId || offer()?.product || product()">
         <div class="product-panel-header">
           <span class="material-icons-round">shopping_bag</span>
-          <h4>{{ currentLang() === 'en' ? 'Catalog Product Specifications' : 'مواصفات المنتج في الدليل' }}</h4>
+          <h4>{{ currentLang() === 'en' ? 'Product Details & Specifications' : 'تفاصيل ومواصفات المنتج' }}</h4>
         </div>
         <div class="product-panel-body">
-          <div class="product-meta-item" *ngIf="offer()?.productNameEn || offer()?.product?.nameEn">
+          <!-- Product Name -->
+          <div class="product-meta-item" *ngIf="product()?.nameEn || offer()?.productNameEn || offer()?.product?.nameEn">
             <span class="meta-name">{{ currentLang() === 'en' ? 'Product Name:' : 'اسم المنتج:' }}</span>
-            <span class="meta-val">{{ currentLang() === 'en' ? (offer()?.productNameEn || offer()?.product?.nameEn) : (offer()?.productNameAr || offer()?.product?.nameAr || offer()?.productNameEn) }}</span>
+            <span class="meta-val">{{ currentLang() === 'en' ? (product()?.nameEn || offer()?.productNameEn || offer()?.product?.nameEn) : (product()?.nameAr || offer()?.productNameAr || offer()?.product?.nameAr || product()?.nameEn || offer()?.productNameEn) }}</span>
           </div>
+
+          <!-- Brand -->
+          <div class="product-meta-item" *ngIf="product()?.brand">
+            <span class="meta-name">{{ currentLang() === 'en' ? 'Brand:' : 'الماركة / العلامة التجارية:' }}</span>
+            <span class="meta-val brand-val-inline">
+              <img *ngIf="product()?.brandImage" [src]="getImageUrl(product()?.brandImage)" class="product-brand-logo" alt="Brand Logo">
+              <span>{{ product()?.brand }}</span>
+            </span>
+          </div>
+
+          <!-- Category -->
           <div class="product-meta-item" *ngIf="offer()?.categoryNameEn || offer()?.category?.nameEn">
             <span class="meta-name">{{ currentLang() === 'en' ? 'Category:' : 'القسم:' }}</span>
             <span class="meta-val">{{ currentLang() === 'en' ? (offer()?.categoryNameEn || offer()?.category?.nameEn) : (offer()?.categoryNameAr || offer()?.category?.nameAr) }}</span>
           </div>
-          <div class="product-meta-item" *ngIf="offer()?.cityNameEn || offer()?.city?.nameEn">
-            <span class="meta-name">{{ currentLang() === 'en' ? 'City Coverage:' : 'تغطية المدينة:' }}</span>
-            <span class="meta-val">{{ currentLang() === 'en' ? (offer()?.cityNameEn || offer()?.city?.nameEn) : (offer()?.cityNameAr || offer()?.city?.nameAr) }}</span>
+
+          <!-- SKU / Barcode -->
+          <div class="product-meta-item" *ngIf="product()?.sku">
+            <span class="meta-name">{{ currentLang() === 'en' ? 'SKU:' : 'رمز المنتج (SKU):' }}</span>
+            <span class="meta-val font-mono">{{ product()?.sku }}</span>
+          </div>
+          <div class="product-meta-item" *ngIf="product()?.barcode">
+            <span class="meta-name">{{ currentLang() === 'en' ? 'Barcode:' : 'الباركود:' }}</span>
+            <span class="meta-val font-mono">{{ product()?.barcode }}</span>
+          </div>
+
+          <!-- Unit / Size -->
+          <div class="product-meta-item" *ngIf="product()?.unitSize || product()?.unit">
+            <span class="meta-name">{{ currentLang() === 'en' ? 'Unit Size:' : 'الوحدة / الحجم:' }}</span>
+            <span class="meta-val">{{ product()?.unitSize }} {{ product()?.unit }}</span>
+          </div>
+
+          <!-- Dynamic Specifications Table / Badges -->
+          <div class="product-specs-list" *ngIf="productSpecs().length > 0">
+            <h5 class="specs-heading">{{ currentLang() === 'en' ? 'Technical Specifications:' : 'المواصفات الفنية:' }}</h5>
+            <div class="specs-grid">
+              <div class="spec-row" *ngFor="let spec of productSpecs()">
+                <span class="spec-key">{{ currentLang() === 'en' ? (spec.attrKeyAr || spec.attributeKeyEn || spec.attributeKey) : (spec.attrKeyAr || spec.attributeKeyAr || spec.attributeKey) }}:</span>
+                <span class="spec-value">{{ currentLang() === 'en' ? (spec.attrValueEn || spec.valueEn || spec.attrValueAr || spec.valueAr) : (spec.attrValueAr || spec.valueAr || spec.attrValueEn || spec.valueEn) }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

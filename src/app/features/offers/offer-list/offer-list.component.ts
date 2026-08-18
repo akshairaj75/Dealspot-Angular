@@ -227,7 +227,7 @@ export class OfferListComponent implements OnInit {
       url = url.substring(1);
     }
 
-    let base = this.filePath || 'http://192.168.1.110:8080/';
+    let base = this.filePath || environment.filePath;
     if (!base.endsWith('/')) {
       base += '/';
     }
@@ -270,7 +270,7 @@ export class OfferListComponent implements OnInit {
       url = url.substring(1);
     }
 
-    let base = this.filePath || 'http://192.168.1.110:8080/';
+    let base = this.filePath || environment.filePath;
     if (!base.endsWith('/')) {
       base += '/';
     }

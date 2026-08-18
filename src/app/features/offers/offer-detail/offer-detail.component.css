@@ -584,6 +584,72 @@
   font-weight: 700;
 }
 
+.brand-val-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.product-brand-logo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: #f8fafc;
+  padding: 2px;
+  border: 1px solid var(--border);
+}
+
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.product-specs-list {
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.specs-heading {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 4px 0;
+}
+
+.specs-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.spec-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface-hover, #f8fafc);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm, 6px);
+  font-size: 12px;
+}
+
+.spec-key {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.spec-value {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
 /* Empty State & Spinner */
 .empty-state {
   padding: 60px 24px;
