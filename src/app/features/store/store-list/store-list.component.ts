@@ -8,15 +8,12 @@ import { CategoryService } from '../../../core/services/category.service';
 // import { OfferService } from '../../../core/services/offer.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { TranslationService } from '../../../core/services/translation.service';
-import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
 import { environment } from '../../../environment/environment';
-// import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
-// import { Store, Category } from '../../../core/models';
 
 @Component({
   selector: 'app-store-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, TranslatePipe],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './store-list.component.html',
   styleUrls: ['./store-list.component.css']
 })

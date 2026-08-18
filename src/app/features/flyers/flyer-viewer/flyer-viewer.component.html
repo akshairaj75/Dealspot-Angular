@@ -1,0 +1,202 @@
+<div class="flyer-viewer-page">
+
+  <!-- Spinner loading state -->
+  <div class="spinner-container" *ngIf="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Error / Not found state -->
+  <div class="empty-state card" *ngIf="!loading && (hasError || !flyer())">
+    <span class="material-icons-round empty-state-icon">error_outline</span>
+    <h3 class="empty-state-title">{{ currentLang() === 'en' ? 'Flyer Not Found' : 'لم يتم العثور على البروشور' }}</h3>
+    <p class="empty-state-desc">{{ currentLang() === 'en' ? 'The flyer you are looking for might have expired or been removed.' : 'البروشور المطلوب غير متوفر أو قد انتهت فترة صلاحيته.' }}</p>
+    <a routerLink="/stores" class="btn btn-primary" style="margin-top: 12px;">
+      <span class="material-icons-round">arrow_back</span>
+      <span>{{ currentLang() === 'en' ? 'Back to Stores' : 'العودة للمتاجر' }}</span>
+    </a>
+  </div>
+
+  <!-- Main Viewer Content -->
+  <div class="flyer-viewer-container" *ngIf="!loading && flyer()">
+    
+    <!-- Header Navigation & Info Bar -->
+    <div class="viewer-top-bar card">
+      <div class="viewer-header-left">
+        <a [routerLink]="flyer()?.storeId || flyer()?.store?.id ? ['/stores', (flyer()?.storeId || flyer()?.store?.id)] : ['/stores']" class="btn btn-outline btn-back">
+          <span class="material-icons-round">{{ currentLang() === 'ar' ? 'arrow_forward' : 'arrow_back' }}</span>
+          <span>{{ currentLang() === 'en' ? 'Back to Store' : 'العودة للمتجر' }}</span>
+        </a>
+
+        <div class="viewer-title-block">
+          <div class="viewer-title-row">
+            <h1 class="viewer-title">
+              {{ currentLang() === 'en' ? (flyer()?.titleEn || flyer()?.title_en) : (flyer()?.titleAr || flyer()?.title_ar || flyer()?.titleEn) }}
+            </h1>
+          </div>
+          <div class="viewer-meta-row">
+            <a *ngIf="flyer()?.storeId || flyer()?.store?.id" [routerLink]="['/stores', (flyer()?.storeId || flyer()?.store?.id)]" class="store-link-chip">
+              <span class="material-icons-round store-chip-icon">store</span>
+              <span>{{ currentLang() === 'en' ? (flyer()?.storeNameEn || flyer()?.store?.nameEn || flyer()?.store?.name_en || 'Store') : (flyer()?.storeNameAr || flyer()?.store?.nameAr || flyer()?.store?.name_ar || flyer()?.storeNameEn || 'متجر') }}</span>
+            </a>
+            <span class="meta-sep" *ngIf="flyer()?.validUntil || flyer()?.valid_until">&bull;</span>
+            <span class="validity-chip" *ngIf="flyer()?.validUntil || flyer()?.valid_until">
+              <span class="material-icons-round" style="font-size: 14px;">event</span>
+              <span>{{ currentLang() === 'en' ? 'Valid until:' : 'ساري حتى:' }} {{ flyer()?.validUntil || flyer()?.valid_until }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Header Actions (Zoom, Share, PDF, Fullscreen) -->
+      <div class="viewer-header-right">
+        <button 
+          class="btn btn-icon-action" 
+          (click)="toggleZoom()" 
+          [class.active]="zoomMode()"
+          [title]="zoomMode() ? (currentLang() === 'en' ? 'Fit Page' : 'ملاءمة الصفحة') : (currentLang() === 'en' ? 'Zoom In' : 'تكبير')">
+          <span class="material-icons-round">{{ zoomMode() ? 'zoom_out' : 'zoom_in' }}</span>
+        </button>
+
+        <button 
+          class="btn btn-icon-action" 
+          (click)="toggleFullscreen()" 
+          [title]="currentLang() === 'en' ? 'Fullscreen' : 'ملء الشاشة'">
+          <span class="material-icons-round">{{ isFullscreen() ? 'fullscreen_exit' : 'fullscreen' }}</span>
+        </button>
+
+        <a 
+          *ngIf="flyer()?.pdfUrl || flyer()?.pdf_url" 
+          [href]="getPdfUrl(flyer()?.pdfUrl || flyer()?.pdf_url)" 
+          target="_blank" 
+          class="btn btn-icon-action"
+          [title]="currentLang() === 'en' ? 'Download / View PDF' : 'تحميل / عرض PDF'">
+          <span class="material-icons-round">picture_as_pdf</span>
+        </a>
+
+        <button 
+          class="btn btn-icon-action" 
+          (click)="shareFlyer()" 
+          [title]="currentLang() === 'en' ? 'Share Flyer' : 'مشاركة البروشور'">
+          <span class="material-icons-round">{{ copied() ? 'check' : 'share' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Copied Alert Toast -->
+    <div class="toast-feedback" *ngIf="copied()">
+      <span class="material-icons-round">check_circle</span>
+      <span>{{ currentLang() === 'en' ? 'Flyer link copied to clipboard!' : 'تم نسخ رابط البروشور إلى الحافظة!' }}</span>
+    </div>
+
+    <!-- Viewer Workspace -->
+    <div class="viewer-workspace" *ngIf="pages().length > 0; else noPages" id="flyer-book-viewer">
+      
+      <!-- Big Book Container -->
+      <div class="book-container card" [class.zoom-active]="zoomMode()">
+        
+        <!-- Left Navigation Arrow (Prev in LTR, Next in RTL) -->
+        <button 
+          class="nav-page-btn prev-btn" 
+          [disabled]="currentPageIndex() === 0" 
+          (click)="prevPage()"
+          [title]="currentLang() === 'en' ? 'Previous Page (Left Arrow)' : 'الصفحة السابقة'">
+          <span class="material-icons-round">{{ currentLang() === 'ar' ? 'chevron_right' : 'chevron_left' }}</span>
+        </button>
+
+        <!-- Main Page Viewport -->
+        <div class="active-page-viewport" (click)="toggleZoom()">
+          <img 
+            [src]="getImageUrl(getCurrentPage()?.imageUrl || getCurrentPage()?.image_url)" 
+            [alt]="'Flyer page ' + (currentPageIndex() + 1)"
+            class="active-page-img"
+            [class.zoomed]="zoomMode()"
+            (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800&auto=format&fit=crop&q=80'"
+          >
+        </div>
+
+        <!-- Right Navigation Arrow (Next in LTR, Prev in RTL) -->
+        <button 
+          class="nav-page-btn next-btn" 
+          [disabled]="currentPageIndex() === pages().length - 1" 
+          (click)="nextPage()"
+          [title]="currentLang() === 'en' ? 'Next Page (Right Arrow)' : 'الصفحة التالية'">
+          <span class="material-icons-round">{{ currentLang() === 'ar' ? 'chevron_left' : 'chevron_right' }}</span>
+        </button>
+      </div>
+
+      <!-- Page Indicator & Progress Controller -->
+      <div class="page-indicator-bar card">
+        <div class="page-nav-controls">
+          <button 
+            class="btn btn-sm btn-outline" 
+            [disabled]="currentPageIndex() === 0" 
+            (click)="prevPage()">
+            <span class="material-icons-round" style="font-size: 16px;">{{ currentLang() === 'ar' ? 'arrow_forward' : 'arrow_back' }}</span>
+            <span>{{ currentLang() === 'en' ? 'Prev' : 'السابق' }}</span>
+          </button>
+
+          <div class="page-count-badge">
+            <span class="current-p">{{ currentPageIndex() + 1 }}</span>
+            <span class="of-txt">{{ currentLang() === 'en' ? 'of' : 'من' }}</span>
+            <span class="total-p">{{ pages().length }}</span>
+          </div>
+
+          <button 
+            class="btn btn-sm btn-outline" 
+            [disabled]="currentPageIndex() === pages().length - 1" 
+            (click)="nextPage()">
+            <span>{{ currentLang() === 'en' ? 'Next' : 'التالي' }}</span>
+            <span class="material-icons-round" style="font-size: 16px;">{{ currentLang() === 'ar' ? 'arrow_back' : 'arrow_forward' }}</span>
+          </button>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="flyer-progress-track">
+          <div 
+            class="flyer-progress-fill" 
+            [style.width.%]="((currentPageIndex() + 1) / pages().length) * 100">
+          </div>
+        </div>
+      </div>
+
+      <!-- Horizontal Thumbnails Strip -->
+      <div class="thumbnails-strip-card card">
+        <div class="strip-header">
+          <div class="strip-title">
+            <span class="material-icons-round strip-icon">auto_stories</span>
+            <span>{{ currentLang() === 'en' ? 'Flyer Pages Overview' : 'نظرة عامة على صفحات البروشور' }}</span>
+          </div>
+          <span class="strip-pages-hint">{{ pages().length }} {{ currentLang() === 'en' ? 'pages' : 'صفحة' }}</span>
+        </div>
+
+        <div class="thumbnails-strip-scroll">
+          <button 
+            *ngFor="let page of pages(); let idx = index" 
+            (click)="jumpToPage(idx)"
+            class="strip-thumb-btn"
+            [class.active]="currentPageIndex() === idx"
+            [title]="'Jump to page ' + (idx + 1)"
+          >
+            <img 
+              [src]="getImageUrl(page.thumbUrl || page.thumb_url || page.imageUrl || page.image_url)" 
+              [alt]="'Page ' + (page.pageNumber || page.page_number || (idx + 1))"
+              (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=200&auto=format&fit=crop&q=60'"
+            >
+            <span class="thumb-page-num">{{ page.pageNumber || page.page_number || (idx + 1) }}</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- No scanned pages fallback -->
+    <ng-template #noPages>
+      <div class="empty-state card">
+        <span class="material-icons-round empty-state-icon">menu_book</span>
+        <h3 class="empty-state-title">{{ currentLang() === 'en' ? 'No pages uploaded yet' : 'لا توجد صفحات ممسوحة ضوئياً بعد' }}</h3>
+        <p class="empty-state-desc">{{ currentLang() === 'en' ? 'This flyer currently does not contain any scanned page images.' : 'هذا البروشور لا يحتوي على صفحات ممسوحة ضوئياً في الوقت الحالي.' }}</p>
+      </div>
+    </ng-template>
+
+  </div>
+</div>

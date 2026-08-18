@@ -245,6 +245,20 @@ export class ProductsCrudComponent implements OnInit {
     return catName;
   }
 
+  getCategoryInfo(categoryId: number): { mainName: string; subName: string | null } {
+    if (!categoryId) return { mainName: '-', subName: null };
+    const cat = this.allCategories().find(c => c.id === categoryId);
+    if (!cat) return { mainName: `#${categoryId}`, subName: null };
+
+    const catName = this.currentLang() === 'en' ? cat.nameEn : (cat.nameAr || cat.nameEn);
+    if (cat.parentId) {
+      const parent = this.allCategories().find(c => c.id === cat.parentId);
+      const parentName = this.currentLang() === 'en' ? parent?.nameEn : (parent?.nameAr || parent?.nameEn);
+      return { mainName: parentName || '', subName: catName || '' };
+    }
+    return { mainName: catName || '', subName: null };
+  }
+
   closeModal(): void {
     this.isModalOpen = false;
     this.previewUrl = null;

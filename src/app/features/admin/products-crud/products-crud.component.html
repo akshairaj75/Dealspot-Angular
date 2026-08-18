@@ -65,9 +65,18 @@
             </div>
           </td>
           <td>
-            <span class="category-badge">
-              {{ getCategoryDisplayName(p.categoryId || p.category_id) }}
-            </span>
+            <ng-container *ngIf="getCategoryInfo(p.categoryId || p.category_id) as catInfo">
+              <div class="category-tree-cell">
+                <div class="cat-hierarchy-pill" *ngIf="catInfo.subName">
+                  <span class="cat-main-text">{{ catInfo.mainName }}</span>
+                  <span class="material-icons-round cat-arrow-icon">{{ currentLang() === 'ar' ? 'arrow_left' : 'arrow_right' }}</span>
+                  <span class="cat-sub-text">{{ catInfo.subName }}</span>
+                </div>
+                <div class="cat-hierarchy-pill" *ngIf="!catInfo.subName">
+                  <span class="cat-single-text">{{ catInfo.mainName }}</span>
+                </div>
+              </div>
+            </ng-container>
           </td>
           <td>
             <div class="code-column-desc">

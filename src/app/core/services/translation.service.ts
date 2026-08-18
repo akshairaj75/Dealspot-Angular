@@ -43,13 +43,30 @@ export class TranslationService {
     if (!obj) return '';
     const lang = this.currentLang();
     
-    // Check if dynamic field exists, e.g. title_en, title_ar
-    const key = `${fieldName}_${lang}`;
-    if (key in obj) {
-      return obj[key] || obj[`${fieldName}_en`] || '';
+    // Check camelCase first, e.g. titleEn / titleAr, nameEn / nameAr
+    const capitalizedLang = lang.charAt(0).toUpperCase() + lang.slice(1);
+    const camelKey = `${fieldName}${capitalizedLang}`;
+    if (obj[camelKey] !== undefined && obj[camelKey] !== null && obj[camelKey] !== '') {
+      return obj[camelKey];
     }
-    
-    // If not found, try to fall back or return exact field
+
+    // Check snake_case, e.g. title_en, title_ar
+    const snakeKey = `${fieldName}_${lang}`;
+    if (obj[snakeKey] !== undefined && obj[snakeKey] !== null && obj[snakeKey] !== '') {
+      return obj[snakeKey];
+    }
+
+    // Fallbacks to English
+    const fallbackCamel = `${fieldName}En`;
+    if (obj[fallbackCamel] !== undefined && obj[fallbackCamel] !== null && obj[fallbackCamel] !== '') {
+      return obj[fallbackCamel];
+    }
+
+    const fallbackSnake = `${fieldName}_en`;
+    if (obj[fallbackSnake] !== undefined && obj[fallbackSnake] !== null && obj[fallbackSnake] !== '') {
+      return obj[fallbackSnake];
+    }
+
     return obj[fieldName] || '';
   }
 }

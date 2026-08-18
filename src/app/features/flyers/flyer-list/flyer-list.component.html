@@ -1,0 +1,83 @@
+<div class="flyer-list-page">
+  <!-- Section Title & Header -->
+  <div class="flyer-list-header">
+    <h1 class="page-title">{{ currentLang() === 'en' ? 'Active Store Flyers & Brochures' : 'المنشورات والمجلات الترويجية' }}</h1>
+    <p class="page-subtitle">{{ currentLang() === 'en' ? 'Flip through digital saving catalogs and store promotional booklets' : 'تصفح مجلات عروض المتاجر الأسبوعية والتخفيضات الكبرى والعروض الحصرية' }}</p>
+  </div>
+
+  <!-- Search Filter Bar -->
+  <div class="flyer-filters card">
+    <div class="search-field">
+      <span class="material-icons-round search-field-icon">search</span>
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery" 
+        [placeholder]="currentLang() === 'en' ? 'Search flyer titles or store names...' : 'ابحث عن عروض ومجلات المتاجر...'" 
+        class="form-control"
+      >
+      <button class="clear-search-btn" *ngIf="searchQuery" (click)="searchQuery = ''">
+        <span class="material-icons-round">close</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Spinner state -->
+  <div class="spinner-container" *ngIf="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state card" *ngIf="!loading && getFilteredFlyers().length === 0">
+    <span class="material-icons-round empty-state-icon">menu_book</span>
+    <h3 class="empty-state-title">{{ currentLang() === 'en' ? 'No flyers found' : 'لا توجد بروشورات متاحة' }}</h3>
+    <p class="empty-state-desc">{{ currentLang() === 'en' ? 'No promotional flyers found matching your search criteria.' : 'لم يتم العثور على أي نشرات عروض تطابق معايير البحث الحالية.' }}</p>
+  </div>
+
+  <!-- Flyers Grid -->
+  <div class="grid-flyers" *ngIf="!loading && getFilteredFlyers().length > 0">
+    <div class="flyer-card card" *ngFor="let flyer of getFilteredFlyers()">
+      
+      <div class="flyer-image-wrapper">
+        <img 
+          [src]="getImageUrl(flyer.coverImageUrl || flyer.cover_image_url)" 
+          [alt]="flyer.titleEn || flyer.title_en || 'Flyer Cover'"
+          (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&auto=format&fit=crop&q=60'"
+        >
+        <div class="flyer-overlay">
+          <a [routerLink]="['/flyers', flyer.id]" class="btn btn-primary btn-open-flyer">
+            <span class="material-icons-round">auto_stories</span>
+            <span>{{ currentLang() === 'en' ? 'Open Flyer' : 'فتح البروشور' }}</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="flyer-card-body">
+        <a *ngIf="flyer.storeId || flyer.store?.id" [routerLink]="['/stores', (flyer.storeId || flyer.store?.id)]" class="store-badge-row">
+          <img 
+            [src]="getLogoUrl(flyer.store?.logoUrl || flyer.store?.logo_url)" 
+            class="mini-store-logo"
+            (error)="$any($event.target).src = 'https://placehold.co/40x40?text=Logo'"
+          >
+          <span>{{ currentLang() === 'en' ? (flyer.storeNameEn || flyer.store?.nameEn || flyer.store?.name_en || 'Store') : (flyer.storeNameAr || flyer.store?.nameAr || flyer.store?.name_ar || flyer.storeNameEn || 'متجر') }}</span>
+        </a>
+
+        <h3 class="flyer-title">
+          <a [routerLink]="['/flyers', flyer.id]">
+            {{ currentLang() === 'en' ? (flyer.titleEn || flyer.title_en) : (flyer.titleAr || flyer.title_ar || flyer.titleEn) }}
+          </a>
+        </h3>
+
+        <div class="flyer-card-footer">
+          <span class="pages-count">
+            <span class="material-icons-round" style="font-size: 14px;">auto_stories</span>
+            <span>{{ flyer.totalPages || flyer.total_pages || (flyer.pages ? flyer.pages.length : 1) }} {{ currentLang() === 'en' ? 'Pages' : 'صفحات' }}</span>
+          </span>
+          <span class="validity-dates" *ngIf="flyer.validUntil || flyer.valid_until">
+            {{ currentLang() === 'en' ? 'Until:' : 'حتى:' }} {{ flyer.validUntil || flyer.valid_until }}
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -12,8 +12,12 @@ import { ProductsCrudComponent } from './features/admin/products-crud/products-c
 import { BrandsCrudComponent } from './features/admin/brands-crud/brands-crud.component';
 import { ProductSpecsCrudComponent } from './features/admin/product-specs-crud/product-specs-crud.component';
 import { BranchesCrudComponent } from './features/admin/branches-crud/branches-crud.component';
+import { FlyersCrudComponent } from './features/admin/flyers-crud/flyers-crud.component';
+import { FlyerPagesCrudComponent } from './features/admin/flyer-pages-crud/flyer-pages-crud.component';
 import { StoreListComponent } from './features/store/store-list/store-list.component';
 import { StoreDetailComponent } from './features/store/store-detail/store-detail.component';
+import { FlyerListComponent } from './features/flyers/flyer-list/flyer-list.component';
+import { FlyerViewerComponent } from './features/flyers/flyer-viewer/flyer-viewer.component';
 
 export const routes: Routes = [
 
@@ -33,7 +37,9 @@ export const routes: Routes = [
             },
             { path: 'offers-list', component: OfferListComponent },
             { path: 'stores', component: StoreListComponent },
-            { path: 'stores/:id', component: StoreDetailComponent }
+            { path: 'stores/:id', component: StoreDetailComponent },
+            { path: 'flyers', component: FlyerListComponent },
+            { path: 'flyers/:id', component: FlyerViewerComponent }
 
         ]
     },
@@ -51,6 +57,8 @@ export const routes: Routes = [
             { path: 'stores/:id/branches', component: BranchesCrudComponent },
             { path: 'products', component: ProductsCrudComponent },
             { path: 'brands', component: BrandsCrudComponent },
+            { path: 'flyers', component: FlyersCrudComponent },
+            { path: 'flyers/:id/pages', component: FlyerPagesCrudComponent },
             {
                 path: 'product-specs/:productId/details',
                 component: ProductSpecsCrudComponent

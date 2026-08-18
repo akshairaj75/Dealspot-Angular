@@ -1,0 +1,110 @@
+<div class="crud-container">
+  <!-- Header with Back Button and Add Button -->
+  <div class="crud-header">
+    <div class="header-titles">
+      <a routerLink="/admin/flyers" class="btn btn-outline btn-back">
+        <span class="material-icons-round">{{ currentLang() === 'ar' ? 'arrow_forward' : 'arrow_back' }}</span>
+        <span>{{ currentLang() === 'en' ? 'Back to Flyers' : 'العودة لقائمة النشرات' }}</span>
+      </a>
+      <h2>
+        {{ currentLang() === 'en' ? 'Scanned Catalogue Pages:' : 'صفحات الكتالوج:' }} 
+        <span class="flyer-highlight">{{ currentLang() === 'en' ? (flyer()?.titleEn || flyer()?.title_en) : (flyer()?.titleAr || flyer()?.title_ar || flyer()?.titleEn || ('Flyer #' + flyerId)) }}</span>
+      </h2>
+    </div>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <span class="material-icons-round">add_photo_alternate</span>
+      <span>{{ currentLang() === 'en' ? 'Add Catalogue Page' : 'إضافة صفحة كتالوج' }}</span>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="spinner-container" *ngIf="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Scanned Pages Grid -->
+  <div class="pages-grid" *ngIf="!loading">
+    <div class="page-card card" *ngFor="let page of pages()">
+      <div class="page-image-wrapper">
+        <img [src]="getPageImageUrl(page)" [alt]="'Page ' + (page.pageNumber || page.page_number)">
+        <span class="badge badge-featured page-badge">
+          {{ currentLang() === 'en' ? 'Page' : 'صفحة' }} {{ page.pageNumber || page.page_number }} {{ (page.pageNumber || page.page_number) === 1 ? (currentLang() === 'en' ? '(Cover)' : '(الغلاف)') : '' }}
+        </span>
+      </div>
+      
+      <div class="page-card-body">
+        <div class="page-info-row">
+          <span class="material-icons-round text-muted" style="font-size: 16px;">tag</span>
+          <span>{{ currentLang() === 'en' ? 'Sheet Position:' : 'ترتيب الصفحة:' }} <strong>#{{ page.pageNumber || page.page_number }}</strong></span>
+        </div>
+      </div>
+
+      <div class="page-card-footer">
+        <button class="btn btn-outline btn-sm" (click)="openEditModal(page)" [title]="currentLang() === 'en' ? 'Edit Page' : 'تعديل الصفحة'">
+          <span class="material-icons-round">edit</span>
+          <span>{{ currentLang() === 'en' ? 'Edit' : 'تعديل' }}</span>
+        </button>
+        <button class="btn btn-outline btn-sm text-danger" (click)="deletePage(page.id)" [title]="currentLang() === 'en' ? 'Delete Page' : 'حذف الصفحة'">
+          <span class="material-icons-round">delete</span>
+          <span>{{ currentLang() === 'en' ? 'Delete' : 'حذف' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state-full card" *ngIf="pages().length === 0">
+      <span class="material-icons-round empty-icon">auto_stories</span>
+      <h3>{{ currentLang() === 'en' ? 'No pages uploaded yet' : 'لا توجد صفحات مرفوعة بعد' }}</h3>
+      <p>{{ currentLang() === 'en' ? 'Click "Add Catalogue Page" above to upload scanned promotional sheets.' : 'انقر على "إضافة صفحة كتالوج" أعلاه لرفع صفحات العروض.' }}</p>
+    </div>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ editingPageId ? (currentLang() === 'en' ? 'Edit Catalogue Page' : 'تعديل صفحة الكتالوج') : (currentLang() === 'en' ? 'Upload Catalogue Sheet' : 'رفع صفحة كتالوج جديدة') }}</h3>
+        <button class="btn-icon border-none" (click)="closeModal()">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="pageForm" (submit)="onSubmit()" class="auth-form">
+          <div class="form-group">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Page Number / Index *' : 'رقم / ترتيب الصفحة *' }}</label>
+            <input type="number" formControlName="page_number" class="form-control" min="1" placeholder="1">
+            <div class="error-msg" *ngIf="pageForm.get('page_number')?.touched && pageForm.get('page_number')?.invalid">
+              {{ currentLang() === 'en' ? 'Valid page number is required.' : 'رقم الصفحة مطلوب.' }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Page Image File *' : 'ملف صورة الصفحة *' }}</label>
+            <div class="file-upload-box">
+              <input type="file" (change)="onFileSelected($event)" accept="image/*">
+              <p class="file-upload-hint">
+                <span class="material-icons-round upload-icon">cloud_upload</span>
+                <span>{{ currentLang() === 'en' ? 'Select page image (JPG, PNG, WEBP)' : 'اختر صورة الصفحة (JPG, PNG, WEBP)' }}</span>
+              </p>
+            </div>
+
+            <div *ngIf="previewUrl" class="image-preview-wrapper">
+              <img [src]="previewUrl" class="image-preview-thumbnail" alt="Preview">
+              <span class="text-muted text-xs">{{ currentLang() === 'en' ? 'Page Preview' : 'معاينة الصفحة' }}</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="modal-footer-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">
+              {{ currentLang() === 'en' ? 'Cancel' : 'إلغاء' }}
+            </button>
+            <button type="submit" [disabled]="pageForm.invalid" class="btn btn-primary">
+              {{ currentLang() === 'en' ? 'Save Page' : 'حفظ الصفحة' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

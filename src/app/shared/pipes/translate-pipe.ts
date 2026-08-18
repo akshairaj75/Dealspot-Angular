@@ -1,10 +1,15 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Pipe, PipeTransform, inject } from '@angular/core';
+import { TranslationService } from '../../core/services/translation.service';
 
 @Pipe({
   name: 'translate',
+  standalone: true,
+  pure: false
 })
 export class TranslatePipe implements PipeTransform {
-  transform(value: unknown, ...args: unknown[]): unknown {
-    return null;
+  private translationService = inject(TranslationService);
+
+  transform(obj: any, fieldName: string): string {
+    return this.translationService.translate(obj, fieldName);
   }
 }

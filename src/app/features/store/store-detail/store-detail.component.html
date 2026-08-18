@@ -160,11 +160,19 @@
             </div>
             <div class="flyer-card-body">
               <h3 class="flyer-title">
-                {{ currentLang() === 'en' ? (flyer.titleEn || flyer.title_en) : (flyer.titleAr || flyer.title_ar || flyer.titleEn) }}
+                <a [routerLink]="['/flyers', flyer.id]">
+                  {{ currentLang() === 'en' ? (flyer.titleEn || flyer.title_en) : (flyer.titleAr || flyer.title_ar || flyer.titleEn) }}
+                </a>
               </h3>
-              <p class="flyer-pages-count" *ngIf="flyer.totalPages || flyer.total_pages">
-                {{ flyer.totalPages || flyer.total_pages }} {{ currentLang() === 'en' ? 'Pages' : 'صفحات' }}
-              </p>
+              <div class="flyer-card-footer">
+                <span class="pages-count" *ngIf="flyer.totalPages || flyer.total_pages">
+                  <span class="material-icons-round" style="font-size: 14px;">auto_stories</span>
+                  <span>{{ flyer.totalPages || flyer.total_pages }} {{ currentLang() === 'en' ? 'Pages' : 'صفحات' }}</span>
+                </span>
+                <span class="validity-dates" *ngIf="flyer.validUntil || flyer.valid_until">
+                  {{ currentLang() === 'en' ? 'Until:' : 'حتى:' }} {{ flyer.validUntil || flyer.valid_until }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
