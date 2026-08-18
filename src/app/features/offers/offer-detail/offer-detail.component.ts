@@ -36,6 +36,8 @@ export class OfferDetailComponent implements OnInit {
   branches = signal<any[]>([]);
   images = signal<string[]>([]);
   activeImage = signal<string>('');
+  lightboxImage = signal<string | null>(null);
+  activeTab = signal<'overview' | 'specs' | 'store' | 'terms'>('overview');
 
   isSaved = signal<boolean>(false);
   loading = signal<boolean>(true);
@@ -347,5 +349,61 @@ export class OfferDetailComponent implements OnInit {
       return (orig - offer).toFixed(2);
     }
     return '0.00';
+  }
+
+  nextImage(): void {
+    const list = this.images();
+    if (list.length <= 1) return;
+    const currIdx = list.indexOf(this.activeImage());
+    const nextIdx = (currIdx + 1) % list.length;
+    this.activeImage.set(list[nextIdx]);
+  }
+
+  prevImage(): void {
+    const list = this.images();
+    if (list.length <= 1) return;
+    const currIdx = list.indexOf(this.activeImage());
+    const prevIdx = (currIdx - 1 + list.length) % list.length;
+    this.activeImage.set(list[prevIdx]);
+  }
+
+  openLightbox(img: string): void {
+    this.lightboxImage.set(img);
+  }
+
+  closeLightbox(): void {
+    this.lightboxImage.set(null);
+  }
+
+  switchTab(tab: 'overview' | 'specs' | 'store' | 'terms'): void {
+    this.activeTab.set(tab);
+  }
+
+  getDaysRemaining(): { text: string; urgent: boolean } | null {
+    const o = this.offer();
+    if (!o || (!o.validUntil && !o.valid_until)) return null;
+    const validUntilStr = o.validUntil || o.valid_until;
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const expiry = new Date(validUntilStr);
+      expiry.setHours(0, 0, 0, 0);
+      const diffTime = expiry.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays < 0) {
+        return { text: this.currentLang() === 'en' ? 'Expired' : 'منتهي الصلاحية', urgent: true };
+      } else if (diffDays === 0) {
+        return { text: this.currentLang() === 'en' ? 'Ends Today!' : 'ينتهي اليوم!', urgent: true };
+      } else if (diffDays === 1) {
+        return { text: this.currentLang() === 'en' ? 'Ends Tomorrow!' : 'ينتهي غداً!', urgent: true };
+      } else if (diffDays <= 5) {
+        return { text: this.currentLang() === 'en' ? `${diffDays} days left` : `متبقي ${diffDays} أيام`, urgent: true };
+      } else {
+        return { text: this.currentLang() === 'en' ? `${diffDays} days remaining` : `متبقي ${diffDays} يوماً`, urgent: false };
+      }
+    } catch {
+      return null;
+    }
   }
 }
