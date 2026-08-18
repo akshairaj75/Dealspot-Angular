@@ -71,7 +71,7 @@
 
         <div class="deal-card-body">
           <a [routerLink]="['/stores', deal.storeId || deal.store_id]" class="store-badge-row">
-            <img [src]="getStoreLogoUrl(deal.storeLogoUrl || deal.store?.logo_url)" class="mini-store-logo">
+            <img [src]="getStoreLogoUrl(deal)" class="mini-store-logo" [alt]="deal.storeNameEn || 'Store Logo'">
             <span>{{ deal.store ? (deal.store | translate:'name') : (currentLang() === 'en' ? (deal.storeNameEn || deal.store_name_en) : (deal.storeNameAr || deal.store_name_ar || deal.storeNameEn)) }}</span>
           </a>
           <h3 class="deal-card-title">
@@ -110,7 +110,7 @@
         </div>
         <div class="flyer-card-body">
           <a [routerLink]="['/stores', flyer.storeId || flyer.store_id]" class="store-badge-row">
-            <img [src]="getStoreLogoUrl(flyer.storeLogoUrl || flyer.store?.logo_url)" class="mini-store-logo">
+            <img [src]="getStoreLogoUrl(flyer)" class="mini-store-logo" [alt]="flyer.storeNameEn || 'Store Logo'">
             <span>{{ flyer.store ? (flyer.store | translate:'name') : (currentLang() === 'en' ? (flyer.storeNameEn || flyer.store_name_en) : (flyer.storeNameAr || flyer.store_name_ar || flyer.storeNameEn)) }}</span>
           </a>  
           <h3 class="flyer-title">
@@ -150,7 +150,7 @@
         <div class="offer-card-body">
           <div class="offer-store-header">
             <a [routerLink]="['/stores', offer.storeId || offer.store_id]" class="store-badge-row">
-              <img [src]="getStoreLogoUrl(offer.storeLogoUrl || offer.store?.logo_url)" class="mini-store-logo">
+              <img [src]="getStoreLogoUrl(offer)" class="mini-store-logo" [alt]="offer.storeNameEn || 'Store Logo'">
               <span>{{ offer.store ? (offer.store | translate:'name') : (currentLang() === 'en' ? (offer.storeNameEn || offer.store_name_en) : (offer.storeNameAr || offer.store_name_ar || offer.storeNameEn)) }}</span>
             </a>
             <span class="material-icons-round verified-icon" *ngIf="offer.store?.is_verified === 1 || offer.storeVerified">verified</span>
@@ -197,7 +197,7 @@
         <div class="offer-card-body">
           <div class="offer-store-header">
             <a [routerLink]="['/stores', offer.storeId || offer.store_id]" class="store-badge-row">
-              <img [src]="getStoreLogoUrl(offer.storeLogoUrl || offer.store?.logo_url)" class="mini-store-logo">
+              <img [src]="getStoreLogoUrl(offer)" class="mini-store-logo" [alt]="offer.storeNameEn || 'Store Logo'">
               <span>{{ offer.store ? (offer.store | translate:'name') : (currentLang() === 'en' ? (offer.storeNameEn || offer.store_name_en) : (offer.storeNameAr || offer.store_name_ar || offer.storeNameEn)) }}</span>
             </a>
             <span class="material-icons-round verified-icon" *ngIf="offer.store?.is_verified === 1 || offer.storeVerified">verified</span>

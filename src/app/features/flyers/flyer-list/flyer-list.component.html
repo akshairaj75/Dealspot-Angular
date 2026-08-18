@@ -54,7 +54,7 @@
       <div class="flyer-card-body">
         <a *ngIf="flyer.storeId || flyer.store?.id" [routerLink]="['/stores', (flyer.storeId || flyer.store?.id)]" class="store-badge-row">
           <img 
-            [src]="getLogoUrl(flyer.store?.logoUrl || flyer.store?.logo_url)" 
+            [src]="getLogoUrl(flyer.storeLogoUrl || flyer.store?.logoUrl || flyer.store?.logo_url)" 
             class="mini-store-logo"
             (error)="$any($event.target).src = 'https://placehold.co/40x40?text=Logo'"
           >

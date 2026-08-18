@@ -88,13 +88,29 @@ export class OfferDetailComponent implements OnInit {
         this.images.set(imgList);
         this.activeImage.set(imgList[0]);
 
-        // Load store branches if storeId exists
+        // Load store branches and details if storeId exists
         const storeId = data.storeId || data.store_id;
         if (storeId) {
           this.storeService.getBranches(storeId).subscribe({
             next: (b) => {
               this.branches.set(b || []);
               this.cd.detectChanges();
+            },
+            error: () => {}
+          });
+
+          // Fetch Store details for logo & name fallback
+          this.storeService.getStoreById(storeId).subscribe({
+            next: (st) => {
+              if (st) {
+                this.offer.update(curr => curr ? {
+                  ...curr,
+                  storeLogoUrl: curr.storeLogoUrl || st.logoUrl || st.logo_url,
+                  storeVerified: curr.storeVerified !== undefined ? curr.storeVerified : st.verified,
+                  store: curr.store || st
+                } : curr);
+                this.cd.detectChanges();
+              }
             },
             error: () => {}
           });
@@ -140,23 +156,65 @@ export class OfferDetailComponent implements OnInit {
 
   // Image & Logo Helpers
   getImageUrl(url: string | null | undefined): string {
-    if (!url) {
+    if (!url || typeof url !== 'string' || url.trim() === '') {
       return 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80';
     }
+
+    url = url.trim();
+
     if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
       return url;
     }
-    return this.filePath + url;
+
+    while (url.startsWith('/')) {
+      url = url.substring(1);
+    }
+
+    let base = this.filePath || 'http://192.168.1.110:8080/';
+    if (!base.endsWith('/')) {
+      base += '/';
+    }
+
+    if (!url.startsWith('uploads/')) {
+      url = 'uploads/' + url;
+    }
+
+    return base + url;
   }
 
-  getStoreLogoUrl(url: string | null | undefined): string {
-    if (!url) {
-      return 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=120&auto=format&fit=crop&q=60';
+  getStoreLogoUrl(itemOrUrl: any): string {
+    let url: string | null = null;
+
+    if (typeof itemOrUrl === 'string') {
+      url = itemOrUrl;
+    } else if (itemOrUrl && typeof itemOrUrl === 'object') {
+      url = itemOrUrl.storeLogoUrl || itemOrUrl.store_logo_url || itemOrUrl.store?.logoUrl || itemOrUrl.store?.logo_url || itemOrUrl.logoUrl || itemOrUrl.logo_url;
     }
+
+    if (!url || typeof url !== 'string' || url.trim() === '') {
+      return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' width='48' height='48'%3E%3Crect width='48' height='48' rx='10' fill='%23eff6ff'/%3E%3Cpath fill='%232563eb' d='M8 14l3-7h26l3 7v3h-2v23a2 2 0 01-2 2H12a2 2 0 01-2-2V17H8v-3zm6 0h20l-1.7-4H15.7L14 14zm18 6H16v18h16V20z'/%3E%3C/svg%3E";
+    }
+
+    url = url.trim();
+
     if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
       return url;
     }
-    return this.filePath + url;
+
+    while (url.startsWith('/')) {
+      url = url.substring(1);
+    }
+
+    let base = this.filePath || 'http://192.168.1.110:8080/';
+    if (!base.endsWith('/')) {
+      base += '/';
+    }
+
+    if (!url.startsWith('uploads/')) {
+      url = 'uploads/' + url;
+    }
+
+    return base + url;
   }
 
   // Saved / Bookmark State

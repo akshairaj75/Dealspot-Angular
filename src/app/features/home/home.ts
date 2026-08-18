@@ -5,6 +5,7 @@ import { CityService } from '../../core/services/city.service';
 import { CategoryService } from '../../core/services/category.service';
 import { OfferService } from '../../core/services/offer.service';
 import { FlyerService } from '../../core/services/flyer.service';
+import { StoreService } from '../../core/services/store.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { TranslatePipe } from '../../shared/pipes/translate-pipe';
 import { environment } from '../../environment/environment';
@@ -21,6 +22,7 @@ export class HomeComponent implements OnInit {
   categoryService = inject(CategoryService);
   offerService = inject(OfferService);
   flyerService = inject(FlyerService);
+  storeService = inject(StoreService);
   translationService = inject(TranslationService);
   private cd = inject(ChangeDetectorRef);
 
@@ -33,6 +35,7 @@ export class HomeComponent implements OnInit {
   featuredOffers = signal<any[]>([]);
   latestOffers = signal<any[]>([]);
   activeFlyers = signal<any[]>([]);
+  storeMap = signal<Record<number, any>>({});
 
   savedOfferIds = signal<number[]>([]);
   loading = signal<boolean>(true);
@@ -54,6 +57,21 @@ export class HomeComponent implements OnInit {
 
   loadRealData(): void {
     this.loading.set(true);
+
+    // 0. Stores Map for Logo resolution
+    this.storeService.getStores().subscribe({
+      next: (stores: any[]) => {
+        if (stores && Array.isArray(stores)) {
+          const map: Record<number, any> = {};
+          stores.forEach(s => {
+            if (s && s.id) map[s.id] = s;
+          });
+          this.storeMap.set(map);
+          this.cd.detectChanges();
+        }
+      },
+      error: (err) => console.error('Failed to load stores:', err)
+    });
 
     // 1. Categories
     this.categoryService.getCategories().subscribe({
@@ -129,23 +147,73 @@ export class HomeComponent implements OnInit {
 
   // Image & Logo Helpers
   getImageUrl(url: string | null | undefined): string {
-    if (!url) {
+    if (!url || typeof url !== 'string' || url.trim() === '') {
       return 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&auto=format&fit=crop&q=60';
     }
+
+    url = url.trim();
+
     if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
       return url;
     }
-    return this.filePath + url;
+
+    while (url.startsWith('/')) {
+      url = url.substring(1);
+    }
+
+    let base = this.filePath || 'http://192.168.1.110:8080/';
+    if (!base.endsWith('/')) {
+      base += '/';
+    }
+
+    if (!url.startsWith('uploads/')) {
+      url = 'uploads/' + url;
+    }
+
+    return base + url;
   }
 
-  getStoreLogoUrl(url: string | null | undefined): string {
-    if (!url) {
-      return 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=100&auto=format&fit=crop&q=60';
+  getStoreLogoUrl(itemOrUrl: any, explicitStoreId?: number): string {
+    let url: string | null = null;
+    let storeId: number | null = explicitStoreId || null;
+
+    if (typeof itemOrUrl === 'string') {
+      url = itemOrUrl;
+    } else if (itemOrUrl && typeof itemOrUrl === 'object') {
+      url = itemOrUrl.storeLogoUrl || itemOrUrl.store_logo_url || itemOrUrl.store?.logoUrl || itemOrUrl.store?.logo_url || itemOrUrl.logoUrl || itemOrUrl.logo_url;
+      storeId = storeId || itemOrUrl.storeId || itemOrUrl.store_id || itemOrUrl.store?.id || itemOrUrl.id;
     }
+
+    // Fallback to storeMap lookup if url is empty
+    if ((!url || url.trim() === '') && storeId && this.storeMap()[storeId]) {
+      const st = this.storeMap()[storeId];
+      url = st.logoUrl || st.logo_url;
+    }
+
+    if (!url || typeof url !== 'string' || url.trim() === '') {
+      return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' width='48' height='48'%3E%3Crect width='48' height='48' rx='10' fill='%23eff6ff'/%3E%3Cpath fill='%232563eb' d='M8 14l3-7h26l3 7v3h-2v23a2 2 0 01-2 2H12a2 2 0 01-2-2V17H8v-3zm6 0h20l-1.7-4H15.7L14 14zm18 6H16v18h16V20z'/%3E%3C/svg%3E";
+    }
+
+    url = url.trim();
+
     if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
       return url;
     }
-    return this.filePath + url;
+
+    while (url.startsWith('/')) {
+      url = url.substring(1);
+    }
+
+    let base = this.filePath || 'http://192.168.1.110:8080/';
+    if (!base.endsWith('/')) {
+      base += '/';
+    }
+
+    if (!url.startsWith('uploads/')) {
+      url = 'uploads/' + url;
+    }
+
+    return base + url;
   }
 
   getCategoryIcon(slug: string | null | undefined): string {
