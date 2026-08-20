@@ -10,6 +10,9 @@ import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
 import { environment } from '../../../environment/environment';
 import { APP_CONFIG } from '../../../core/config/app-config';
 
+import { AuthService } from '../../../core/services/auth.service';
+import Swal from 'sweetalert2';
+
 @Component({
   selector: 'app-offer-detail',
   standalone: true,
@@ -24,8 +27,10 @@ export class OfferDetailComponent implements OnInit {
   private couponService = inject(CouponService);
   private storeService = inject(StoreService);
   private productService = inject(ProductService);
+  private authService = inject(AuthService);
   private translationService = inject(TranslationService);
   private cd = inject(ChangeDetectorRef);
+
 
   currentLang = this.translationService.currentLang;
   filePath = environment.filePath;
@@ -292,39 +297,63 @@ export class OfferDetailComponent implements OnInit {
   }
 
   // Saved / Bookmark State
-  private checkIfSaved(id: number): void {
-    try {
-      const stored = localStorage.getItem('dealspot_saved_offers');
-      if (stored) {
-        const list: number[] = JSON.parse(stored);
-        this.isSaved.set(list.includes(id));
-      }
-    } catch {
+  checkIfSaved(offerId: number): void {
+    if (this.authService.isAuthenticated()) {
+      this.offerService.isOfferSaved(offerId).subscribe({
+        next: (res) => {
+          this.isSaved.set(!!res?.isSaved);
+          this.cd.detectChanges();
+        },
+        error: () => {}
+      });
+    } else {
       this.isSaved.set(false);
     }
   }
 
-  toggleSave(): void {
-    const current = this.offer();
-    if (!current) return;
+  toggleSaveOffer(): void {
+    const o = this.offer();
+    if (!o) return;
 
-    try {
-      const stored = localStorage.getItem('dealspot_saved_offers');
-      let list: number[] = stored ? JSON.parse(stored) : [];
-      const index = list.indexOf(current.id);
-
-      if (index >= 0) {
-        list.splice(index, 1);
-        this.isSaved.set(false);
-      } else {
-        list.push(current.id);
-        this.isSaved.set(true);
-      }
-
-      localStorage.setItem('dealspot_saved_offers', JSON.stringify(list));
-    } catch (e) {
-      console.error('Failed to update bookmarks in localStorage', e);
+    if (!this.authService.isAuthenticated()) {
+      Swal.fire({
+        title: this.currentLang() === 'en' ? 'Sign in Required' : 'تسجيل الدخول مطلوب',
+        text: this.currentLang() === 'en'
+          ? 'Please sign in to save this offer to your favorites.'
+          : 'يرجى تسجيل الدخول لحفظ هذا العرض في المفضلة.',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        confirmButtonText: this.currentLang() === 'en' ? 'Sign In' : 'تسجيل الدخول',
+        cancelButtonText: this.currentLang() === 'en' ? 'Cancel' : 'إلغاء'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.router.navigate(['/login']);
+        }
+      });
+      return;
     }
+
+    const wasSaved = this.isSaved();
+    this.isSaved.set(!wasSaved);
+
+    this.offerService.toggleSaveOffer(o.id).subscribe({
+      next: (res) => {
+        this.isSaved.set(res.isSaved);
+        if (res.saveCount !== undefined) {
+          this.offer.update(curr => curr ? { ...curr, saveCount: res.saveCount } : curr);
+        }
+        this.cd.detectChanges();
+      },
+      error: () => {
+        this.isSaved.set(wasSaved);
+        this.cd.detectChanges();
+      }
+    });
+  }
+
+  toggleSave(): void {
+    this.toggleSaveOffer();
   }
 
   revealCoupon(): void {
@@ -343,7 +372,9 @@ export class OfferDetailComponent implements OnInit {
     }
   }
 
+
   shareOffer(): void {
+
     const shareUrl = window.location.href;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(shareUrl).then(() => {

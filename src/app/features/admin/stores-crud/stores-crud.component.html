@@ -152,8 +152,13 @@
               <span class="category-text" *ngIf="s.categoryNameEn || s.categoryNameAr || s.category?.nameEn || s.category?.name_en">
                 {{ currentLang() === 'en' ? (s.categoryNameEn || s.category?.nameEn || s.category?.name_en) : (s.categoryNameAr || s.category?.nameAr || s.categoryNameEn || s.category?.nameEn) }}
               </span>
+              <span class="badge-category" style="margin-top: 2px; font-size: 11px; display: inline-flex; align-items: center; gap: 3px; background: rgba(16, 185, 129, 0.08); color: var(--primary, #10b981); width: fit-content; padding: 2px 8px; border-radius: 9999px; font-weight: 600;">
+                <span class="material-icons-round" style="font-size: 13px;">people</span>
+                <span>{{ s.followersCount || 0 }} {{ currentLang() === 'en' ? 'Followers' : 'متابع' }}</span>
+              </span>
             </div>
           </td>
+
 
           <td>
             <div class="code-column-desc">

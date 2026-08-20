@@ -36,4 +36,25 @@ export class StoreService {
   deleteStore(id: number): Observable<any> {
     return this.http.delete(this.apiUrl + '/delete-store/' + id);
   }
+
+  // Follow Store Operations
+  toggleFollow(storeId: number): Observable<{ isFollowing: boolean; followersCount: number; message: string }> {
+    return this.http.post<{ isFollowing: boolean; followersCount: number; message: string }>(
+      `${this.apiUrl}/${storeId}/follow-toggle`,
+      {}
+    );
+  }
+
+  getMyFollowedStores(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/my-followed`);
+  }
+
+  isFollowing(storeId: number): Observable<{ isFollowing: boolean }> {
+    return this.http.get<{ isFollowing: boolean }>(`${this.apiUrl}/${storeId}/is-following`);
+  }
+
+  getFollowersCount(storeId: number): Observable<{ followersCount: number }> {
+    return this.http.get<{ followersCount: number }>(`${this.apiUrl}/${storeId}/followers-count`);
+  }
 }
+

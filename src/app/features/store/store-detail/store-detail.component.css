@@ -157,7 +157,49 @@
   border-radius: var(--radius-sm);
 }
 
+.store-hero-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+
+[dir="rtl"] .store-hero-right {
+  align-items: flex-start;
+}
+
+.followers-count-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-hover, #f8fafc);
+  border: 1px solid var(--border, #e2e8f0);
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.count-people-icon {
+  font-size: 16px;
+  color: var(--primary);
+}
+
+.follow-hero-btn {
+  min-width: 160px;
+  height: 42px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--radius-full);
+  transition: all 0.2s ease;
+}
+
 /* Tabs Panel */
+
 .store-tabs-bar {
   display: flex;
   border-bottom: 2px solid var(--border);

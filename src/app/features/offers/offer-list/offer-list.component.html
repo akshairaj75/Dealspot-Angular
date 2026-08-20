@@ -110,6 +110,10 @@
 
       <!-- Toggle Deals types -->
       <div class="filter-group-checkboxes">
+        <label class="checkbox-label" [class.active-saved-filter]="onlySaved()">
+          <input type="checkbox" [checked]="onlySaved()" (change)="toggleSavedOnly()">
+          <span>{{ currentLang() === 'en' ? 'Saved Offers Only' : 'العروض المحفوظة فقط' }} <strong *ngIf="savedOfferIds().length > 0">({{ savedOfferIds().length }})</strong></span>
+        </label>
         <label class="checkbox-label">
           <input type="checkbox" [(ngModel)]="showFlashOnly" (ngModelChange)="applyFilters()">
           <span>{{ currentLang() === 'en' ? 'Flash Deals Only' : 'عروض خاطفة فقط' }}</span>
@@ -121,6 +125,7 @@
       </div>
     </div>
   </aside>
+
 
   <!-- Offers Grid Section -->
   <section class="offers-grid-section">

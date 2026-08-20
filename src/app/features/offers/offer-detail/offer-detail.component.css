@@ -679,6 +679,65 @@
   border: 1px solid #fecaca;
 }
 
+/* Detail Action Buttons (Save & Share) */
+.detail-action-buttons-row {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-save-detail {
+  flex: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  border-radius: var(--radius-md, 12px);
+  font-weight: 700;
+  font-size: 14px;
+  background: var(--surface-hover, #f8fafc);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-save-detail:hover {
+  background: var(--primary-light, #ecfdf5);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.btn-save-detail.saved {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 4px 14px var(--primary-glow);
+}
+
+.btn-share-detail {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  border-radius: var(--radius-md, 12px);
+  font-weight: 600;
+  font-size: 13px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-share-detail:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+
 /* Coupon Ticket Card */
 .coupon-ticket-card {
   display: flex;

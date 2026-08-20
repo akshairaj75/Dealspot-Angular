@@ -185,6 +185,28 @@
   padding-top: 14px;
 }
 
-.store-card-actions .btn-primary {
+.follow-btn {
   flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  transition: all 0.2s ease;
+  height: 38px;
 }
+
+.btn-following {
+  background: var(--primary-light, #ecfdf5);
+  color: var(--primary, #10b981);
+  border: 1.5px solid var(--primary, #10b981);
+}
+
+.btn-following:hover {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+

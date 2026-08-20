@@ -1,16 +1,18 @@
 import { Component, inject, OnInit, signal, effect, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { CityService } from '../../core/services/city.service';
 import { CategoryService } from '../../core/services/category.service';
 import { OfferService } from '../../core/services/offer.service';
 import { FlyerService } from '../../core/services/flyer.service';
 import { StoreService } from '../../core/services/store.service';
+import { AuthService } from '../../core/services/auth.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { TranslatePipe } from '../../shared/pipes/translate-pipe';
 import { environment } from '../../environment/environment';
 import { APP_CONFIG } from '../../core/config/app-config';
 import { ProductService } from '../../core/services/product.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-home',
@@ -28,6 +30,8 @@ export class HomeComponent implements OnInit {
   flyerService = inject(FlyerService);
   storeService = inject(StoreService);
   productService = inject(ProductService);
+  authService = inject(AuthService);
+  router = inject(Router);
   translationService = inject(TranslationService);
   private cd = inject(ChangeDetectorRef);
 
@@ -64,12 +68,23 @@ export class HomeComponent implements OnInit {
         this.filterByCity(city.id);
       }
     });
+
+    // Monitor user authentication to load saved offers from database
+    effect(() => {
+      const user = this.authService.currentUser();
+      if (user && this.authService.isAuthenticated()) {
+        this.loadSavedOffers();
+      } else {
+        this.savedOfferIds.set([]);
+      }
+    });
   }
 
   ngOnInit(): void {
     this.loadSavedOffers();
     this.loadRealData();
   }
+
 
   loadRealData(): void {
     this.loading.set(true);
@@ -320,39 +335,78 @@ export class HomeComponent implements OnInit {
 
   // Bookmarking / Saved Offers
   private loadSavedOffers(): void {
-    try {
-      const stored = localStorage.getItem('dealspot_saved_offers');
-      if (stored) {
-        this.savedOfferIds.set(JSON.parse(stored));
-      }
-    } catch {
+    if (this.authService.isAuthenticated()) {
+      this.offerService.getMySavedOffers().subscribe({
+        next: (savedOffers) => {
+          if (Array.isArray(savedOffers)) {
+            this.savedOfferIds.set(savedOffers.map((o: any) => Number(o.id)));
+          }
+          this.cd.detectChanges();
+        },
+        error: () => {}
+      });
+    } else {
       this.savedOfferIds.set([]);
     }
   }
 
   isSaved(id: number): boolean {
-    return this.savedOfferIds().includes(id);
+    return this.savedOfferIds().includes(Number(id));
   }
 
   toggleSaveOffer(offer: any, event: Event): void {
     event.preventDefault();
     event.stopPropagation();
 
-    const id = offer.id;
-    const current = [...this.savedOfferIds()];
-    const index = current.indexOf(id);
+    if (!this.authService.isAuthenticated()) {
+      Swal.fire({
+        title: this.currentLang() === 'en' ? 'Sign in Required' : 'تسجيل الدخول مطلوب',
+        text: this.currentLang() === 'en'
+          ? 'Please log in to save offers to your favorites.'
+          : 'يرجى تسجيل الدخول لحفظ العروض في المفضلة.',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        confirmButtonText: this.currentLang() === 'en' ? 'Log In' : 'تسجيل الدخول',
+        cancelButtonText: this.currentLang() === 'en' ? 'Cancel' : 'إلغاء'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.router.navigate(['/login']);
+        }
+      });
+      return;
+    }
 
-    if (index >= 0) {
-      current.splice(index, 1);
+    const id = Number(offer.id);
+    const wasSaved = this.isSaved(id);
+
+    // Optimistic UI update
+    if (wasSaved) {
+      this.savedOfferIds.update(ids => ids.filter(i => i !== id));
+      if (offer.saveCount && offer.saveCount > 0) offer.saveCount--;
     } else {
-      current.push(id);
+      this.savedOfferIds.update(ids => [...ids, id]);
+      offer.saveCount = (offer.saveCount || 0) + 1;
     }
 
-    this.savedOfferIds.set(current);
-    try {
-      localStorage.setItem('dealspot_saved_offers', JSON.stringify(current));
-    } catch (e) {
-      console.error('Failed to save to localStorage', e);
-    }
+    this.offerService.toggleSaveOffer(id).subscribe({
+      next: (res) => {
+        if (res && res.saveCount !== undefined) {
+          offer.saveCount = res.saveCount;
+        }
+        this.cd.detectChanges();
+      },
+      error: () => {
+        // Rollback on failure
+        if (wasSaved) {
+          this.savedOfferIds.update(ids => [...ids, id]);
+          offer.saveCount = (offer.saveCount || 0) + 1;
+        } else {
+          this.savedOfferIds.update(ids => ids.filter(i => i !== id));
+          if (offer.saveCount && offer.saveCount > 0) offer.saveCount--;
+        }
+        this.cd.detectChanges();
+      }
+    });
   }
 }

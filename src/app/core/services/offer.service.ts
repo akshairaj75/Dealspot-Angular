@@ -39,4 +39,21 @@ export class OfferService {
   deleteOffer(id: number | string): Observable<any> {
     return this.http.delete(this.apiUrl + '/delete/' + id, { responseType: 'text' });
   }
+
+  // Saved / Bookmark Operations
+  toggleSaveOffer(offerId: number | string): Observable<{ isSaved: boolean; saveCount: number; message: string }> {
+    return this.http.post<{ isSaved: boolean; saveCount: number; message: string }>(
+      `${this.apiUrl}/${offerId}/save-toggle`,
+      {}
+    );
+  }
+
+  getMySavedOffers(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/my-saved`);
+  }
+
+  isOfferSaved(offerId: number | string): Observable<{ isSaved: boolean }> {
+    return this.http.get<{ isSaved: boolean }>(`${this.apiUrl}/${offerId}/is-saved`);
+  }
 }
+

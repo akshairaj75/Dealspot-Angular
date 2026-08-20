@@ -56,17 +56,22 @@
       </div>
       
       <div class="store-hero-right">
+        <div class="followers-count-badge">
+          <span class="material-icons-round count-people-icon">people</span>
+          <span><strong>{{ followersCount() }}</strong> {{ currentLang() === 'en' ? 'Followers' : 'متابع' }}</span>
+        </div>
         <button 
-          class="btn" 
+          class="btn follow-hero-btn" 
           [class.btn-primary]="!isFollowing()" 
           [class.btn-outline]="isFollowing()"
           (click)="toggleFollow()"
         >
-          <span class="material-icons-round">{{ isFollowing() ? 'check' : 'favorite' }}</span>
-          <span>{{ isFollowing() ? (currentLang() === 'en' ? 'Following Store' : 'متابع للمتجر') : (currentLang() === 'en' ? 'Follow Store' : 'متابعة المتجر') }}</span>
+          <span class="material-icons-round">{{ isFollowing() ? 'check_circle' : 'favorite_border' }}</span>
+          <span>{{ isFollowing() ? (currentLang() === 'en' ? 'Following' : 'تتابعه') : (currentLang() === 'en' ? 'Follow Store' : 'متابعة المتجر') }}</span>
         </button>
       </div>
     </div>
+
 
     <!-- Store Navigation Tabs -->
     <div class="store-tabs-bar">

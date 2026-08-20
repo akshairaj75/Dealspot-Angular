@@ -248,7 +248,21 @@
         </div>
       </div>
 
+      <!-- Primary Action Buttons (Save & Share) -->
+      <div class="detail-action-buttons-row">
+        <button class="btn btn-save-detail" [class.saved]="isSaved()" (click)="toggleSaveOffer()">
+          <span class="material-icons-round">{{ isSaved() ? 'bookmark' : 'bookmark_border' }}</span>
+          <span>{{ isSaved() ? (currentLang() === 'en' ? 'Saved to Favorites' : 'محفوظ في المفضلة') : (currentLang() === 'en' ? 'Save to Favorites' : 'حفظ في المفضلة') }}</span>
+        </button>
+
+        <button class="btn btn-share-detail" (click)="shareOffer()">
+          <span class="material-icons-round">{{ linkCopied ? 'check' : 'share' }}</span>
+          <span>{{ linkCopied ? (currentLang() === 'en' ? 'Link Copied!' : 'تم نسخ الرابط!') : (currentLang() === 'en' ? 'Share Offer' : 'مشاركة العرض') }}</span>
+        </button>
+      </div>
+
       <!-- Coupon Voucher Card (If Available) -->
+
       <div class="coupon-ticket-card card" *ngIf="coupon()">
         <div class="coupon-ticket-left">
           <span class="material-icons-round coupon-ticket-icon">confirmation_number</span>

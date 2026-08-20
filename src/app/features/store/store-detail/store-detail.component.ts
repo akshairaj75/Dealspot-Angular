@@ -8,6 +8,9 @@ import { ProductService } from '../../../core/services/product.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { environment } from '../../../environment/environment';
 
+import { AuthService } from '../../../core/services/auth.service';
+import Swal from 'sweetalert2';
+
 type StoreTab = 'offers' | 'flyers' | 'branches';
 
 @Component({
@@ -24,6 +27,7 @@ export class StoreDetailComponent implements OnInit {
   private offerService = inject(OfferService);
   private flyerService = inject(FlyerService);
   private productService = inject(ProductService);
+  private authService = inject(AuthService);
   private translationService = inject(TranslationService);
   private cd = inject(ChangeDetectorRef);
 
@@ -37,6 +41,7 @@ export class StoreDetailComponent implements OnInit {
   productMap = signal<Record<number, any>>({});
   
   isFollowing = signal<boolean>(false);
+  followersCount = signal<number>(0);
   activeTab = signal<StoreTab>('offers');
   loading = true;
 
@@ -61,6 +66,7 @@ export class StoreDetailComponent implements OnInit {
           return;
         }
         this.store.set(storeData);
+        this.followersCount.set(storeData.followersCount || 0);
 
         // Fetch Store Branches
         this.storeService.getBranches(id).subscribe({
@@ -126,29 +132,64 @@ export class StoreDetailComponent implements OnInit {
   }
 
   private checkFollowStatus(storeId: number): void {
-    const followed = JSON.parse(localStorage.getItem('dealspot_followed_stores') || '[]');
-    this.isFollowing.set(followed.includes(storeId));
+    if (this.authService.isAuthenticated()) {
+      this.storeService.isFollowing(storeId).subscribe({
+        next: (res) => {
+          this.isFollowing.set(!!res?.isFollowing);
+          this.cd.detectChanges();
+        },
+        error: () => {}
+      });
+    } else {
+      this.isFollowing.set(false);
+    }
   }
 
   toggleFollow(): void {
     const currentStore = this.store();
     if (!currentStore) return;
 
-    const storeId = currentStore.id;
-    let followed: number[] = JSON.parse(localStorage.getItem('dealspot_followed_stores') || '[]');
-
-    if (this.isFollowing()) {
-      followed = followed.filter(id => id !== storeId);
-      this.isFollowing.set(false);
-    } else {
-      if (!followed.includes(storeId)) {
-        followed.push(storeId);
-      }
-      this.isFollowing.set(true);
+    if (!this.authService.isAuthenticated()) {
+      Swal.fire({
+        title: this.currentLang() === 'en' ? 'Sign in Required' : 'تسجيل الدخول مطلوب',
+        text: this.currentLang() === 'en'
+          ? 'Please sign in to follow this store and get real-time flyer updates.'
+          : 'يرجى تسجيل الدخول لمتابعة هذا المتجر واستلام أحدث النشرات فور صدورها.',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        confirmButtonText: this.currentLang() === 'en' ? 'Sign In' : 'تسجيل الدخول',
+        cancelButtonText: this.currentLang() === 'en' ? 'Cancel' : 'إلغاء'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.router.navigate(['/login']);
+        }
+      });
+      return;
     }
 
-    localStorage.setItem('dealspot_followed_stores', JSON.stringify(followed));
+    const wasFollowing = this.isFollowing();
+    const prevCount = this.followersCount();
+
+    // Optimistic UI update
+    this.isFollowing.set(!wasFollowing);
+    this.followersCount.set(wasFollowing ? Math.max(0, prevCount - 1) : prevCount + 1);
+
+    this.storeService.toggleFollow(currentStore.id).subscribe({
+      next: (res) => {
+        this.isFollowing.set(res.isFollowing);
+        this.followersCount.set(res.followersCount);
+        this.cd.detectChanges();
+      },
+      error: (err) => {
+        // Rollback
+        this.isFollowing.set(wasFollowing);
+        this.followersCount.set(prevCount);
+        this.cd.detectChanges();
+      }
+    });
   }
+
 
   switchTab(tab: StoreTab): void {
     this.activeTab.set(tab);

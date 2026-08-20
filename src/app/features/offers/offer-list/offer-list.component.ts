@@ -11,6 +11,9 @@ import { TranslationService } from '../../../core/services/translation.service';
 import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
 import { environment } from '../../../environment/environment';
 
+import { AuthService } from '../../../core/services/auth.service';
+import Swal from 'sweetalert2';
+
 @Component({
   selector: 'app-offer-list',
   standalone: true,
@@ -24,6 +27,7 @@ export class OfferListComponent implements OnInit {
   private storeService = inject(StoreService);
   private productService = inject(ProductService);
   private cityService = inject(CityService);
+  private authService = inject(AuthService);
   private translationService = inject(TranslationService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -40,6 +44,7 @@ export class OfferListComponent implements OnInit {
   productMap = signal<Record<number, any>>({});
   cities = signal<any[]>([]);
   savedOfferIds = signal<number[]>([]);
+  onlySaved = signal<boolean>(false);
 
   // Hierarchical Category Computed Signals
   mainCategories = computed(() => {
@@ -74,12 +79,29 @@ export class OfferListComponent implements OnInit {
         this.applyFilters();
       }
     });
+
+    // Monitor auth state for real saved offers
+    effect(() => {
+      const user = this.authService.currentUser();
+      if (user && this.authService.isAuthenticated()) {
+        this.loadSavedOffers();
+      } else {
+        this.savedOfferIds.set([]);
+      }
+    });
   }
 
   ngOnInit(): void {
+    this.route.data.subscribe(data => {
+      if (data && data['onlySaved']) {
+        this.onlySaved.set(true);
+      }
+    });
+
     this.loadSavedOffers();
     this.loadDropdowns();
     this.loadOffers();
+
 
     // Handle query parameters (from Home page or direct links)
     this.route.queryParams.subscribe(params => {
@@ -231,10 +253,15 @@ export class OfferListComponent implements OnInit {
   applyFilters(): void {
     let list = [...this.rawOffers()];
 
+    if (this.onlySaved()) {
+      list = list.filter(o => this.isSaved(Number(o.id)));
+    }
+
     if (this.selectedCityId) {
       const cId = Number(this.selectedCityId);
       list = list.filter(o => o.cityId === cId || o.city_id === cId);
     }
+
 
     if (this.selectedSubCategoryId) {
       const sId = Number(this.selectedSubCategoryId);
@@ -428,41 +455,115 @@ export class OfferListComponent implements OnInit {
 
   // Saved / Bookmarking Logic
   private loadSavedOffers(): void {
-    try {
-      const stored = localStorage.getItem('dealspot_saved_offers');
-      if (stored) {
-        this.savedOfferIds.set(JSON.parse(stored));
-      }
-    } catch {
+    if (this.authService.isAuthenticated()) {
+      this.offerService.getMySavedOffers().subscribe({
+        next: (savedOffers) => {
+          if (Array.isArray(savedOffers)) {
+            this.savedOfferIds.set(savedOffers.map((o: any) => Number(o.id)));
+          }
+          if (this.onlySaved()) {
+            this.applyFilters();
+          }
+          this.cd.detectChanges();
+        },
+        error: () => {}
+      });
+    } else {
       this.savedOfferIds.set([]);
     }
   }
 
   isSaved(offerId: number): boolean {
-    return this.savedOfferIds().includes(offerId);
+    return this.savedOfferIds().includes(Number(offerId));
   }
 
   toggleSave(offer: any, event: Event): void {
     event.preventDefault();
     event.stopPropagation();
 
-    const id = offer.id;
-    const current = [...this.savedOfferIds()];
-    const index = current.indexOf(id);
+    if (!this.authService.isAuthenticated()) {
+      Swal.fire({
+        title: this.currentLang() === 'en' ? 'Sign in Required' : 'تسجيل الدخول مطلوب',
+        text: this.currentLang() === 'en'
+          ? 'Please log in to save offers to your favorites.'
+          : 'يرجى تسجيل الدخول لحفظ العروض في المفضلة.',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        confirmButtonText: this.currentLang() === 'en' ? 'Log In' : 'تسجيل الدخول',
+        cancelButtonText: this.currentLang() === 'en' ? 'Cancel' : 'إلغاء'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.router.navigate(['/login']);
+        }
+      });
+      return;
+    }
 
-    if (index >= 0) {
-      current.splice(index, 1);
+    const id = Number(offer.id);
+    const wasSaved = this.isSaved(id);
+
+    // Optimistic UI update
+    if (wasSaved) {
+      this.savedOfferIds.update(ids => ids.filter(i => i !== id));
+      if (offer.saveCount && offer.saveCount > 0) offer.saveCount--;
     } else {
-      current.push(id);
+      this.savedOfferIds.update(ids => [...ids, id]);
+      offer.saveCount = (offer.saveCount || 0) + 1;
     }
 
-    this.savedOfferIds.set(current);
-    try {
-      localStorage.setItem('dealspot_saved_offers', JSON.stringify(current));
-    } catch (e) {
-      console.error('Failed to save to localStorage', e);
+    if (this.onlySaved()) {
+      this.applyFilters();
     }
+
+    this.offerService.toggleSaveOffer(id).subscribe({
+      next: (res) => {
+        if (res && res.saveCount !== undefined) {
+          offer.saveCount = res.saveCount;
+        }
+        this.cd.detectChanges();
+      },
+      error: () => {
+        // Rollback on failure
+        if (wasSaved) {
+          this.savedOfferIds.update(ids => [...ids, id]);
+          offer.saveCount = (offer.saveCount || 0) + 1;
+        } else {
+          this.savedOfferIds.update(ids => ids.filter(i => i !== id));
+          if (offer.saveCount && offer.saveCount > 0) offer.saveCount--;
+        }
+        if (this.onlySaved()) {
+          this.applyFilters();
+        }
+        this.cd.detectChanges();
+      }
+    });
   }
+
+  toggleSavedOnly(): void {
+    if (!this.authService.isAuthenticated()) {
+      Swal.fire({
+        title: this.currentLang() === 'en' ? 'Sign in Required' : 'تسجيل الدخول مطلوب',
+        text: this.currentLang() === 'en'
+          ? 'Please log in to view your saved offers.'
+          : 'يرجى تسجيل الدخول لعرض العروض المحفوظة.',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        confirmButtonText: this.currentLang() === 'en' ? 'Log In' : 'تسجيل الدخول',
+        cancelButtonText: this.currentLang() === 'en' ? 'Cancel' : 'إلغاء'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.router.navigate(['/login']);
+        }
+      });
+      return;
+    }
+
+    this.onlySaved.set(!this.onlySaved());
+    this.applyFilters();
+  }
+
 
   shareOffer(offer: any, event: Event): void {
     event.preventDefault();

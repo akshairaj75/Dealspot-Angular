@@ -57,12 +57,16 @@ export const routes: Routes = [
                 component: PartnerApplyComponent
             },
             { path: 'offers-list', component: OfferListComponent },
+            { path: 'saved-offers', component: OfferListComponent, data: { onlySaved: true } },
             { path: 'offers/:id', component: OfferDetailComponent },
             { path: 'offers', redirectTo: 'offers-list', pathMatch: 'full' },
             { path: 'stores', component: StoreListComponent },
+            { path: 'followed-stores', component: StoreListComponent, data: { onlyFollowed: true } },
+
             { path: 'stores/:id', component: StoreDetailComponent },
             { path: 'flyers', component: FlyerListComponent },
             { path: 'flyers/:id', component: FlyerViewerComponent }
+
 
         ]
     },
