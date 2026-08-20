@@ -45,43 +45,55 @@
         </button>
 
         <!-- Language Selector -->
-        <button class="lang-toggle btn-icon" (click)="toggleLanguage()">
+        <button class="lang-toggle btn-icon" (click)="toggleLanguage()" [title]="currentLang() === 'en' ? 'Switch to Arabic' : 'Switch to English'">
           <span class="lang-label">{{ currentLang() === 'en' ? 'AR' : 'EN' }}</span>
         </button>
 
-        
-
-        <!-- Notification Bell -->
-        <a routerLink="/notifications" class="notification-btn btn-icon">
-          <span class="material-icons-round">notifications</span>
-          <span class="badge-count" *ngIf="unreadNotificationsCount() > 0">{{ unreadNotificationsCount() }}</span>
+        <!-- Admin Direct Link (When Admin is Logged In) -->
+        <a *ngIf="isAdmin()" routerLink="/admin" class="btn-admin-pill" [title]="currentLang() === 'en' ? 'Admin Dashboard' : 'لوحة التحكم'">
+          <span class="material-icons-round">admin_panel_settings</span>
+          <span class="admin-pill-text">{{ currentLang() === 'en' ? 'Admin Panel' : 'لوحة الإدارة' }}</span>
         </a>
 
-        <!-- User Menu -->
+        <!-- User Menu Dropdown -->
         <div class="profile-dropdown-wrapper">
-          <button class="profile-avatar btn-icon" (click)="toggleProfileDropdown($event)">
-            <span class="material-icons-round">person</span>
+          <button 
+            class="profile-avatar btn-icon" 
+            [class.logged-in]="isLoggedIn()"
+            [class.is-admin]="isAdmin()"
+            (click)="toggleProfileDropdown($event)"
+            [title]="isLoggedIn() ? (currentUser()?.fullName || 'My Account') : (currentLang() === 'en' ? 'Account / Sign In' : 'الحساب / تسجيل الدخول')"
+          >
+            <span class="material-icons-round" *ngIf="!isAdmin()">{{ isLoggedIn() ? 'account_circle' : 'person_outline' }}</span>
+            <span class="material-icons-round text-amber" *ngIf="isAdmin()">security</span>
           </button>
 
           <!-- Dropdown List -->
           <div class="profile-dropdown-menu" *ngIf="isProfileOpen" (click)="$event.stopPropagation()">
             <ng-container *ngIf="isLoggedIn(); else guestMenu">
               <div class="dropdown-header">
-                <p class="user-name">{{ currentUser().full_name }}</p>
-                <p class="user-email">{{ currentUser().email }}</p>
+                <div class="user-header-info">
+                  <p class="user-name">{{ currentUser()?.fullName }}</p>
+                  <p class="user-email">{{ currentUser()?.email }}</p>
+                </div>
+                <span class="role-badge" *ngIf="isAdmin()">
+                  {{ currentUser()?.role || 'ADMIN' }}
+                </span>
               </div>
+
+              <!-- Admin Quick Entry -->
+              <a *ngIf="isAdmin()" routerLink="/admin" (click)="closeDropdowns()" class="dropdown-item admin-highlight-item">
+                <span class="material-icons-round">dashboard</span>
+                <strong>{{ currentLang() === 'en' ? 'Admin Control Panel' : 'لوحة التحكم والإدارة' }}</strong>
+              </a>
+
               <a routerLink="/saved-offers" (click)="closeDropdowns()" class="dropdown-item">
                 <span class="material-icons-round">bookmark</span>
                 {{ currentLang() === 'en' ? 'Saved Offers' : 'العروض المحفوظة' }}
               </a>
-              <a></a>
               <a routerLink="/followed-stores" (click)="closeDropdowns()" class="dropdown-item">
                 <span class="material-icons-round">favorite</span>
                 {{ currentLang() === 'en' ? 'Followed Stores' : 'المتاجر المتابعة' }}
-              </a>
-              <a routerLink="/profile" (click)="closeDropdowns()" class="dropdown-item">
-                <span class="material-icons-round">settings</span>
-                {{ currentLang() === 'en' ? 'My Profile' : 'الملف الشخصي' }}
               </a>
               <hr class="dropdown-divider">
               <button (click)="logout()" class="dropdown-item text-danger">
@@ -91,19 +103,32 @@
             </ng-container>
 
             <ng-template #guestMenu>
-              <a routerLink="/login" (click)="closeDropdowns()" class="dropdown-item font-semibold">
+              <div class="dropdown-header guest-header">
+                <p class="guest-title">{{ currentLang() === 'en' ? 'Welcome to DealSpot' : 'مرحباً بك في ديل سبوت' }}</p>
+                <p class="guest-desc">{{ currentLang() === 'en' ? 'Sign in to access your profile & favorites' : 'سجل الدخول لحفظ العروض والكتالوجات' }}</p>
+              </div>
+
+              <a routerLink="/login" (click)="closeDropdowns()" class="dropdown-item btn-dropdown-signin">
                 <span class="material-icons-round">login</span>
-                {{ currentLang() === 'en' ? 'Login / Register' : 'الدخول / التسجيل' }}
+                <span>{{ currentLang() === 'en' ? 'User Sign In' : 'تسجيل دخول المستخدم' }}</span>
               </a>
+
+              <a routerLink="/register" (click)="closeDropdowns()" class="dropdown-item">
+                <span class="material-icons-round">person_add</span>
+                <span>{{ currentLang() === 'en' ? 'Create New Account' : 'إنشاء حساب جديد' }}</span>
+              </a>
+
               <hr class="dropdown-divider">
-              <a routerLink="/login" [queryParams]="{admin: true}" (click)="closeDropdowns()" class="dropdown-item">
+
+              <a routerLink="/login" [queryParams]="{admin: 'true'}" (click)="closeDropdowns()" class="dropdown-item admin-portal-entry">
                 <span class="material-icons-round">admin_panel_settings</span>
-                {{ currentLang() === 'en' ? 'Admin Portal' : 'لوحة الإشراف' }}
+                <span>{{ currentLang() === 'en' ? 'Admin Portal Access' : 'بوابة وصول المسؤولين' }}</span>
               </a>
             </ng-template>
           </div>
         </div>
       </div>
+
     </div>
   </header>
 

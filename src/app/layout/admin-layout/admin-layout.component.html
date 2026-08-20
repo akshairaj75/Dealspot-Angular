@@ -52,16 +52,17 @@
           <div class="admin-user-avatar">
             <span class="material-icons-round">manage_accounts</span>
           </div>
-          <!-- <div class="admin-user-info">
-            <p class="admin-name">{{ adminUser()?.full_name || 'Administrator' }}</p>
-            <p class="admin-role">{{ adminUser()?.role || 'Super Admin' }}</p>
-          </div> -->
+          <div class="admin-user-info" *ngIf="adminUser()">
+            <p class="admin-name">{{ adminUser()?.fullName || 'Administrator' }}</p>
+            <p class="admin-role">{{ adminUser()?.role || 'SUPER_ADMIN' }}</p>
+          </div>
         </div>
 
         <!-- Logout button -->
         <button (click)="logout()" class="btn-logout btn-icon text-danger" [title]="currentLang() === 'en' ? 'Logout' : 'تسجيل الخروج'">
           <span class="material-icons-round">logout</span>
         </button>
+
       </div>
     </header>
 

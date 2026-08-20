@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../shared/pipes/translate-pipe';
 import { TranslationService } from '../../core/services/translation.service';
 import { CityService } from '../../core/services/city.service';
+import { AuthService } from '../../core/services/auth.service';
 import { APP_CONFIG } from '../../core/config/app-config';
 
 @Component({
@@ -26,9 +27,10 @@ import { APP_CONFIG } from '../../core/config/app-config';
   templateUrl: './public-layout.html',
   styleUrls: ['./public-layout.css']
 })
-export class PublicLayoutComponent {
+export class PublicLayoutComponent implements OnInit {
 
   router = inject(Router);
+  authService = inject(AuthService);
   translationService = inject(TranslationService);
   currentLang = this.translationService.currentLang;
   appConfig = APP_CONFIG;
@@ -40,12 +42,10 @@ export class PublicLayoutComponent {
 
   unreadNotificationsCount = signal(3);
 
-  isLoggedIn = signal(true);
-
-  currentUser = signal({
-    full_name: 'Arjun',
-    email: 'arjun@gmail.com'
-  });
+  // Authentication State directly from AuthService
+  currentUser = this.authService.currentUser;
+  isLoggedIn = this.authService.isAuthenticated;
+  isAdmin = this.authService.isAdmin;
 
   cityService = inject(CityService);
 
@@ -83,25 +83,17 @@ export class PublicLayoutComponent {
   }
 
   onSearchSubmit() {
-
     if (!this.searchQuery.trim()) return;
-
-    alert(this.searchQuery);
-
+    this.router.navigate(['/offers-list'], { queryParams: { q: this.searchQuery.trim() } });
   }
 
   toggleLanguage() {
-
     this.translationService.toggleLanguage();
-
   }
 
   logout() {
-
-    this.isLoggedIn.set(false);
-
     this.closeDropdowns();
-
+    this.authService.logout('/');
   }
 
 }

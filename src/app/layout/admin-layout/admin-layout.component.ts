@@ -26,7 +26,7 @@ export class AdminLayoutComponent {
 
   currentLang = this.translationService.currentLang;
   appConfig = APP_CONFIG;
-  // adminUser = this.authService.currentAdmin;
+  adminUser = this.authService.currentUser;
 
   menuItems: AdminMenuItem[] = [
     { label_en: 'Dashboard', label_ar: 'الرئيسية', icon: 'dashboard', route: '/admin' },
@@ -48,6 +48,7 @@ export class AdminLayoutComponent {
   }
 
   logout(): void {
-    // this.authService.logout();
+    this.authService.logout('/login?admin=true');
   }
 }
+

@@ -22,6 +22,8 @@ import { StoreDetailComponent } from './features/store/store-detail/store-detail
 import { FlyerListComponent } from './features/flyers/flyer-list/flyer-list.component';
 import { FlyerViewerComponent } from './features/flyers/flyer-viewer/flyer-viewer.component';
 
+import { adminGuard } from './core/guards/admin.guard';
+
 export const routes: Routes = [
 
     {
@@ -38,6 +40,14 @@ export const routes: Routes = [
                 path: 'login',
                 component: LoginComponent
             },
+            {
+                path: 'register',
+                component: LoginComponent
+            },
+            {
+                path: 'admin/login',
+                component: LoginComponent
+            },
             { path: 'offers-list', component: OfferListComponent },
             { path: 'offers/:id', component: OfferDetailComponent },
             { path: 'offers', redirectTo: 'offers-list', pathMatch: 'full' },
@@ -51,6 +61,7 @@ export const routes: Routes = [
     {
         path: 'admin',
         component: AdminLayoutComponent,
+        canActivate: [adminGuard],
         children: [
             {
                 path: '',
@@ -71,6 +82,7 @@ export const routes: Routes = [
                 component: ProductSpecsCrudComponent
             }]
     },
+
 
     {
         path: '**',
