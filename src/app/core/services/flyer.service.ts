@@ -11,13 +11,18 @@ export class FlyerService {
 
   constructor(private http: HttpClient) {}
 
-  getAllFlyers(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl + '/fetch-all-flyers');
+  getAllFlyers(storeId?: number): Observable<any[]> {
+    let url = this.apiUrl + '/fetch-all-flyers';
+    if (storeId) {
+      url += '?storeId=' + storeId;
+    }
+    return this.http.get<any[]>(url);
   }
 
   getFlyers(cityId?: number): Observable<any[]> {
     return this.getAllFlyers();
   }
+
 
   getFlyerById(id: number | string): Observable<any> {
     return this.http.get<any>(this.apiUrl + '/fetch-flyer/' + id);

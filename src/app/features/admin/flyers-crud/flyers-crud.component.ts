@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { FlyerService } from '../../../core/services/flyer.service';
 import { StoreService } from '../../../core/services/store.service';
 import { CityService } from '../../../core/services/city.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { environment } from '../../../environment/environment';
 import Swal from 'sweetalert2';
@@ -21,6 +22,7 @@ export class FlyersCrudComponent implements OnInit {
   private flyerService = inject(FlyerService);
   private storeService = inject(StoreService);
   private cityService = inject(CityService);
+  public authService = inject(AuthService);
   private translationService = inject(TranslationService);
   private cd = inject(ChangeDetectorRef);
 
@@ -68,7 +70,11 @@ export class FlyersCrudComponent implements OnInit {
 
   loadFlyers(): void {
     this.loading = true;
-    this.flyerService.getAllFlyers().subscribe({
+    const storeId = this.authService.isStoreManager() && this.authService.currentUser()?.storeId
+      ? Number(this.authService.currentUser()?.storeId)
+      : undefined;
+
+    this.flyerService.getAllFlyers(storeId).subscribe({
       next: (res) => {
         this.flyers.set(res || []);
         this.applyFilter();
@@ -82,6 +88,7 @@ export class FlyersCrudComponent implements OnInit {
       }
     });
   }
+
 
   loadDropdowns(): void {
     this.storeService.getStores().subscribe({
@@ -132,10 +139,14 @@ export class FlyersCrudComponent implements OnInit {
     const today = new Date().toISOString().split('T')[0];
     const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
+    const defaultStoreId = (this.authService.isStoreManager() && this.authService.currentUser()?.storeId)
+      ? this.authService.currentUser()?.storeId
+      : (this.stores().length > 0 ? this.stores()[0].id : '');
+
     this.flyerForm.reset({
       title_en: '',
       title_ar: '',
-      store_id: this.stores().length > 0 ? this.stores()[0].id : '',
+      store_id: defaultStoreId,
       city_id: this.cities().length > 0 ? this.cities()[0].id : '',
       valid_from: today,
       valid_until: nextWeek,
@@ -145,6 +156,7 @@ export class FlyersCrudComponent implements OnInit {
     });
     this.isModalOpen = true;
   }
+
 
   openEditModal(f: any): void {
     this.editingFlyerId = f.id;

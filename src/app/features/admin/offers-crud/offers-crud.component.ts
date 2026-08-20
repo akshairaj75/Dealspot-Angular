@@ -6,6 +6,7 @@ import { StoreService } from '../../../core/services/store.service';
 import { ProductService } from '../../../core/services/product.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { CityService } from '../../../core/services/city.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { environment } from '../../../environment/environment';
 import Swal from 'sweetalert2';
@@ -24,6 +25,7 @@ export class OffersCrudComponent implements OnInit {
   private productService = inject(ProductService);
   private categoryService = inject(CategoryService);
   private cityService = inject(CityService);
+  public authService = inject(AuthService);
   private translationService = inject(TranslationService);
   private cd = inject(ChangeDetectorRef);
 
@@ -52,10 +54,14 @@ export class OffersCrudComponent implements OnInit {
   existingImageUrl: string | null = null;
 
   ngOnInit(): void {
+    if (this.authService.isStoreManager() && this.authService.currentUser()?.storeId) {
+      this.selectedStoreFilter = this.authService.currentUser()?.storeId!;
+    }
     this.initForm();
     this.loadOffers();
     this.loadDropdowns();
   }
+
 
   initForm(): void {
     this.offerForm = this.fb.group({
@@ -97,7 +103,11 @@ export class OffersCrudComponent implements OnInit {
 
   loadOffers(): void {
     this.loading = true;
-    this.offerService.getAllOffers().subscribe({
+    const storeId = this.authService.isStoreManager() && this.authService.currentUser()?.storeId
+      ? Number(this.authService.currentUser()?.storeId)
+      : (this.selectedStoreFilter ? Number(this.selectedStoreFilter) : undefined);
+
+    this.offerService.getAllOffers(storeId).subscribe({
       next: (res) => {
         this.offers.set(res || []);
         this.applyFilter();
@@ -182,10 +192,14 @@ export class OffersCrudComponent implements OnInit {
     const today = new Date().toISOString().split('T')[0];
     const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
+    const defaultStoreId = (this.authService.isStoreManager() && this.authService.currentUser()?.storeId)
+      ? this.authService.currentUser()?.storeId
+      : (this.stores().length > 0 ? this.stores()[0].id : '');
+
     this.offerForm.reset({
       title_en: '',
       title_ar: '',
-      store_id: this.stores().length > 0 ? this.stores()[0].id : '',
+      store_id: defaultStoreId,
       category_id: this.categories().length > 0 ? this.categories()[0].id : '',
       city_id: this.cities().length > 0 ? this.cities()[0].id : '',
       product_id: null,
@@ -207,6 +221,7 @@ export class OffersCrudComponent implements OnInit {
     });
     this.isModalOpen = true;
   }
+
 
   openEditModal(o: any): void {
     this.editingOfferId = o.id;

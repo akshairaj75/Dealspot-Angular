@@ -5,6 +5,7 @@ import { CouponService } from '../../../core/services/coupon.service';
 import { StoreService } from '../../../core/services/store.service';
 import { OfferService } from '../../../core/services/offer.service';
 import { ProductService } from '../../../core/services/product.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { environment } from '../../../environment/environment';
 import Swal from 'sweetalert2';
@@ -22,6 +23,7 @@ export class CouponsCrudComponent implements OnInit {
   private storeService = inject(StoreService);
   private offerService = inject(OfferService);
   private productService = inject(ProductService);
+  public authService = inject(AuthService);
   private translationService = inject(TranslationService);
   private cd = inject(ChangeDetectorRef);
 
@@ -46,10 +48,14 @@ export class CouponsCrudComponent implements OnInit {
   copiedCouponId: number | null = null;
 
   ngOnInit(): void {
+    if (this.authService.isStoreManager() && this.authService.currentUser()?.storeId) {
+      this.selectedStoreFilter = this.authService.currentUser()?.storeId!;
+    }
     this.initForm();
     this.loadCoupons();
     this.loadDropdowns();
   }
+
 
   initForm(): void {
     this.couponForm = this.fb.group({
@@ -147,9 +153,13 @@ export class CouponsCrudComponent implements OnInit {
     const today = new Date().toISOString().split('T')[0];
     const nextMonth = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
+    const defaultStoreId = (this.authService.isStoreManager() && this.authService.currentUser()?.storeId)
+      ? this.authService.currentUser()?.storeId
+      : (this.stores().length > 0 ? this.stores()[0].id : '');
+
     this.couponForm.reset({
       code: '',
-      store_id: this.stores().length > 0 ? this.stores()[0].id : '',
+      store_id: defaultStoreId,
       offer_id: null,
       product_id: null,
       discount_type: 'PERCENT',
@@ -162,6 +172,7 @@ export class CouponsCrudComponent implements OnInit {
     });
     this.isModalOpen = true;
   }
+
 
   openEditModal(c: any): void {
     this.editingCouponId = c.id;

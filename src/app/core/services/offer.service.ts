@@ -11,13 +11,18 @@ export class OfferService {
 
   constructor(private http: HttpClient) {}
 
-  getAllOffers(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl + '/fetch-all-offers');
+  getAllOffers(storeId?: number): Observable<any[]> {
+    let url = this.apiUrl + '/fetch-all-offers';
+    if (storeId) {
+      url += '?storeId=' + storeId;
+    }
+    return this.http.get<any[]>(url);
   }
 
   getOffers(cityId?: number): Observable<any[]> {
     return this.getAllOffers();
   }
+
 
   getOfferById(id: number | string): Observable<any> {
     return this.http.get<any>(this.apiUrl + '/fetch-offer/' + id);
