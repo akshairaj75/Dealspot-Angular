@@ -22,6 +22,8 @@ import { StoreDetailComponent } from './features/store/store-detail/store-detail
 import { FlyerListComponent } from './features/flyers/flyer-list/flyer-list.component';
 import { FlyerViewerComponent } from './features/flyers/flyer-viewer/flyer-viewer.component';
 import { UsersCrudComponent } from './features/admin/users-crud/users-crud';
+import { PartnerApplyComponent } from './features/partner/partner-apply/partner-apply';
+import { PartnerRequestsComponent } from './features/admin/partner-requests/partner-requests';
 
 import { adminGuard } from './core/guards/admin.guard';
 
@@ -50,6 +52,10 @@ export const routes: Routes = [
                 path: 'admin/login',
                 component: LoginComponent
             },
+            {
+                path: 'partner-with-us',
+                component: PartnerApplyComponent
+            },
             { path: 'offers-list', component: OfferListComponent },
             { path: 'offers/:id', component: OfferDetailComponent },
             { path: 'offers', redirectTo: 'offers-list', pathMatch: 'full' },
@@ -69,6 +75,7 @@ export const routes: Routes = [
                 path: '',
                 component: DashboardComponent
             },
+            { path: 'partner-requests', component: PartnerRequestsComponent },
             { path: 'cities', component: CitiesCrudComponent },
             { path: 'categories', component: CategoriesCrud },
             { path: 'stores', component: StoresCrudComponent },
@@ -85,6 +92,7 @@ export const routes: Routes = [
                 component: ProductSpecsCrudComponent
             }]
     },
+
 
 
 

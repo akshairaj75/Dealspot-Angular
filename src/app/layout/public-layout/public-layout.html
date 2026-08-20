@@ -118,6 +118,11 @@
                 <span>{{ currentLang() === 'en' ? 'Create New Account' : 'إنشاء حساب جديد' }}</span>
               </a>
 
+              <a routerLink="/partner-with-us" (click)="closeDropdowns()" class="dropdown-item partner-entry-item">
+                <span class="material-icons-round text-primary">handshake</span>
+                <span>{{ currentLang() === 'en' ? 'Partner With Us (Register Store)' : 'انضم كشريك (سجل متجرك)' }}</span>
+              </a>
+
               <hr class="dropdown-divider">
 
               <a routerLink="/login" [queryParams]="{admin: 'true'}" (click)="closeDropdowns()" class="dropdown-item admin-portal-entry">
@@ -161,12 +166,14 @@
       </div>
 
       <div class="footer-section">  
-        <h4>{{ currentLang() === 'en' ? 'Support' : 'الدعم والمساعدة' }}</h4>
+        <h4>{{ currentLang() === 'en' ? 'Partner & Support' : 'الشراكة والدعم' }}</h4>
         <ul class="footer-links">
+          <li><a routerLink="/partner-with-us" class="partner-link-highlight">{{ currentLang() === 'en' ? '🤝 Partner With Us' : '🤝 سجل متجرك معنا' }}</a></li>
           <li><a routerLink="/login">{{ currentLang() === 'en' ? 'User Login' : 'تسجيل دخول المستخدم' }}</a></li>
           <li><a routerLink="/login" [queryParams]="{admin: true}">{{ currentLang() === 'en' ? 'Admin Portal' : 'بوابة المسؤول' }}</a></li>
         </ul>
       </div>
+
 
       <div class="footer-section">
         <h4>{{ currentLang() === 'en' ? 'Active City' : 'المدينة النشطة' }}</h4>

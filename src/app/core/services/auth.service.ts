@@ -10,6 +10,7 @@ export interface AuthUser {
   email: string;
   accountType: 'USER' | 'ADMIN' | string;
   role: string;
+  storeId?: number | null;
 }
 
 export interface AuthResponse {
@@ -19,6 +20,7 @@ export interface AuthResponse {
   token: string;
   accountType: string;
   role: string;
+  storeId?: number | null;
 }
 
 @Injectable({
@@ -40,8 +42,19 @@ export class AuthService {
     if (!user || !this.token()) return false;
     const role = (user.role || '').toUpperCase();
     const accountType = (user.accountType || '').toUpperCase();
-    return accountType === 'ADMIN' || role === 'ADMIN' || role === 'SUPER_ADMIN' || role === 'STORE_ADMIN';
+    return accountType === 'ADMIN' || role === 'ADMIN' || role === 'SUPER_ADMIN' || role === 'STORE_MANAGER' || role === 'STORE_ADMIN' || role === 'CONTENT_MANAGER';
   });
+
+  isStoreManager = computed(() => {
+    const user = this.currentUser();
+    return !!user && (user.role === 'STORE_MANAGER' || !!user.storeId);
+  });
+
+  isSuperAdmin = computed(() => {
+    const user = this.currentUser();
+    return !!user && user.role === 'SUPER_ADMIN';
+  });
+
 
   private loadTokenFromStorage(): string | null {
     return localStorage.getItem('dealspot_token') || localStorage.getItem('token');
@@ -63,8 +76,10 @@ export class AuthService {
       fullName: res.fullName,
       email: res.email,
       accountType: res.accountType || (res.role === 'USER' ? 'USER' : 'ADMIN'),
-      role: res.role || 'USER'
+      role: res.role || 'USER',
+      storeId: res.storeId || null
     };
+
 
     localStorage.setItem('dealspot_token', res.token);
     localStorage.setItem('token', res.token);

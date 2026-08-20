@@ -1,0 +1,258 @@
+<div class="admin-page-container">
+
+  <!-- Header -->
+  <div class="page-header-row">
+    <div class="page-title-block">
+      <h1 class="page-title">
+        <span class="material-icons-round text-amber">handshake</span>
+        {{ currentLang() === 'en' ? 'Store Partner Requests' : 'طلبات شراكة المتاجر' }}
+      </h1>
+      <p class="page-subtitle">
+        {{ currentLang() === 'en' ? 'Review inbound merchant applications, verify commercial registration, and provision store portals.' : 'مراجعة طلبات الانضمام والتحقق من السجلات التجارية واعتماد لوحة إدارة المتجر.' }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Status Tabs Navigation -->
+  <div class="tabs-nav card">
+    <div class="tabs-group">
+      <button type="button" class="tab-btn" [class.active]="activeTab() === 'PENDING'" (click)="setTab('PENDING')">
+        <span class="material-icons-round">hourglass_top</span>
+        <span>{{ currentLang() === 'en' ? 'Pending Review' : 'قيد المراجعة' }}</span>
+        <span class="tab-badge" *ngIf="pendingCount > 0">{{ pendingCount }}</span>
+      </button>
+
+      <button type="button" class="tab-btn" [class.active]="activeTab() === 'APPROVED'" (click)="setTab('APPROVED')">
+        <span class="material-icons-round">check_circle</span>
+        <span>{{ currentLang() === 'en' ? 'Approved Stores' : 'المتاجر المعتمدة' }}</span>
+      </button>
+
+      <button type="button" class="tab-btn" [class.active]="activeTab() === 'REJECTED'" (click)="setTab('REJECTED')">
+        <span class="material-icons-round">cancel</span>
+        <span>{{ currentLang() === 'en' ? 'Rejected' : 'المرفوضة' }}</span>
+      </button>
+
+      <button type="button" class="tab-btn" [class.active]="activeTab() === 'ALL'" (click)="setTab('ALL')">
+        <span class="material-icons-round">list_alt</span>
+        <span>{{ currentLang() === 'en' ? 'All Applications' : 'جميع الطلبات' }}</span>
+      </button>
+    </div>
+
+    <div class="search-input-wrap">
+      <span class="material-icons-round search-icon">search</span>
+      <input type="text" [(ngModel)]="searchQuery" [placeholder]="currentLang() === 'en' ? 'Search by store, CR, or applicant...' : 'ابحث بالمتجر، السجل التجاري أو مقدم الطلب...'" class="form-control">
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="table-card card">
+    <div class="table-responsive" *ngIf="!loading(); else loadingTpl">
+      <table class="data-table" *ngIf="getFilteredRequests().length > 0; else emptyTpl">
+        <thead>
+          <tr>
+            <th>{{ currentLang() === 'en' ? 'Store & Category' : 'المتجر والنشاط' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Applicant / Manager' : 'مقدم الطلب' }}</th>
+            <th>{{ currentLang() === 'en' ? 'City' : 'المدينة' }}</th>
+            <th>{{ currentLang() === 'en' ? 'CR Number' : 'السجل التجاري' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Status' : 'الحالة' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Applied Date' : 'تاريخ التقديم' }}</th>
+            <th class="text-end">{{ currentLang() === 'en' ? 'Review & Actions' : 'المراجعة والإجراءات' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let req of getFilteredRequests()">
+            <td>
+              <div class="store-cell">
+                <div class="store-avatar">
+                  <span class="material-icons-round">storefront</span>
+                </div>
+                <div class="store-info">
+                  <span class="store-name">{{ currentLang() === 'en' ? req.storeNameEn : req.storeNameAr }}</span>
+                  <span class="store-sub">{{ currentLang() === 'en' ? req.categoryNameEn : req.categoryNameAr }}</span>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <div class="applicant-info">
+                <span class="applicant-name">{{ req.applicantName }}</span>
+                <span class="applicant-contact">{{ req.applicantEmail }} | {{ req.applicantPhone }}</span>
+              </div>
+            </td>
+
+            <td>
+              <span class="city-badge">
+                <span class="material-icons-round">place</span>
+                {{ currentLang() === 'en' ? req.cityNameEn : req.cityNameAr }}
+              </span>
+            </td>
+
+            <td>
+              <code class="cr-code">{{ req.crNumber || '—' }}</code>
+            </td>
+
+            <td>
+              <span class="status-pill" [ngClass]="'status-' + req.status.toLowerCase()">
+                <span class="status-dot"></span>
+                <span>{{ req.status }}</span>
+              </span>
+            </td>
+
+            <td>
+              <span class="date-text">{{ req.createdAt | date:'shortDate' }}</span>
+            </td>
+
+            <td class="text-end">
+              <div class="actions-group">
+                <button type="button" class="btn btn-sm btn-outline" (click)="viewDetails(req)">
+                  <span class="material-icons-round">visibility</span>
+                  <span>{{ currentLang() === 'en' ? 'Inspect' : 'معاينة' }}</span>
+                </button>
+
+                <button *ngIf="req.status === 'PENDING'" type="button" class="btn btn-sm btn-approve" (click)="onApprove(req)">
+                  <span class="material-icons-round">check</span>
+                  <span>{{ currentLang() === 'en' ? 'Approve' : 'اعتماد' }}</span>
+                </button>
+
+                <button *ngIf="req.status === 'PENDING'" type="button" class="btn btn-sm btn-reject" (click)="onReject(req)">
+                  <span class="material-icons-round">close</span>
+                  <span>{{ currentLang() === 'en' ? 'Reject' : 'رفض' }}</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #loadingTpl>
+      <div class="loading-state">
+        <div class="spinner-large"></div>
+        <p>{{ currentLang() === 'en' ? 'Loading partner requests...' : 'جاري تحميل الطلبات...' }}</p>
+      </div>
+    </ng-template>
+
+    <ng-template #emptyTpl>
+      <div class="empty-state">
+        <span class="material-icons-round empty-icon">inbox</span>
+        <h3>{{ currentLang() === 'en' ? 'No Partner Requests Found' : 'لا توجد طلبات شراكة' }}</h3>
+        <p>{{ currentLang() === 'en' ? 'There are no merchant applications in this category.' : 'لا توجد طلبات انضمام جديدة في هذا التبويب.' }}</p>
+      </div>
+    </ng-template>
+  </div>
+
+
+  <!-- INSPECT APPLICATION DETAILS MODAL -->
+  <div class="modal-backdrop" *ngIf="isDetailModalOpen() && selectedRequest" (click)="closeDetailModal()">
+    <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-header-icon bg-amber-light text-amber">
+            <span class="material-icons-round">storefront</span>
+          </div>
+          <div>
+            <h3>{{ currentLang() === 'en' ? selectedRequest.storeNameEn : selectedRequest.storeNameAr }}</h3>
+            <p class="modal-sub">
+              {{ currentLang() === 'en' ? 'Partner Application Details & Commercial Verification' : 'تفاصيل طلب الشراكة والتوثيق التجاري' }}
+            </p>
+          </div>
+        </div>
+        <button type="button" class="btn-close-modal" (click)="closeDetailModal()">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <div class="modal-body inspect-grid">
+        <div class="inspect-section">
+          <h4>{{ currentLang() === 'en' ? 'Store Identity' : 'هوية المتجر' }}</h4>
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'English Name:' : 'الاسم بالإنجليزي:' }}</span>
+            <span class="info-val font-bold">{{ selectedRequest.storeNameEn }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'Arabic Name:' : 'الاسم بالعربي:' }}</span>
+            <span class="info-val font-bold">{{ selectedRequest.storeNameAr }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'Category:' : 'النشاط:' }}</span>
+            <span class="info-val">{{ currentLang() === 'en' ? selectedRequest.categoryNameEn : selectedRequest.categoryNameAr }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'City:' : 'المدينة:' }}</span>
+            <span class="info-val">{{ currentLang() === 'en' ? selectedRequest.cityNameEn : selectedRequest.cityNameAr }}</span>
+          </div>
+          <div class="info-row" *ngIf="selectedRequest.contactAddress">
+            <span class="info-label">{{ currentLang() === 'en' ? 'Address:' : 'العنوان:' }}</span>
+            <span class="info-val">{{ selectedRequest.contactAddress }}</span>
+          </div>
+        </div>
+
+        <div class="inspect-section">
+          <h4>{{ currentLang() === 'en' ? 'Commercial & Regulatory' : 'التوثيق والسجل التجاري' }}</h4>
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'Commercial Reg (CR):' : 'السجل التجاري:' }}</span>
+            <span class="info-val"><code class="cr-code-highlight">{{ selectedRequest.crNumber }}</code></span>
+          </div>
+          <div class="info-row" *ngIf="selectedRequest.vatNumber">
+            <span class="info-label">{{ currentLang() === 'en' ? 'VAT Number:' : 'الرقم الضريبي:' }}</span>
+            <span class="info-val">{{ selectedRequest.vatNumber }}</span>
+          </div>
+          <div class="info-row" *ngIf="selectedRequest.website">
+            <span class="info-label">{{ currentLang() === 'en' ? 'Website:' : 'الموقع الإلكتروني:' }}</span>
+            <span class="info-val"><a [href]="selectedRequest.website" target="_blank">{{ selectedRequest.website }}</a></span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'Current Status:' : 'الحالة:' }}</span>
+            <span class="info-val">
+              <span class="status-pill" [ngClass]="'status-' + selectedRequest.status.toLowerCase()">{{ selectedRequest.status }}</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="inspect-section full-width">
+          <h4>{{ currentLang() === 'en' ? 'Applicant / Manager Contact' : 'بيانات التواصل' }}</h4>
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'Manager Name:' : 'اسم المسؤول:' }}</span>
+            <span class="info-val">{{ selectedRequest.applicantName }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'Email:' : 'البريد الإلكتروني:' }}</span>
+            <span class="info-val">{{ selectedRequest.applicantEmail }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'Phone:' : 'رقم الجوال:' }}</span>
+            <span class="info-val">{{ selectedRequest.applicantPhone }}</span>
+          </div>
+        </div>
+
+        <div class="inspect-section full-width" *ngIf="selectedRequest.descriptionEn || selectedRequest.descriptionAr">
+          <h4>{{ currentLang() === 'en' ? 'Store Description' : 'نبذة عن المتجر' }}</h4>
+          <p class="desc-box">{{ selectedRequest.descriptionEn || selectedRequest.descriptionAr }}</p>
+        </div>
+
+        <div class="inspect-section full-width" *ngIf="selectedRequest.rejectionReason">
+          <h4 class="text-danger">{{ currentLang() === 'en' ? 'Rejection Reason' : 'سبب الرفض' }}</h4>
+          <p class="rejection-box">{{ selectedRequest.rejectionReason }}</p>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="closeDetailModal()">
+          {{ currentLang() === 'en' ? 'Close' : 'إغلاق' }}
+        </button>
+
+        <ng-container *ngIf="selectedRequest.status === 'PENDING'">
+          <button type="button" class="btn btn-reject" (click)="onReject(selectedRequest)">
+            <span class="material-icons-round">close</span>
+            <span>{{ currentLang() === 'en' ? 'Reject' : 'رفض' }}</span>
+          </button>
+          <button type="button" class="btn btn-primary" (click)="onApprove(selectedRequest)">
+            <span class="material-icons-round">verified</span>
+            <span>{{ currentLang() === 'en' ? 'Approve & Provision Store' : 'اعتماد وإنشاء المتجر' }}</span>
+          </button>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+</div>

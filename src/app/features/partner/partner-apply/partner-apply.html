@@ -1,0 +1,185 @@
+<div class="partner-page">
+  <div class="partner-container">
+
+    <!-- Hero Header Banner -->
+    <div class="partner-hero-card">
+      <div class="hero-content">
+        <span class="partner-pill">
+          <span class="material-icons-round">verified</span>
+          {{ currentLang() === 'en' ? 'DealSpot Partner Network' : 'شبكة شركاء ديل سبوت' }}
+        </span>
+        <h1 class="hero-title">
+          {{ currentLang() === 'en' ? 'List Your Store & Reach Millions of Shoppers' : 'سجل متجرك واصل لملايين المتسوقين' }}
+        </h1>
+        <p class="hero-desc">
+          {{ currentLang() === 'en' 
+            ? 'Publish weekly promotional flyers, discount vouchers, and product deals directly to verified customers across Riyadh, Jeddah, Dammam, and all Saudi regions.'
+            : 'انشر منشوراتك وكتالوجاتك الأسبوعية، كوبونات الخصم، وعروض المنتجات مباشرة لآلاف المتسوقين في الرياض، جدة، الدمام وكافة مدن المملكة.' }}
+        </p>
+
+        <!-- Highlights Row -->
+        <div class="hero-benefits">
+          <div class="benefit-item">
+            <span class="material-icons-round text-primary">menu_book</span>
+            <span>{{ currentLang() === 'en' ? 'Digital Flyer Distribution' : 'نشر الكتالوجات الرقمية' }}</span>
+          </div>
+          <div class="benefit-item">
+            <span class="material-icons-round text-primary">local_offer</span>
+            <span>{{ currentLang() === 'en' ? 'Real-Time Deal Publishing' : 'إدارة العروض الحصرية' }}</span>
+          </div>
+          <div class="benefit-item">
+            <span class="material-icons-round text-primary">insights</span>
+            <span>{{ currentLang() === 'en' ? 'Branch & Follower Analytics' : 'إحصائيات الفروع والمتابعين' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Application Form Card -->
+    <div class="form-card">
+      <div class="form-header">
+        <h2>{{ currentLang() === 'en' ? 'Store Partner Application' : 'طلب تسجيل شريك متجر' }}</h2>
+        <p>{{ currentLang() === 'en' ? 'Please provide accurate business and regulatory details for verification.' : 'يرجى تقديم بيانات النشاط التجاري بدقة لغرض التحقق والاعتماد.' }}</p>
+      </div>
+
+      <form [formGroup]="applyForm" (submit)="onSubmit()" class="partner-form">
+        
+        <!-- SECTION 1: APPLICANT INFO -->
+        <div class="form-section">
+          <h3 class="section-title">
+            <span class="material-icons-round">person</span>
+            {{ currentLang() === 'en' ? '1. Authorized Manager Information' : '1. بيانات المدير المفوض' }}
+          </h3>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Manager Full Name' : 'اسم المسؤول الكامل' }} <span class="required">*</span></label>
+              <input type="text" formControlName="applicantName" class="form-control" [placeholder]="currentLang() === 'en' ? 'e.g. Abdullah Al-Harbi' : 'مثال: عبدالله الحربي'">
+              <span class="field-error" *ngIf="applyForm.get('applicantName')?.touched && applyForm.get('applicantName')?.invalid">
+                {{ currentLang() === 'en' ? 'Full name is required.' : 'الاسم الكامل مطلوب.' }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Official Work Email' : 'البريد الإلكتروني المهني' }} <span class="required">*</span></label>
+              <input type="email" formControlName="applicantEmail" class="form-control" placeholder="manager@store.com">
+              <span class="field-error" *ngIf="applyForm.get('applicantEmail')?.touched && applyForm.get('applicantEmail')?.invalid">
+                {{ currentLang() === 'en' ? 'Valid email required.' : 'البريد الإلكتروني مطلوب.' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Mobile / WhatsApp Number' : 'رقم الجوال / واتساب' }} <span class="required">*</span></label>
+            <input type="tel" formControlName="applicantPhone" class="form-control" placeholder="05XXXXXXXX">
+            <span class="field-error" *ngIf="applyForm.get('applicantPhone')?.touched && applyForm.get('applicantPhone')?.invalid">
+              {{ currentLang() === 'en' ? 'Valid phone number required.' : 'رقم الجوال مطلوب.' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- SECTION 2: STORE PROFILE -->
+        <div class="form-section">
+          <h3 class="section-title">
+            <span class="material-icons-round">storefront</span>
+            {{ currentLang() === 'en' ? '2. Store Identity & Location' : '2. بيانات وهوية المتجر' }}
+          </h3>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Store Name (English)' : 'اسم المتجر (بالإنجليزي)' }} <span class="required">*</span></label>
+              <input type="text" formControlName="storeNameEn" class="form-control" placeholder="e.g. Al-Madina Hypermarket">
+              <span class="field-error" *ngIf="applyForm.get('storeNameEn')?.touched && applyForm.get('storeNameEn')?.invalid">
+                {{ currentLang() === 'en' ? 'English name required.' : 'الاسم بالإنجليزي مطلوب.' }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Store Name (Arabic)' : 'اسم المتجر (بالعربي)' }} <span class="required">*</span></label>
+              <input type="text" formControlName="storeNameAr" class="form-control" placeholder="مثال: هايبر ماركت المدينة">
+              <span class="field-error" *ngIf="applyForm.get('storeNameAr')?.touched && applyForm.get('storeNameAr')?.invalid">
+                {{ currentLang() === 'en' ? 'Arabic name required.' : 'الاسم بالعربي مطلوب.' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Primary City / Region' : 'المدينة الرئيسية' }} <span class="required">*</span></label>
+              <select formControlName="cityId" class="form-control">
+                <option value="" disabled selected>{{ currentLang() === 'en' ? 'Select City' : 'اختر المدينة' }}</option>
+                <option *ngFor="let c of cities()" [value]="c.id">{{ c | translate:'name' }}</option>
+              </select>
+              <span class="field-error" *ngIf="applyForm.get('cityId')?.touched && applyForm.get('cityId')?.invalid">
+                {{ currentLang() === 'en' ? 'City is required.' : 'المدينة مطلوبة.' }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Business Category' : 'نشاط المتجر' }} <span class="required">*</span></label>
+              <select formControlName="categoryId" class="form-control">
+                <option value="" disabled selected>{{ currentLang() === 'en' ? 'Select Category' : 'اختر القسم' }}</option>
+                <option *ngFor="let cat of categories()" [value]="cat.id">{{ cat | translate:'name' }}</option>
+              </select>
+              <span class="field-error" *ngIf="applyForm.get('categoryId')?.touched && applyForm.get('categoryId')?.invalid">
+                {{ currentLang() === 'en' ? 'Category is required.' : 'القسم مطلوب.' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Store Description / Bio' : 'نبذة عن المتجر' }}</label>
+            <textarea formControlName="descriptionEn" class="form-control" rows="2" [placeholder]="currentLang() === 'en' ? 'Brief description about your goods and specialties...' : 'وصف موجز عن المتجر ومنتجاته...'"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Headquarters / Main Branch Address' : 'عنوان المقر الرئيسي أو الفرع' }}</label>
+            <input type="text" formControlName="contactAddress" class="form-control" [placeholder]="currentLang() === 'en' ? 'King Fahd Road, Riyadh' : 'طريق الملك فهد، الرياض'">
+          </div>
+        </div>
+
+        <!-- SECTION 3: LEGAL & VERIFICATION -->
+        <div class="form-section">
+          <h3 class="section-title">
+            <span class="material-icons-round">verified_user</span>
+            {{ currentLang() === 'en' ? '3. Legal & Commercial Verification' : '3. بيانات التوثيق والسجل التجاري' }}
+          </h3>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">
+                {{ currentLang() === 'en' ? 'Commercial Registration (CR) Number' : 'رقم السجل التجاري (CR)' }} 
+                <span class="required">*</span>
+              </label>
+              <input type="text" formControlName="crNumber" class="form-control" placeholder="1010XXXXXX">
+              <span class="field-error" *ngIf="applyForm.get('crNumber')?.touched && applyForm.get('crNumber')?.invalid">
+                {{ currentLang() === 'en' ? 'CR number is required for verification.' : 'رقم السجل التجاري مطلوب للتحقق.' }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">{{ currentLang() === 'en' ? 'VAT / Tax Registration Number' : 'الرقم الضريبي (اختياري)' }}</label>
+              <input type="text" formControlName="vatNumber" class="form-control" placeholder="300XXXXXXXXXXXX">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Store Official Website / Social Link' : 'موقع المتجر أو الرابط الرسمي' }}</label>
+            <input type="url" formControlName="website" class="form-control" placeholder="https://www.yourstore.com">
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="form-actions">
+          <a routerLink="/" class="btn btn-outline">
+            {{ currentLang() === 'en' ? 'Cancel' : 'إلغاء' }}
+          </a>
+          <button type="submit" [disabled]="applyForm.invalid || submitting()" class="btn btn-primary btn-submit-app">
+            <span class="material-icons-round" *ngIf="!submitting()">send</span>
+            <span *ngIf="!submitting()">{{ currentLang() === 'en' ? 'Submit Partner Application' : 'إرسال طلب الشراكة' }}</span>
+            <div class="spinner-small" *ngIf="submitting()"></div>
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>
