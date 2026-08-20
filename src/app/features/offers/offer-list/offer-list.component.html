@@ -32,13 +32,49 @@
         </select>
       </div>
 
-      <!-- Category Filter -->
+      <!-- Main Category Filter -->
       <div class="filter-group">
-        <label class="form-label">{{ currentLang() === 'en' ? 'Category' : 'القسم' }}</label>
-        <select [(ngModel)]="selectedCategoryId" (ngModelChange)="applyFilters()" class="form-control">
-          <option [ngValue]="null">{{ currentLang() === 'en' ? 'All Categories' : 'جميع الأقسام' }}</option>
-          <option *ngFor="let cat of categories()" [value]="cat.id">{{ cat | translate:'name' }}</option>
+        <div class="filter-group-title-row">
+          <label class="form-label">{{ currentLang() === 'en' ? 'Main Category' : 'القسم الرئيسي' }}</label>
+          <span class="subcat-count-badge" *ngIf="mainCategories().length > 0">{{ mainCategories().length }}</span>
+        </div>
+        <select [ngModel]="selectedMainCategoryId" (ngModelChange)="onMainCategoryChange($event)" class="form-control">
+          <option [ngValue]="null">{{ currentLang() === 'en' ? 'All Main Categories' : 'جميع الأقسام الرئيسية' }}</option>
+          <option *ngFor="let cat of mainCategories()" [value]="cat.id">{{ cat | translate:'name' }}</option>
         </select>
+      </div>
+
+      <!-- Subcategory Filter (Cascades when Main Category is chosen) -->
+      <div class="filter-group subcategory-filter-group" *ngIf="selectedMainCategoryId && availableSubcategories().length > 0">
+        <div class="filter-group-title-row">
+          <label class="form-label">{{ currentLang() === 'en' ? 'Subcategory' : 'القسم الفرعي' }}</label>
+          <span class="subcat-count-badge">{{ availableSubcategories().length }}</span>
+        </div>
+        <select [ngModel]="selectedSubCategoryId" (ngModelChange)="onSubCategoryChange($event)" class="form-control">
+          <option [ngValue]="null">{{ currentLang() === 'en' ? 'All Subcategories' : 'جميع الأقسام الفرعية' }}</option>
+          <option *ngFor="let sub of availableSubcategories()" [value]="sub.id">{{ sub | translate:'name' }}</option>
+        </select>
+
+        <!-- Interactive Quick Subcategory Chips -->
+        <div class="subcat-chips-list">
+          <button 
+            type="button"
+            class="subcat-chip" 
+            [class.active]="selectedSubCategoryId === null"
+            (click)="onSubCategoryChange(null)"
+          >
+            {{ currentLang() === 'en' ? 'All' : 'الكل' }}
+          </button>
+          <button 
+            type="button"
+            *ngFor="let sub of availableSubcategories()" 
+            class="subcat-chip"
+            [class.active]="selectedSubCategoryId === sub.id"
+            (click)="onSubCategoryChange(sub.id)"
+          >
+            {{ sub | translate:'name' }}
+          </button>
+        </div>
       </div>
 
       <!-- Store Filter -->
@@ -100,10 +136,26 @@
         </p>
       </div>
 
-      <div class="active-chips" *ngIf="selectedCategoryId || selectedStoreId || showFlashOnly || showFeaturedOnly || selectedDiscountRange > 0 || searchQuery">
+      <div class="active-chips" *ngIf="selectedMainCategoryId || selectedSubCategoryId || selectedStoreId || showFlashOnly || showFeaturedOnly || selectedDiscountRange > 0 || searchQuery">
+        <!-- Main Category chip -->
+        <span class="active-filter-badge" *ngIf="getSelectedMainCategory()">
+          <span>{{ getSelectedMainCategory() | translate:'name' }}</span>
+          <button class="remove-chip-btn" (click)="onMainCategoryChange(null)">
+            <span class="material-icons-round">close</span>
+          </button>
+        </span>
+
+        <!-- Subcategory chip -->
+        <span class="active-filter-badge sub-badge" *ngIf="getSelectedSubCategory()">
+          <span>{{ getSelectedSubCategory() | translate:'name' }}</span>
+          <button class="remove-chip-btn" (click)="onSubCategoryChange(null)">
+            <span class="material-icons-round">close</span>
+          </button>
+        </span>
+
         <button class="btn-clear-all-chips" (click)="resetFilters()">
           <span class="material-icons-round">close</span>
-          <span>{{ currentLang() === 'en' ? 'Clear Filters' : 'مسح الفلاتر' }}</span>
+          <span>{{ currentLang() === 'en' ? 'Clear All' : 'مسح الكل' }}</span>
         </button>
       </div>
     </div>
@@ -136,7 +188,7 @@
         
         <div class="offer-card-image">
           <a [routerLink]="['/offers', offer.id]" class="offer-card-img-link">
-            <img [src]="getImageUrl(offer.imageUrl || offer.thumbnailUrl || offer.image_url || offer.product?.primary_image_url || offer.productImageUrl)" [alt]="offer | translate:'title'">
+            <img [src]="getOfferImageUrl(offer)" [alt]="offer | translate:'title'">
           </a>
           
           <!-- Save / Bookmark Button -->

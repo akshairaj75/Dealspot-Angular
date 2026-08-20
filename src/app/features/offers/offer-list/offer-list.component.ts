@@ -1,10 +1,11 @@
-import { Component, inject, signal, OnInit, effect, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, effect, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { OfferService } from '../../../core/services/offer.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { StoreService } from '../../../core/services/store.service';
+import { ProductService } from '../../../core/services/product.service';
 import { CityService } from '../../../core/services/city.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
@@ -21,6 +22,7 @@ export class OfferListComponent implements OnInit {
   private offerService = inject(OfferService);
   private categoryService = inject(CategoryService);
   private storeService = inject(StoreService);
+  private productService = inject(ProductService);
   private cityService = inject(CityService);
   private translationService = inject(TranslationService);
   private route = inject(ActivatedRoute);
@@ -35,12 +37,25 @@ export class OfferListComponent implements OnInit {
   categories = signal<any[]>([]);
   stores = signal<any[]>([]);
   storeMap = signal<Record<number, any>>({});
+  productMap = signal<Record<number, any>>({});
   cities = signal<any[]>([]);
   savedOfferIds = signal<number[]>([]);
 
+  // Hierarchical Category Computed Signals
+  mainCategories = computed(() => {
+    return this.categories().filter(c => !c.parentId && !c.parent_id);
+  });
+
+  availableSubcategories = computed(() => {
+    if (!this.selectedMainCategoryId) return [];
+    const mainId = Number(this.selectedMainCategoryId);
+    return this.categories().filter(c => (c.parentId === mainId || c.parent_id === mainId));
+  });
+
   // Filter States
   selectedCityId: number | null = null;
-  selectedCategoryId: number | null = null;
+  selectedMainCategoryId: number | null = null;
+  selectedSubCategoryId: number | null = null;
   selectedStoreId: number | null = null;
   selectedDiscountRange: number = 0;
   showFlashOnly = false;
@@ -69,7 +84,7 @@ export class OfferListComponent implements OnInit {
     // Handle query parameters (from Home page or direct links)
     this.route.queryParams.subscribe(params => {
       if (params['category']) {
-        this.selectedCategoryId = Number(params['category']);
+        this.handleCategoryParam(params['category']);
       }
       if (params['store']) {
         this.selectedStoreId = Number(params['store']);
@@ -91,11 +106,66 @@ export class OfferListComponent implements OnInit {
     });
   }
 
+  handleCategoryParam(catIdParam: any): void {
+    if (!catIdParam) {
+      this.selectedMainCategoryId = null;
+      this.selectedSubCategoryId = null;
+      return;
+    }
+    const catId = Number(catIdParam);
+    const found = this.categories().find(c => c.id === catId);
+    if (found) {
+      const pId = found.parentId || found.parent_id;
+      if (pId) {
+        this.selectedMainCategoryId = pId;
+        this.selectedSubCategoryId = catId;
+      } else {
+        this.selectedMainCategoryId = catId;
+        this.selectedSubCategoryId = null;
+      }
+    } else {
+      this.selectedMainCategoryId = catId;
+    }
+  }
+
+  onMainCategoryChange(val: any): void {
+    this.selectedMainCategoryId = val !== null && val !== undefined && val !== '' ? Number(val) : null;
+    this.selectedSubCategoryId = null;
+    this.updateCategoryQueryParams();
+    this.applyFilters();
+  }
+
+  onSubCategoryChange(val: any): void {
+    this.selectedSubCategoryId = val !== null && val !== undefined && val !== '' ? Number(val) : null;
+    this.updateCategoryQueryParams();
+    this.applyFilters();
+  }
+
+  private updateCategoryQueryParams(): void {
+    const currentParams = { ...this.route.snapshot.queryParams };
+    if (this.selectedSubCategoryId) {
+      currentParams['category'] = this.selectedSubCategoryId;
+    } else if (this.selectedMainCategoryId) {
+      currentParams['category'] = this.selectedMainCategoryId;
+    } else {
+      delete currentParams['category'];
+    }
+    this.router.navigate([], { queryParams: currentParams, queryParamsHandling: 'merge' });
+  }
+
   loadDropdowns(): void {
     this.categoryService.getCategories().subscribe({
       next: (c: any) => {
         const list = Array.isArray(c) ? c : (c?.data || []);
         this.categories.set(list);
+
+        // Re-evaluate category query params once categories are loaded
+        const catParam = this.route.snapshot.queryParams['category'];
+        if (catParam) {
+          this.handleCategoryParam(catParam);
+          this.applyFilters();
+        }
+
         this.cd.detectChanges();
       },
       error: (err) => console.error('Failed to load categories:', err)
@@ -122,6 +192,22 @@ export class OfferListComponent implements OnInit {
       },
       error: (err) => console.error('Failed to load cities:', err)
     });
+
+    this.productService.getProducts().subscribe({
+      next: (prods: any[]) => {
+        const list = prods || [];
+        const map: Record<number, any> = {};
+        list.forEach((p: any) => {
+          if (p && p.id) {
+            map[Number(p.id)] = p;
+            map[p.id] = p;
+          }
+        });
+        this.productMap.set(map);
+        this.cd.detectChanges();
+      },
+      error: (err) => console.error('Failed to load products:', err)
+    });
   }
 
   loadOffers(): void {
@@ -141,65 +227,73 @@ export class OfferListComponent implements OnInit {
     });
   }
 
+  // Filters
   applyFilters(): void {
-    let list = this.rawOffers();
+    let list = [...this.rawOffers()];
 
-    // City Filter
     if (this.selectedCityId) {
-      list = list.filter(o => !o.cityId || o.cityId === Number(this.selectedCityId) || o.city_id === Number(this.selectedCityId));
+      const cId = Number(this.selectedCityId);
+      list = list.filter(o => o.cityId === cId || o.city_id === cId);
     }
 
-    // Category Filter
-    if (this.selectedCategoryId) {
-      list = list.filter(o => o.categoryId === Number(this.selectedCategoryId) || o.category_id === Number(this.selectedCategoryId));
-    }
-
-    // Store Filter
-    if (this.selectedStoreId) {
-      list = list.filter(o => o.storeId === Number(this.selectedStoreId) || o.store_id === Number(this.selectedStoreId));
-    }
-
-    // Minimum Discount Range
-    if (this.selectedDiscountRange > 0) {
+    if (this.selectedSubCategoryId) {
+      const sId = Number(this.selectedSubCategoryId);
+      list = list.filter(o => o.categoryId === sId || o.category_id === sId);
+    } else if (this.selectedMainCategoryId) {
+      const mId = Number(this.selectedMainCategoryId);
+      const childCatIds = this.categories()
+        .filter(c => c.parentId === mId || c.parent_id === mId)
+        .map(c => Number(c.id));
+      const allowedCatIds = [mId, ...childCatIds];
       list = list.filter(o => {
-        const pct = o.discountPct !== undefined ? o.discountPct : (o.discount_pct || 0);
-        return pct >= this.selectedDiscountRange;
+        const oCatId = Number(o.categoryId || o.category_id);
+        return allowedCatIds.includes(oCatId);
       });
     }
 
-    // Flash Deals Only
+    if (this.selectedStoreId) {
+      const stId = Number(this.selectedStoreId);
+      list = list.filter(o => o.storeId === stId || o.store_id === stId);
+    }
+
+    if (this.selectedDiscountRange > 0) {
+      list = list.filter(o => {
+        const d = Number(o.discountPct || o.discount_pct || 0);
+        return d >= this.selectedDiscountRange;
+      });
+    }
+
     if (this.showFlashOnly) {
       list = list.filter(o => o.flash === true || o.badgeType === 'FLASH' || o.is_flash === 1 || o.is_flash === true);
     }
 
-    // Featured Deals Only
     if (this.showFeaturedOnly) {
       list = list.filter(o => o.featured === true || o.badgeType === 'FEATURED' || o.is_featured === 1 || o.is_featured === true);
     }
 
-    // Search Query
-    if (this.searchQuery && this.searchQuery.trim()) {
+    if (this.searchQuery && this.searchQuery.trim() !== '') {
       const q = this.searchQuery.toLowerCase().trim();
-      list = list.filter(o =>
-        (o.titleEn && o.titleEn.toLowerCase().includes(q)) ||
-        (o.titleAr && o.titleAr.toLowerCase().includes(q)) ||
-        (o.title_en && o.title_en.toLowerCase().includes(q)) ||
-        (o.title_ar && o.title_ar.toLowerCase().includes(q)) ||
-        (o.storeNameEn && o.storeNameEn.toLowerCase().includes(q)) ||
-        (o.storeNameAr && o.storeNameAr.toLowerCase().includes(q)) ||
-        (o.store?.nameEn && o.store.nameEn.toLowerCase().includes(q)) ||
-        (o.store?.nameAr && o.store.nameAr.toLowerCase().includes(q)) ||
-        (o.categoryNameEn && o.categoryNameEn.toLowerCase().includes(q)) ||
-        (o.descriptionEn && o.descriptionEn.toLowerCase().includes(q)) ||
-        (o.descriptionAr && o.descriptionAr.toLowerCase().includes(q))
-      );
+      list = list.filter(o => {
+        const tEn = (o.titleEn || o.title_en || '').toLowerCase();
+        const tAr = (o.titleAr || o.title_ar || '').toLowerCase();
+        const sEn = (o.storeNameEn || o.store_name_en || '').toLowerCase();
+        const sAr = (o.storeNameAr || o.store_name_ar || '').toLowerCase();
+        return tEn.includes(q) || tAr.includes(q) || sEn.includes(q) || sAr.includes(q);
+      });
     }
 
     this.offers.set(list);
+    this.cd.detectChanges();
+  }
+
+  onFilterChange(): void {
+    this.applyFilters();
   }
 
   resetFilters(): void {
-    this.selectedCategoryId = null;
+    this.selectedCityId = null;
+    this.selectedMainCategoryId = null;
+    this.selectedSubCategoryId = null;
     this.selectedStoreId = null;
     this.selectedDiscountRange = 0;
     this.showFlashOnly = false;
@@ -211,10 +305,60 @@ export class OfferListComponent implements OnInit {
     this.applyFilters();
   }
 
+  getSelectedMainCategory(): any | null {
+    if (!this.selectedMainCategoryId) return null;
+    return this.categories().find(c => Number(c.id) === Number(this.selectedMainCategoryId)) || null;
+  }
+
+  getSelectedSubCategory(): any | null {
+    if (!this.selectedSubCategoryId) return null;
+    return this.categories().find(c => Number(c.id) === Number(this.selectedSubCategoryId)) || null;
+  }
+
   // Image & Logo Helpers
+  getOfferImageUrl(item: any): string {
+    if (!item) return this.getImageUrl(null);
+
+    // 1. Dedicated Offer Image
+    const offerImg = item.imageUrl || item.image_url || item.thumbnailUrl || item.thumbnail_url;
+    if (offerImg && typeof offerImg === 'string' && offerImg.trim() !== '' && !offerImg.startsWith('data:image/svg')) {
+      return this.getImageUrl(offerImg);
+    }
+
+    // 2. Product Image from DTO
+    const dtoProdImg = item.productPrimaryImageUrl || 
+                       item.product_primary_image_url || 
+                       item.productImageUrl || 
+                       item.product_image_url || 
+                       item.product?.primaryImageUrl || 
+                       item.product?.primary_image_url || 
+                       item.product?.imageUrl;
+    if (dtoProdImg && typeof dtoProdImg === 'string' && dtoProdImg.trim() !== '') {
+      return this.getImageUrl(dtoProdImg);
+    }
+
+    // 3. Product Image from Product Map
+    const pId = item.productId || item.product_id || item.product?.id;
+    if (pId !== undefined && pId !== null && pId !== '') {
+      const mappedProd = this.productMap()[Number(pId)] || this.productMap()[pId];
+      if (mappedProd) {
+        let prodImg = mappedProd.primaryImageUrl || mappedProd.primary_image_url || mappedProd.imageUrl || mappedProd.image_url;
+        if ((!prodImg || typeof prodImg !== 'string' || prodImg.trim() === '') && mappedProd.images && Array.isArray(mappedProd.images) && mappedProd.images.length > 0) {
+          const first = mappedProd.images[0];
+          prodImg = typeof first === 'string' ? first : (first?.imageUrl || first?.image_url);
+        }
+        if (prodImg && typeof prodImg === 'string' && prodImg.trim() !== '') {
+          return this.getImageUrl(prodImg);
+        }
+      }
+    }
+
+    return this.getImageUrl(null);
+  }
+
   getImageUrl(url: string | null | undefined): string {
     if (!url || typeof url !== 'string' || url.trim() === '') {
-      return 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&auto=format&fit=crop&q=60';
+      return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23f8fafc'/%3E%3Cpath fill='%23cbd5e1' d='M160 110a20 20 0 1 0 0-40 20 20 0 0 0 0 40zm100 120H140l50-65 35 45 25-30 40 50z'/%3E%3Ctext x='50%25' y='82%25' text-anchor='middle' fill='%2394a3b8' font-family='sans-serif' font-size='14' font-weight='500'%3EDealSpot%3C/text%3E%3C/svg%3E";
     }
 
     url = url.trim();

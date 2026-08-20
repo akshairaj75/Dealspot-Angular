@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { StoreService } from '../../../core/services/store.service';
 import { OfferService } from '../../../core/services/offer.service';
 import { FlyerService } from '../../../core/services/flyer.service';
+import { ProductService } from '../../../core/services/product.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { environment } from '../../../environment/environment';
 
@@ -22,6 +23,7 @@ export class StoreDetailComponent implements OnInit {
   private storeService = inject(StoreService);
   private offerService = inject(OfferService);
   private flyerService = inject(FlyerService);
+  private productService = inject(ProductService);
   private translationService = inject(TranslationService);
   private cd = inject(ChangeDetectorRef);
 
@@ -32,6 +34,7 @@ export class StoreDetailComponent implements OnInit {
   offers = signal<any[]>([]);
   flyers = signal<any[]>([]);
   branches = signal<any[]>([]);
+  productMap = signal<Record<number, any>>({});
   
   isFollowing = signal<boolean>(false);
   activeTab = signal<StoreTab>('offers');
@@ -82,6 +85,19 @@ export class StoreDetailComponent implements OnInit {
           error: (err) => {
             console.warn('Could not load offers:', err);
           }
+        });
+
+        // Fetch Products for real image fallback
+        this.productService.getProducts().subscribe({
+          next: (prods: any[]) => {
+            const map: Record<number, any> = {};
+            (prods || []).forEach((p: any) => {
+              if (p && p.id) map[p.id] = p;
+            });
+            this.productMap.set(map);
+            this.cd.detectChanges();
+          },
+          error: () => {}
         });
 
         // Fetch Flyers for this store
@@ -148,8 +164,50 @@ export class StoreDetailComponent implements OnInit {
     return this.filePath + url;
   }
 
-  getImageUrl(url: string | null | undefined, fallback: string = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300&auto=format&fit=crop&q=60'): string {
-    if (!url) return fallback;
+  getOfferImageUrl(item: any): string {
+    if (!item) return this.getImageUrl(null);
+
+    // 1. Dedicated Offer Image
+    const offerImg = item.imageUrl || item.image_url || item.thumbnailUrl || item.thumbnail_url;
+    if (offerImg && typeof offerImg === 'string' && offerImg.trim() !== '' && !offerImg.startsWith('data:image/svg')) {
+      return this.getImageUrl(offerImg);
+    }
+
+    // 2. Product Image from DTO
+    const dtoProdImg = item.productPrimaryImageUrl || 
+                       item.product_primary_image_url || 
+                       item.productImageUrl || 
+                       item.product_image_url || 
+                       item.product?.primaryImageUrl || 
+                       item.product?.primary_image_url || 
+                       item.product?.imageUrl;
+    if (dtoProdImg && typeof dtoProdImg === 'string' && dtoProdImg.trim() !== '') {
+      return this.getImageUrl(dtoProdImg);
+    }
+
+    // 3. Product Image from Product Map
+    const pId = item.productId || item.product_id || item.product?.id;
+    if (pId !== undefined && pId !== null && pId !== '') {
+      const mappedProd = this.productMap()[Number(pId)] || this.productMap()[pId];
+      if (mappedProd) {
+        let prodImg = mappedProd.primaryImageUrl || mappedProd.primary_image_url || mappedProd.imageUrl || mappedProd.image_url;
+        if ((!prodImg || typeof prodImg !== 'string' || prodImg.trim() === '') && mappedProd.images && Array.isArray(mappedProd.images) && mappedProd.images.length > 0) {
+          const first = mappedProd.images[0];
+          prodImg = typeof first === 'string' ? first : (first?.imageUrl || first?.image_url);
+        }
+        if (prodImg && typeof prodImg === 'string' && prodImg.trim() !== '') {
+          return this.getImageUrl(prodImg);
+        }
+      }
+    }
+
+    return this.getImageUrl(null);
+  }
+
+  getImageUrl(url: string | null | undefined): string {
+    if (!url || typeof url !== 'string' || url.trim() === '') {
+      return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23f8fafc'/%3E%3Cpath fill='%23cbd5e1' d='M160 110a20 20 0 1 0 0-40 20 20 0 0 0 0 40zm100 120H140l50-65 35 45 25-30 40 50z'/%3E%3Ctext x='50%25' y='82%25' text-anchor='middle' fill='%2394a3b8' font-family='sans-serif' font-size='14' font-weight='500'%3EDealSpot%3C/text%3E%3C/svg%3E";
+    }
     if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
       return url;
     }

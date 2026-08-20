@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import {
   FormBuilder,
   FormGroup,
@@ -11,6 +11,7 @@ import {
 import { TranslationService } from '../../../core/services/translation.service';
 import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
 import { AuthService } from '../../../core/services/auth.service';
+import { APP_CONFIG } from '../../../core/config/app-config';
 
 type AuthMode = 'login' | 'register' | 'admin';
 
@@ -20,7 +21,6 @@ type AuthMode = 'login' | 'register' | 'admin';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink,
     TranslatePipe
   ],
   templateUrl: './login.html',
@@ -33,6 +33,7 @@ export class LoginComponent implements OnInit {
   private router = inject(Router);
 
   translationService = inject(TranslationService);
+  appConfig = APP_CONFIG;
 
   constructor(private authService: AuthService,
     private cdref:ChangeDetectorRef

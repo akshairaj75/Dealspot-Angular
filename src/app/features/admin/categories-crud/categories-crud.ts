@@ -35,6 +35,12 @@ export class CategoriesCrud implements OnInit {
   // Filter for subcategories
   selectedParentFilter: string = '';
 
+  // Drag and Drop state
+  draggedIndex: number | null = null;
+  dragOverIndex: number | null = null;
+  dragTab: 'parent' | 'sub' | null = null;
+  isSavingOrder = false;
+
   ngOnInit(): void {
     this.loadCategories();
     this.catForm = this.fb.group({
@@ -52,22 +58,137 @@ export class CategoriesCrud implements OnInit {
 
   loadCategories(): void {
     this.categoryService.getCategories().subscribe(res => {
-      this.categories = res;
-      console.log(res);
+      this.categories = res || [];
 
-      // Parent categories (parentId is null)
-      this.parentCategories = res.filter((c: any) => c.parentId === null);
+      // Parent categories (parentId is null) sorted by sortOrder
+      this.parentCategories = this.categories
+        .filter((c: any) => c.parentId === null)
+        .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
-      // Subcategories (parentId is not null) - map parentNameEn dynamically
-      this.subCategories = res.filter((c: any) => c.parentId !== null).map((sub: any) => {
-        const parent = this.parentCategories.find(p => p.id === sub.parentId);
-        return {
-          ...sub,
-          parentNameEn: parent ? parent.nameEn : 'Unknown'
-        };
-      });
+      // Subcategories (parentId is not null) sorted by sortOrder
+      this.subCategories = this.categories
+        .filter((c: any) => c.parentId !== null)
+        .map((sub: any) => {
+          const parent = this.parentCategories.find(p => p.id === sub.parentId);
+          return {
+            ...sub,
+            parentNameEn: parent ? parent.nameEn : 'Unknown'
+          };
+        })
+        .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
       this.cd.detectChanges();
+    });
+  }
+
+  onDragStart(event: DragEvent, index: number, tab: 'parent' | 'sub'): void {
+    this.draggedIndex = index;
+    this.dragTab = tab;
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', String(index));
+    }
+  }
+
+  onDragOver(event: DragEvent, index: number): void {
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+    this.dragOverIndex = index;
+  }
+
+  onDragEnd(): void {
+    this.draggedIndex = null;
+    this.dragOverIndex = null;
+    this.dragTab = null;
+  }
+
+  onDrop(event: DragEvent, targetIndex: number, tab: 'parent' | 'sub'): void {
+    event.preventDefault();
+    if (this.draggedIndex === null || this.draggedIndex === targetIndex || this.dragTab !== tab) {
+      this.onDragEnd();
+      return;
+    }
+
+    const list = tab === 'parent' ? [...this.parentCategories] : [...this.getFilteredSubCategories()];
+    const [movedItem] = list.splice(this.draggedIndex, 1);
+    list.splice(targetIndex, 0, movedItem);
+
+    // Update sortOrder values locally
+    list.forEach((item, idx) => {
+      item.sortOrder = idx + 1;
+    });
+
+    if (tab === 'parent') {
+      this.parentCategories = list;
+    } else {
+      if (this.selectedParentFilter) {
+        const filterId = Number(this.selectedParentFilter);
+        let currentSubIndex = 0;
+        this.subCategories = this.subCategories.map(sub => {
+          if (sub.parentId === filterId) {
+            const updated = list[currentSubIndex++];
+            return updated || sub;
+          }
+          return sub;
+        });
+      } else {
+        this.subCategories = list;
+      }
+    }
+
+    this.onDragEnd();
+    this.saveOrder(list);
+  }
+
+  moveUp(index: number, tab: 'parent' | 'sub'): void {
+    if (index <= 0) return;
+    this.draggedIndex = index;
+    this.dragTab = tab;
+    this.onDrop(new DragEvent('drop'), index - 1, tab);
+  }
+
+  moveDown(index: number, tab: 'parent' | 'sub'): void {
+    const list = tab === 'parent' ? this.parentCategories : this.getFilteredSubCategories();
+    if (index >= list.length - 1) return;
+    this.draggedIndex = index;
+    this.dragTab = tab;
+    this.onDrop(new DragEvent('drop'), index + 1, tab);
+  }
+
+  private saveOrder(items: any[]): void {
+    const payload = items.map((item, idx) => ({
+      id: item.id,
+      sortOrder: idx + 1
+    }));
+
+    this.isSavingOrder = true;
+    this.cd.detectChanges();
+
+    this.categoryService.reorderCategories(payload).subscribe({
+      next: () => {
+        this.isSavingOrder = false;
+        this.cd.detectChanges();
+
+        const Toast = Swal.mixin({
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 1800,
+          timerProgressBar: true,
+        });
+        Toast.fire({
+          icon: 'success',
+          title: 'Categories order updated!'
+        });
+      },
+      error: (err) => {
+        console.error('Failed to save category order:', err);
+        this.isSavingOrder = false;
+        this.cd.detectChanges();
+        Swal.fire('Error', 'Failed to update category order', 'error');
+      }
     });
   }
 

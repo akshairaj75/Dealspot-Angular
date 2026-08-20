@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { TranslationService } from '../../core/services/translation.service';
+import { APP_CONFIG } from '../../core/config/app-config';
 
 interface AdminMenuItem {
   label_en: string;
@@ -24,6 +25,7 @@ export class AdminLayoutComponent {
   router = inject(Router);
 
   currentLang = this.translationService.currentLang;
+  appConfig = APP_CONFIG;
   // adminUser = this.authService.currentAdmin;
 
   menuItems: AdminMenuItem[] = [

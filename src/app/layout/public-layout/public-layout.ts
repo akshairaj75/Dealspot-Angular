@@ -10,7 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../shared/pipes/translate-pipe';
 import { TranslationService } from '../../core/services/translation.service';
 import { CityService } from '../../core/services/city.service';
-
+import { APP_CONFIG } from '../../core/config/app-config';
 
 @Component({
   selector: 'app-public-layout',
@@ -29,10 +29,9 @@ import { CityService } from '../../core/services/city.service';
 export class PublicLayoutComponent {
 
   router = inject(Router);
-
   translationService = inject(TranslationService);
-
   currentLang = this.translationService.currentLang;
+  appConfig = APP_CONFIG;
 
   searchQuery = '';
 

@@ -8,6 +8,7 @@ import { ProductService } from '../../../core/services/product.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
 import { environment } from '../../../environment/environment';
+import { APP_CONFIG } from '../../../core/config/app-config';
 
 @Component({
   selector: 'app-offer-detail',
@@ -28,6 +29,7 @@ export class OfferDetailComponent implements OnInit {
 
   currentLang = this.translationService.currentLang;
   filePath = environment.filePath;
+  appConfig = APP_CONFIG;
 
   offer = signal<any | null>(null);
   product = signal<any | null>(null);
@@ -69,8 +71,14 @@ export class OfferDetailComponent implements OnInit {
         this.offer.set(data);
         this.checkIfSaved(data.id);
 
-        // Build gallery images list
+        // 1. Build initial offer images (offer image as 1st slide if present)
         const imgList: string[] = [];
+        const offerMainImage = data.imageUrl || data.image_url;
+        
+        if (offerMainImage) {
+          imgList.push(this.getImageUrl(offerMainImage));
+        }
+
         if (data.imageUrls && Array.isArray(data.imageUrls) && data.imageUrls.length > 0) {
           data.imageUrls.forEach((img: any) => {
             const url = typeof img === 'string' ? img : (img.imageUrl || img.image_url);
@@ -79,14 +87,6 @@ export class OfferDetailComponent implements OnInit {
               if (!imgList.includes(resolved)) imgList.push(resolved);
             }
           });
-        }
-        if (data.imageUrl) {
-          const resolved = this.getImageUrl(data.imageUrl);
-          if (!imgList.includes(resolved)) imgList.unshift(resolved);
-        }
-        if (data.productImageUrl) {
-          const resolved = this.getImageUrl(data.productImageUrl);
-          if (!imgList.includes(resolved)) imgList.push(resolved);
         }
 
         if (imgList.length === 0) {
@@ -104,7 +104,7 @@ export class OfferDetailComponent implements OnInit {
               this.branches.set(b || []);
               this.cd.detectChanges();
             },
-            error: () => {}
+            error: () => { }
           });
 
           // Fetch Store details for logo & name fallback
@@ -120,22 +120,23 @@ export class OfferDetailComponent implements OnInit {
                 this.cd.detectChanges();
               }
             },
-            error: () => {}
+            error: () => { }
           });
         }
 
-        // Load product details & images if productId exists
+        // 2. Load linked product details & images (preserves product attributes & details)
         const productId = data.productId || data.product_id;
         if (productId) {
           this.productService.getProductById(productId).subscribe({
             next: (prod) => {
               if (prod) {
+                // Keep complete product details, brand, and specifications intact
                 this.product.set(prod);
 
                 const prodImages: string[] = [];
                 if (prod.primaryImageUrl) {
                   const resolved = this.getImageUrl(prod.primaryImageUrl);
-                  if (!this.images().includes(resolved) && !prodImages.includes(resolved)) {
+                  if (!prodImages.includes(resolved)) {
                     prodImages.push(resolved);
                   }
                 }
@@ -144,7 +145,7 @@ export class OfferDetailComponent implements OnInit {
                     const raw = typeof imgObj === 'string' ? imgObj : (imgObj.imageUrl || imgObj.image_url);
                     if (raw) {
                       const resolved = this.getImageUrl(raw);
-                      if (!this.images().includes(resolved) && !prodImages.includes(resolved)) {
+                      if (!prodImages.includes(resolved)) {
                         prodImages.push(resolved);
                       }
                     }
@@ -153,13 +154,23 @@ export class OfferDetailComponent implements OnInit {
 
                 if (prodImages.length > 0) {
                   this.images.update(existing => {
-                    // Remove default unsplash placeholder if real product images are found
-                    const filtered = existing.filter(img => !img.includes('images.unsplash.com'));
-                    const merged = [...filtered, ...prodImages];
-                    return merged.length > 0 ? merged : existing;
+                    // Remove placeholder when real product images are found
+                    const cleanExisting = existing.filter(img => !img.startsWith('data:image/svg') && !img.includes('unsplash.com'));
+                    
+                    if (cleanExisting.length > 0) {
+                      // Offer image is present: Offer image remains 1st slide, append product images as other slides
+                      const merged = [...cleanExisting];
+                      prodImages.forEach(pImg => {
+                        if (!merged.includes(pImg)) merged.push(pImg);
+                      });
+                      return merged;
+                    } else {
+                      // No offer image provided: Product primary image is 1st slide + product gallery
+                      return prodImages;
+                    }
                   });
 
-                  if (!this.activeImage() || this.activeImage().includes('images.unsplash.com')) {
+                  if (!this.activeImage() || this.activeImage().startsWith('data:image/svg') || this.activeImage().includes('unsplash.com')) {
                     if (this.images().length > 0) {
                       this.activeImage.set(this.images()[0]);
                     }
@@ -184,6 +195,11 @@ export class OfferDetailComponent implements OnInit {
             },
             error: () => {}
           });
+        } else if (!offerMainImage) {
+          // No offer image and no product id -> show placeholder
+          const fallback = this.getImageUrl(null);
+          this.images.set([fallback]);
+          this.activeImage.set(fallback);
         }
 
         // Load matched coupon
@@ -215,7 +231,7 @@ export class OfferDetailComponent implements OnInit {
   // Image & Logo Helpers
   getImageUrl(url: string | null | undefined): string {
     if (!url || typeof url !== 'string' || url.trim() === '') {
-      return 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80';
+      return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23f8fafc'/%3E%3Cpath fill='%23cbd5e1' d='M160 110a20 20 0 1 0 0-40 20 20 0 0 0 0 40zm100 120H140l50-65 35 45 25-30 40 50z'/%3E%3Ctext x='50%25' y='82%25' text-anchor='middle' fill='%2394a3b8' font-family='sans-serif' font-size='14' font-weight='500'%3EDealSpot%3C/text%3E%3C/svg%3E";
     }
 
     url = url.trim();

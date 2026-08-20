@@ -34,6 +34,12 @@
   border-bottom: 1px solid #1e293b;
 }
 
+.admin-logo-img {
+  height: 32px;
+  max-width: 120px;
+  object-fit: contain;
+}
+
 .admin-logo-icon {
   font-size: 32px;
   color: var(--primary);

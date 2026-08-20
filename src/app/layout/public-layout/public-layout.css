@@ -24,6 +24,18 @@
   gap: 10px;
 }
 
+.logo-img {
+  height: 36px;
+  max-width: 140px;
+  object-fit: contain;
+}
+
+.footer-logo-img {
+  height: 32px;
+  max-width: 120px;
+  object-fit: contain;
+}
+
 .logo-icon {
   font-size: 32px;
   color: var(--primary);

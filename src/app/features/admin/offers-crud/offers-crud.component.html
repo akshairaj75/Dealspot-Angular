@@ -3,7 +3,8 @@
   <div class="crud-header">
     <div class="header-titles">
       <h2>{{ currentLang() === 'en' ? 'Manage Deals & Promotions' : 'إدارة العروض والتخفيضات' }}</h2>
-      <p class="header-desc">{{ currentLang() === 'en' ? 'Create, configure, and publish promotional offers and discounts' : 'إنشاء وضبط ونشر عروض التخفيضات والصفقات الترويجية للمتاجر' }}</p>
+      <p class="header-desc">{{ currentLang() === 'en' ? 'Create, configure, and publish promotional offers and
+        discounts' : 'إنشاء وضبط ونشر عروض التخفيضات والصفقات الترويجية للمتاجر' }}</p>
     </div>
     <button class="btn btn-primary" (click)="openAddModal()">
       <span class="material-icons-round">add</span>
@@ -15,13 +16,9 @@
   <div class="card filters-toolbar">
     <div class="search-input-wrapper">
       <span class="material-icons-round search-icon">search</span>
-      <input 
-        type="text" 
-        [(ngModel)]="searchQuery" 
-        (ngModelChange)="applyFilter()" 
+      <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="applyFilter()"
         [placeholder]="currentLang() === 'en' ? 'Search by title, store, or category...' : 'ابحث بالعنوان، المتجر، أو القسم...'"
-        class="form-control"
-      >
+        class="form-control">
       <button class="clear-search-btn" *ngIf="searchQuery" (click)="searchQuery = ''; applyFilter()">
         <span class="material-icons-round">close</span>
       </button>
@@ -30,7 +27,8 @@
     <div class="filter-dropdowns">
       <select [(ngModel)]="selectedStoreFilter" (ngModelChange)="applyFilter()" class="form-control select-filter">
         <option value="">{{ currentLang() === 'en' ? 'All Retail Stores' : 'جميع المتاجر' }}</option>
-        <option *ngFor="let s of stores()" [value]="s.id">{{ currentLang() === 'en' ? (s.nameEn || s.name_en) : (s.nameAr || s.name_ar || s.nameEn) }}</option>
+        <option *ngFor="let s of stores()" [value]="s.id">{{ currentLang() === 'en' ? (s.nameEn || s.name_en) :
+          (s.nameAr || s.name_ar || s.nameEn) }}</option>
       </select>
 
       <select [(ngModel)]="selectedBadgeFilter" (ngModelChange)="applyFilter()" class="form-control select-filter">
@@ -82,23 +80,29 @@
           </td>
           <td>
             <div class="store-cell">
-              <span class="store-name-text">{{ currentLang() === 'en' ? (o.storeNameEn || o.store?.nameEn || o.store?.name_en || 'Store #' + o.storeId) : (o.storeNameAr || o.store?.nameAr || o.store?.name_ar || o.storeNameEn || 'متجر #' + o.storeId) }}</span>
-              <span class="city-subtext" *ngIf="o.cityNameEn || o.city?.nameEn">{{ currentLang() === 'en' ? (o.cityNameEn || o.city?.nameEn) : (o.cityNameAr || o.city?.nameAr || o.cityNameEn) }}</span>
+              <span class="store-name-text">{{ currentLang() === 'en' ? (o.storeNameEn || o.store?.nameEn ||
+                o.store?.name_en || 'Store #' + o.storeId) : (o.storeNameAr || o.store?.nameAr || o.store?.name_ar ||
+                o.storeNameEn || 'متجر #' + o.storeId) }}</span>
+              <span class="city-subtext" *ngIf="o.cityNameEn || o.city?.nameEn">{{ currentLang() === 'en' ?
+                (o.cityNameEn || o.city?.nameEn) : (o.cityNameAr || o.city?.nameAr || o.cityNameEn) }}</span>
             </div>
           </td>
           <td>
             <div class="cat-prod-cell">
-              <span class="badge-category">{{ currentLang() === 'en' ? (o.categoryNameEn || o.category?.nameEn || 'General') : (o.categoryNameAr || o.category?.nameAr || 'عام') }}</span>
+              <span class="badge-category">{{ currentLang() === 'en' ? (o.categoryNameEn || o.category?.nameEn ||
+                'General') : (o.categoryNameAr || o.category?.nameAr || 'عام') }}</span>
               <span class="product-link-subtext" *ngIf="o.productNameEn || o.product?.nameEn">
                 <span class="material-icons-round" style="font-size: 13px;">link</span>
-                <span>{{ currentLang() === 'en' ? (o.productNameEn || o.product?.nameEn) : (o.productNameAr || o.product?.nameAr || o.productNameEn) }}</span>
+                <span>{{ currentLang() === 'en' ? (o.productNameEn || o.product?.nameEn) : (o.productNameAr ||
+                  o.product?.nameAr || o.productNameEn) }}</span>
               </span>
             </div>
           </td>
           <td>
             <div class="price-cell">
               <div class="offer-p-val">{{ o.offerPrice || o.offer_price }} SAR</div>
-              <div class="orig-p-val" *ngIf="o.originalPrice || o.original_price">{{ o.originalPrice || o.original_price }} SAR</div>
+              <div class="orig-p-val" *ngIf="o.originalPrice || o.original_price">{{ o.originalPrice || o.original_price
+                }} SAR</div>
             </div>
           </td>
           <td>
@@ -106,29 +110,34 @@
           </td>
           <td>
             <div class="validity-cell">
-              <span>{{ currentLang() === 'en' ? 'From:' : 'من:' }} <strong>{{ o.validFrom || o.valid_from }}</strong></span>
-              <span>{{ currentLang() === 'en' ? 'Until:' : 'إلى:' }} <strong class="text-danger">{{ o.validUntil || o.valid_until }}</strong></span>
+              <span>{{ currentLang() === 'en' ? 'From:' : 'من:' }} <strong>{{ o.validFrom || o.valid_from
+                  }}</strong></span>
+              <span>{{ currentLang() === 'en' ? 'Until:' : 'إلى:' }} <strong class="text-danger">{{ o.validUntil ||
+                  o.valid_until }}</strong></span>
             </div>
           </td>
           <td>
-            <span class="badge" 
-              [class.badge-featured]="o.badgeType === 'FEATURED' || o.badge_type === 'FEATURED'" 
+            <span class="badge" [class.badge-featured]="o.badgeType === 'FEATURED' || o.badge_type === 'FEATURED'"
               [class.badge-flash]="o.badgeType === 'FLASH' || o.badge_type === 'FLASH'"
               [class.badge-bogo]="o.badgeType === 'BOGO' || o.badge_type === 'BOGO'">
               {{ o.badgeType || o.badge_type || 'NONE' }}
             </span>
           </td>
           <td>
-            <span class="badge" [class.badge-active]="o.active === true || o.is_active === 1 || o.active === 1" [class.badge-inactive]="o.active === false || o.is_active === 0 || o.active === 0">
-              {{ (o.active === true || o.is_active === 1 || o.active === 1) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'معطل') }}
+            <span class="badge" [class.badge-active]="o.active === true || o.is_active === 1 || o.active === 1"
+              [class.badge-inactive]="o.active === false || o.is_active === 0 || o.active === 0">
+              {{ (o.active === true || o.is_active === 1 || o.active === 1) ? (currentLang() === 'en' ? 'Active' :
+              'نشط') : (currentLang() === 'en' ? 'Inactive' : 'معطل') }}
             </span>
           </td>
           <td>
             <div class="action-buttons-cell">
-              <button class="btn-icon" (click)="openEditModal(o)" [title]="currentLang() === 'en' ? 'Edit Offer' : 'تعديل العرض'">
+              <button class="btn-icon" (click)="openEditModal(o)"
+                [title]="currentLang() === 'en' ? 'Edit Offer' : 'تعديل العرض'">
                 <span class="material-icons-round">edit</span>
               </button>
-              <button class="btn-icon text-danger" (click)="deleteOffer(o.id)" [title]="currentLang() === 'en' ? 'Delete Offer' : 'حذف العرض'">
+              <button class="btn-icon text-danger" (click)="deleteOffer(o.id)"
+                [title]="currentLang() === 'en' ? 'Delete Offer' : 'حذف العرض'">
                 <span class="material-icons-round">delete</span>
               </button>
             </div>
@@ -141,7 +150,8 @@
       <div class="empty-state">
         <span class="material-icons-round empty-state-icon">local_offer</span>
         <h3 class="empty-state-title">{{ currentLang() === 'en' ? 'No offers registered' : 'لا توجد عروض مسجلة' }}</h3>
-        <p class="empty-state-desc">{{ currentLang() === 'en' ? 'Click "Create Offer" to publish your first retail promotion.' : 'انقر على "إنشاء عرض جديد" لنشر أول عرض ترويجي في النظام.' }}</p>
+        <p class="empty-state-desc">{{ currentLang() === 'en' ? 'Click "Create Offer" to publish your first retail
+          promotion.' : 'انقر على "إنشاء عرض جديد" لنشر أول عرض ترويجي في النظام.' }}</p>
       </div>
     </ng-template>
   </div>
@@ -149,11 +159,12 @@
   <!-- Add/Edit Modal -->
   <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
     <div class="modal-content card" (click)="$event.stopPropagation()">
-      
+
       <div class="modal-header">
         <div class="modal-title-row">
           <span class="material-icons-round modal-icon">local_offer</span>
-          <h3>{{ editingOfferId ? (currentLang() === 'en' ? 'Edit Promotion Deal' : 'تعديل العرض الترويجي') : (currentLang() === 'en' ? 'Create Promotion Deal' : 'إنشاء عرض ترويجي جديد') }}</h3>
+          <h3>{{ editingOfferId ? (currentLang() === 'en' ? 'Edit Promotion Deal' : 'تعديل العرض الترويجي') :
+            (currentLang() === 'en' ? 'Create Promotion Deal' : 'إنشاء عرض ترويجي جديد') }}</h3>
         </div>
         <button class="btn-icon border-none" (click)="closeModal()">
           <span class="material-icons-round">close</span>
@@ -162,57 +173,77 @@
 
       <div class="modal-body">
         <form [formGroup]="offerForm" (submit)="onSubmit()" class="offer-form">
-          
+
           <!-- Bilingual Titles -->
           <div class="form-row-2">
             <div class="form-group">
-              <label class="form-label">{{ currentLang() === 'en' ? 'Offer Title (EN) *' : 'عنوان العرض (الإنجليزية) *' }}</label>
+              <label class="form-label">{{ currentLang() === 'en' ? 'Offer Title (EN) *' : 'عنوان العرض (الإنجليزية) *'
+                }}</label>
               <input type="text" formControlName="title_en" class="form-control" placeholder="e.g. 50% Off Smart TVs">
-              <span class="field-error" *ngIf="offerForm.get('title_en')?.touched && offerForm.get('title_en')?.invalid">{{ currentLang() === 'en' ? 'English title is required' : 'العنوان بالإنجليزية مطلوب' }}</span>
+              <span class="field-error"
+                *ngIf="offerForm.get('title_en')?.touched && offerForm.get('title_en')?.invalid">{{ currentLang() ===
+                'en' ? 'English title is required' : 'العنوان بالإنجليزية مطلوب' }}</span>
             </div>
             <div class="form-group">
-              <label class="form-label">{{ currentLang() === 'en' ? 'Offer Title (AR) *' : 'عنوان العرض (العربية) *' }}</label>
-              <input type="text" formControlName="title_ar" class="form-control" placeholder="مثال: خصم 50% على الشاشات الذكية">
-              <span class="field-error" *ngIf="offerForm.get('title_ar')?.touched && offerForm.get('title_ar')?.invalid">{{ currentLang() === 'en' ? 'Arabic title is required' : 'العنوان بالعربية مطلوب' }}</span>
+              <label class="form-label">{{ currentLang() === 'en' ? 'Offer Title (AR) *' : 'عنوان العرض (العربية) *'
+                }}</label>
+              <input type="text" formControlName="title_ar" class="form-control"
+                placeholder="مثال: خصم 50% على الشاشات الذكية">
+              <span class="field-error"
+                *ngIf="offerForm.get('title_ar')?.touched && offerForm.get('title_ar')?.invalid">{{ currentLang() ===
+                'en' ? 'Arabic title is required' : 'العنوان بالعربية مطلوب' }}</span>
             </div>
           </div>
 
           <!-- Store, Category, City Selection -->
           <div class="form-row-3">
             <div class="form-group">
-              <label class="form-label">{{ currentLang() === 'en' ? 'Retail Partner Store *' : 'المتجر الشريك *' }}</label>
+              <label class="form-label">{{ currentLang() === 'en' ? 'Retail Partner Store *' : 'المتجر الشريك *'
+                }}</label>
               <select formControlName="store_id" class="form-control">
                 <option value="" disabled>{{ currentLang() === 'en' ? 'Select Store' : 'اختر المتجر' }}</option>
-                <option *ngFor="let s of stores()" [value]="s.id">{{ currentLang() === 'en' ? (s.nameEn || s.name_en) : (s.nameAr || s.name_ar || s.nameEn) }}</option>
+                <option *ngFor="let s of stores()" [value]="s.id">{{ currentLang() === 'en' ? (s.nameEn || s.name_en) :
+                  (s.nameAr || s.name_ar || s.nameEn) }}</option>
               </select>
-              <span class="field-error" *ngIf="offerForm.get('store_id')?.touched && offerForm.get('store_id')?.invalid">{{ currentLang() === 'en' ? 'Store is required' : 'المتجر مطلوب' }}</span>
+              <span class="field-error"
+                *ngIf="offerForm.get('store_id')?.touched && offerForm.get('store_id')?.invalid">{{ currentLang() ===
+                'en' ? 'Store is required' : 'المتجر مطلوب' }}</span>
             </div>
 
             <div class="form-group">
               <label class="form-label">{{ currentLang() === 'en' ? 'Category *' : 'القسم الرئيسي *' }}</label>
               <select formControlName="category_id" class="form-control">
                 <option value="" disabled>{{ currentLang() === 'en' ? 'Select Category' : 'اختر القسم' }}</option>
-                <option *ngFor="let cat of categories()" [value]="cat.id">{{ currentLang() === 'en' ? (cat.nameEn || cat.name_en) : (cat.nameAr || cat.name_ar || cat.nameEn) }}</option>
+                <option *ngFor="let cat of categories()" [value]="cat.id">{{ currentLang() === 'en' ? (cat.nameEn ||
+                  cat.name_en) : (cat.nameAr || cat.name_ar || cat.nameEn) }}</option>
               </select>
-              <span class="field-error" *ngIf="offerForm.get('category_id')?.touched && offerForm.get('category_id')?.invalid">{{ currentLang() === 'en' ? 'Category is required' : 'القسم مطلوب' }}</span>
+              <span class="field-error"
+                *ngIf="offerForm.get('category_id')?.touched && offerForm.get('category_id')?.invalid">{{ currentLang()
+                === 'en' ? 'Category is required' : 'القسم مطلوب' }}</span>
             </div>
 
             <div class="form-group">
               <label class="form-label">{{ currentLang() === 'en' ? 'City Scope *' : 'المدينة *' }}</label>
               <select formControlName="city_id" class="form-control">
                 <option value="" disabled>{{ currentLang() === 'en' ? 'Select City' : 'اختر المدينة' }}</option>
-                <option *ngFor="let c of cities()" [value]="c.id">{{ currentLang() === 'en' ? (c.nameEn || c.name_en) : (c.nameAr || c.name_ar || c.nameEn) }}</option>
+                <option *ngFor="let c of cities()" [value]="c.id">{{ currentLang() === 'en' ? (c.nameEn || c.name_en) :
+                  (c.nameAr || c.name_ar || c.nameEn) }}</option>
               </select>
-              <span class="field-error" *ngIf="offerForm.get('city_id')?.touched && offerForm.get('city_id')?.invalid">{{ currentLang() === 'en' ? 'City is required' : 'المدينة مطلوبة' }}</span>
+              <span class="field-error"
+                *ngIf="offerForm.get('city_id')?.touched && offerForm.get('city_id')?.invalid">{{ currentLang() === 'en'
+                ? 'City is required' : 'المدينة مطلوبة' }}</span>
             </div>
           </div>
 
           <!-- Catalog Linked Product -->
           <div class="form-group">
-            <label class="form-label">{{ currentLang() === 'en' ? 'Catalog Linked Product (Optional)' : 'ربط بمنتج من الدليل (اختياري)' }}</label>
+            <label class="form-label">{{ currentLang() === 'en' ? 'Catalog Linked Product (Optional)' : 'ربط بمنتج من
+              الدليل (اختياري)' }}</label>
             <select formControlName="product_id" class="form-control">
-              <option [ngValue]="null">{{ currentLang() === 'en' ? 'No catalog link (General Store Promotion)' : 'بدون ربط بمنتج محدد (عرض عام للمتجر)' }}</option>
-              <option *ngFor="let p of products()" [value]="p.id">{{ currentLang() === 'en' ? (p.nameEn || p.name_en) : (p.nameAr || p.name_ar || p.nameEn) }}</option>
+              <option [ngValue]="null">{{ currentLang() === 'en' ? 'No catalog link (General Store Promotion)' : 'بدون
+                ربط بمنتج محدد (عرض عام للمتجر)' }}</option>
+              <option *ngFor="let p of products()" [value]="p.id">{{ currentLang() === 'en' ? (p.nameEn || p.name_en) :
+                (p.nameAr || p.name_ar || p.nameEn) }}</option>
             </select>
           </div>
 
@@ -220,17 +251,20 @@
           <div class="pricing-card card">
             <div class="form-row-3">
               <div class="form-group">
-                <label class="form-label">{{ currentLang() === 'en' ? 'Original Price (SAR) *' : 'السعر الأصلي (ر.س) *' }}</label>
+                <label class="form-label">{{ currentLang() === 'en' ? 'Original Price (SAR) *' : 'السعر الأصلي (ر.س) *'
+                  }}</label>
                 <input type="number" step="0.01" min="0" formControlName="original_price" class="form-control">
               </div>
 
               <div class="form-group">
-                <label class="form-label">{{ currentLang() === 'en' ? 'Offer Price (SAR) *' : 'سعر العرض (ر.س) *' }}</label>
+                <label class="form-label">{{ currentLang() === 'en' ? 'Offer Price (SAR) *' : 'سعر العرض (ر.س) *'
+                  }}</label>
                 <input type="number" step="0.01" min="0" formControlName="offer_price" class="form-control">
               </div>
 
               <div class="form-group">
-                <label class="form-label">{{ currentLang() === 'en' ? 'Discount % (Auto Calculated)' : 'نسبة الخصم % (محسوبة تلقائياً)' }}</label>
+                <label class="form-label">{{ currentLang() === 'en' ? 'Discount % (Auto Calculated)' : 'نسبة الخصم %
+                  (محسوبة تلقائياً)' }}</label>
                 <div class="discount-display-box">
                   <span class="discount-value">{{ offerForm.get('discount_pct')?.value || 0 }}%</span>
                 </div>
@@ -244,23 +278,30 @@
               <label class="form-label">{{ currentLang() === 'en' ? 'Promotion Badge' : 'شارة العرض' }}</label>
               <select formControlName="badge_type" class="form-control">
                 <option value="NONE">{{ currentLang() === 'en' ? 'Standard (NONE)' : 'عادي (NONE)' }}</option>
-                <option value="FEATURED">{{ currentLang() === 'en' ? 'Featured Deal (مميز)' : 'عرض مميز (FEATURED)' }}</option>
+                <option value="FEATURED">{{ currentLang() === 'en' ? 'Featured Deal (مميز)' : 'عرض مميز (FEATURED)' }}
+                </option>
                 <option value="FLASH">{{ currentLang() === 'en' ? 'Flash Deal (عاجل)' : 'صفقة خاطفة (FLASH)' }}</option>
-                <option value="BOGO">{{ currentLang() === 'en' ? 'Buy 1 Get 1 (BOGO)' : 'اشتر 1 واحصل على 1 (BOGO)' }}</option>
-                <option value="PROMO">{{ currentLang() === 'en' ? 'Special Promo (ترويجي)' : 'عرض ترويجي (PROMO)' }}</option>
+                <option value="BOGO">{{ currentLang() === 'en' ? 'Buy 1 Get 1 (BOGO)' : 'اشتر 1 واحصل على 1 (BOGO)' }}
+                </option>
+                <option value="PROMO">{{ currentLang() === 'en' ? 'Special Promo (ترويجي)' : 'عرض ترويجي (PROMO)' }}
+                </option>
               </select>
             </div>
 
             <div class="form-group">
               <label class="form-label">{{ currentLang() === 'en' ? 'Valid From *' : 'ساري من تاريخ *' }}</label>
               <input type="date" formControlName="valid_from" class="form-control">
-              <span class="field-error" *ngIf="offerForm.get('valid_from')?.touched && offerForm.get('valid_from')?.invalid">{{ currentLang() === 'en' ? 'Valid from is required' : 'تاريخ البداية مطلوب' }}</span>
+              <span class="field-error"
+                *ngIf="offerForm.get('valid_from')?.touched && offerForm.get('valid_from')?.invalid">{{ currentLang()
+                === 'en' ? 'Valid from is required' : 'تاريخ البداية مطلوب' }}</span>
             </div>
 
             <div class="form-group">
               <label class="form-label">{{ currentLang() === 'en' ? 'Valid Until *' : 'ساري حتى تاريخ *' }}</label>
               <input type="date" formControlName="valid_until" class="form-control">
-              <span class="field-error" *ngIf="offerForm.get('valid_until')?.touched && offerForm.get('valid_until')?.invalid">{{ currentLang() === 'en' ? 'Valid until is required' : 'تاريخ الانتهاء مطلوب' }}</span>
+              <span class="field-error"
+                *ngIf="offerForm.get('valid_until')?.touched && offerForm.get('valid_until')?.invalid">{{ currentLang()
+                === 'en' ? 'Valid until is required' : 'تاريخ الانتهاء مطلوب' }}</span>
             </div>
           </div>
 
@@ -268,11 +309,13 @@
           <div class="form-row-2">
             <div class="form-group">
               <label class="form-label">{{ currentLang() === 'en' ? 'Description (EN)' : 'الوصف (الإنجليزية)' }}</label>
-              <textarea formControlName="description_en" rows="2" class="form-control" placeholder="Describe the offer details..."></textarea>
+              <textarea formControlName="description_en" rows="2" class="form-control"
+                placeholder="Describe the offer details..."></textarea>
             </div>
             <div class="form-group">
               <label class="form-label">{{ currentLang() === 'en' ? 'Description (AR)' : 'الوصف (العربية)' }}</label>
-              <textarea formControlName="description_ar" rows="2" class="form-control" placeholder="اكتب تفاصيل العرض..."></textarea>
+              <textarea formControlName="description_ar" rows="2" class="form-control"
+                placeholder="اكتب تفاصيل العرض..."></textarea>
             </div>
           </div>
 
@@ -286,14 +329,17 @@
             <!-- Existing Image Preview on Edit -->
             <div class="existing-image-box" *ngIf="existingImageUrl && imagePreviewUrls.length === 0">
               <img [src]="getImageUrl(existingImageUrl)" alt="Current Offer Image" class="existing-img-thumb">
-              <span class="existing-img-label">{{ currentLang() === 'en' ? 'Current Active Image' : 'الصورة الحالية' }}</span>
+              <span class="existing-img-label">{{ currentLang() === 'en' ? 'Current Active Image' : 'الصورة الحالية'
+                }}</span>
             </div>
 
             <div class="upload-dropzone">
-              <input type="file" (change)="onImageFilesSelected($event)" accept="image/*" multiple id="offer-image-input" class="hidden-file-input">
+              <input type="file" (change)="onImageFilesSelected($event)" accept="image/*" multiple
+                id="offer-image-input" class="hidden-file-input">
               <label for="offer-image-input" class="dropzone-label">
                 <span class="material-icons-round dropzone-icon">cloud_upload</span>
-                <span>{{ currentLang() === 'en' ? 'Click or Drag images to upload' : 'انقر أو اسحب الصور لتحميلها' }}</span>
+                <span>{{ currentLang() === 'en' ? 'Click or Drag images to upload' : 'انقر أو اسحب الصور لتحميلها'
+                  }}</span>
                 <span class="dropzone-hint">PNG, JPG, WEBP (Max 5MB)</span>
               </label>
             </div>
@@ -314,19 +360,22 @@
             <label class="checkbox-container">
               <input type="checkbox" formControlName="is_featured">
               <span class="checkmark"></span>
-              <span class="checkbox-text">{{ currentLang() === 'en' ? 'Set as Featured Deal' : 'تمييز العرض في التوصيات' }}</span>
+              <span class="checkbox-text">{{ currentLang() === 'en' ? 'Set as Featured Deal' : 'تمييز العرض في التوصيات'
+                }}</span>
             </label>
 
             <label class="checkbox-container">
               <input type="checkbox" formControlName="is_flash">
               <span class="checkmark"></span>
-              <span class="checkbox-text">{{ currentLang() === 'en' ? 'Set as Flash Deal (Limited Time)' : 'عرض خاطف لفترة محدودة' }}</span>
+              <span class="checkbox-text">{{ currentLang() === 'en' ? 'Set as Flash Deal (Limited Time)' : 'عرض خاطف
+                لفترة محدودة' }}</span>
             </label>
 
             <label class="checkbox-container">
               <input type="checkbox" formControlName="is_in_store">
               <span class="checkmark"></span>
-              <span class="checkbox-text">{{ currentLang() === 'en' ? 'Available In-Store' : 'متاح في فروع المتجر' }}</span>
+              <span class="checkbox-text">{{ currentLang() === 'en' ? 'Available In-Store' : 'متاح في فروع المتجر'
+                }}</span>
             </label>
 
             <label class="checkbox-container">
@@ -338,7 +387,8 @@
             <label class="checkbox-container">
               <input type="checkbox" formControlName="is_active">
               <span class="checkmark"></span>
-              <span class="checkbox-text font-bold">{{ currentLang() === 'en' ? 'Active Status' : 'حالة النشاط (مفعل)' }}</span>
+              <span class="checkbox-text font-bold">{{ currentLang() === 'en' ? 'Active Status' : 'حالة النشاط (مفعل)'
+                }}</span>
             </label>
           </div>
 
@@ -349,7 +399,8 @@
             </button>
             <button type="submit" [disabled]="offerForm.invalid" class="btn btn-primary btn-save">
               <span class="material-icons-round">save</span>
-              <span>{{ editingOfferId ? (currentLang() === 'en' ? 'Save Changes' : 'حفظ التعديلات') : (currentLang() === 'en' ? 'Create Offer' : 'إنشاء العرض') }}</span>
+              <span>{{ editingOfferId ? (currentLang() === 'en' ? 'Save Changes' : 'حفظ التعديلات') : (currentLang() ===
+                'en' ? 'Create Offer' : 'إنشاء العرض') }}</span>
             </button>
           </div>
 

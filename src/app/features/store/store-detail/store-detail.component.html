@@ -108,7 +108,7 @@
             </span>
             <div class="offer-card-image">
               <img 
-                [src]="getImageUrl(offer.product?.primaryImageUrl || offer.primaryImageUrl || offer.imageUrl)" 
+                [src]="getOfferImageUrl(offer)" 
                 [alt]="offer.titleEn || offer.title_en || 'Offer Image'"
                 (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300&auto=format&fit=crop&q=60'"
               >

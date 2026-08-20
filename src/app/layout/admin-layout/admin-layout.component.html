@@ -2,9 +2,10 @@
   <!-- Sidebar -->
   <aside class="admin-sidebar">
     <div class="sidebar-header">
-      <span class="material-icons-round admin-logo-icon">admin_panel_settings</span>
+      <img *ngIf="appConfig.logoUrl" [src]="appConfig.logoUrl" [alt]="appConfig.adminAppNameEn" class="admin-logo-img">
+      <span *ngIf="!appConfig.logoUrl" class="material-icons-round admin-logo-icon">{{ appConfig.adminLogoIcon }}</span>
       <div class="sidebar-header-text">
-        <span class="admin-logo-title">DealSpot Admin</span>
+        <span class="admin-logo-title">{{ currentLang() === 'en' ? appConfig.adminAppNameEn : appConfig.adminAppNameAr }}</span>
         <span class="admin-logo-subtitle">{{ currentLang() === 'en' ? 'Control Panel' : 'لوحة التحكم' }}</span>
       </div>
     </div>

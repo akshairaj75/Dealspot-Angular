@@ -23,6 +23,10 @@ export class CategoryService {
     return this.http.put(this.apiUrl+ '/edit/' + id, payload);
   }
 
+  reorderCategories(payload: { id: number; sortOrder: number }[]) {
+    return this.http.put(this.apiUrl + '/reorder', payload, { responseType: 'text' });
+  }
+
   deleteCategory(id: number) {
     return this.http.delete(this.apiUrl+ '/delete/' + id);
   }

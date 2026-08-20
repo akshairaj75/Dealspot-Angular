@@ -126,17 +126,30 @@
 }
 
 .flyer-image-wrapper {
-  height: 340px;
+  height: 320px;
   position: relative;
   overflow: hidden;
-  background: #f1f5f9;
+  background: #ffffff;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
 }
 
 .flyer-image-wrapper img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: block;
+}
+
+.dark-theme .flyer-image-wrapper {
+  background: #0f172a;
 }
 
 .flyer-card:hover .flyer-image-wrapper img {

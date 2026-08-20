@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, effect, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, signal, effect, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CityService } from '../../core/services/city.service';
@@ -9,6 +9,8 @@ import { StoreService } from '../../core/services/store.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { TranslatePipe } from '../../shared/pipes/translate-pipe';
 import { environment } from '../../environment/environment';
+import { APP_CONFIG } from '../../core/config/app-config';
+import { ProductService } from '../../core/services/product.service';
 
 @Component({
   selector: 'app-home',
@@ -18,16 +20,20 @@ import { environment } from '../../environment/environment';
   styleUrls: ['./home.css']
 })
 export class HomeComponent implements OnInit {
+  @ViewChild('catScrollContainer') catScrollContainer?: ElementRef<HTMLDivElement>;
+
   cityService = inject(CityService);
   categoryService = inject(CategoryService);
   offerService = inject(OfferService);
   flyerService = inject(FlyerService);
   storeService = inject(StoreService);
+  productService = inject(ProductService);
   translationService = inject(TranslationService);
   private cd = inject(ChangeDetectorRef);
 
   currentLang = this.translationService.currentLang;
   filePath = environment.filePath;
+  appConfig = APP_CONFIG;
 
   categories = signal<any[]>([]);
   allOffers = signal<any[]>([]);
@@ -36,9 +42,19 @@ export class HomeComponent implements OnInit {
   latestOffers = signal<any[]>([]);
   activeFlyers = signal<any[]>([]);
   storeMap = signal<Record<number, any>>({});
+  productMap = signal<Record<number, any>>({});
 
   savedOfferIds = signal<number[]>([]);
   loading = signal<boolean>(true);
+
+  scrollCategories(offset: number): void {
+    if (this.catScrollContainer?.nativeElement) {
+      // In RTL mode, horizontal scroll direction can be reversed in some browsers
+      const isRtl = this.currentLang() === 'ar';
+      const actualOffset = isRtl ? -offset : offset;
+      this.catScrollContainer.nativeElement.scrollBy({ left: actualOffset, behavior: 'smooth' });
+    }
+  }
 
   constructor() {
     // When city changes, re-filter if desired
@@ -77,7 +93,9 @@ export class HomeComponent implements OnInit {
     this.categoryService.getCategories().subscribe({
       next: (res: any) => {
         const cats = Array.isArray(res) ? res : (res?.data || []);
-        this.categories.set(cats);
+        // Prioritize top-level main categories for home page showcase
+        const mainCats = cats.filter((c: any) => !c.parentId && !c.parent_id);
+        this.categories.set(mainCats.length > 0 ? mainCats : cats);
         this.cd.detectChanges();
       },
       error: (err) => console.error('Failed to load categories:', err)
@@ -106,6 +124,23 @@ export class HomeComponent implements OnInit {
         this.cd.detectChanges();
       },
       error: (err) => console.error('Failed to load flyers:', err)
+    });
+
+    // 4. Products (to guarantee real product image fallback for offers)
+    this.productService.getProducts().subscribe({
+      next: (res: any[]) => {
+        const list = res || [];
+        const map: Record<number, any> = {};
+        list.forEach((p: any) => {
+          if (p && p.id) {
+            map[Number(p.id)] = p;
+            map[p.id] = p;
+          }
+        });
+        this.productMap.set(map);
+        this.cd.detectChanges();
+      },
+      error: () => {}
     });
   }
 
@@ -145,10 +180,9 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  // Image & Logo Helpers
   getImageUrl(url: string | null | undefined): string {
     if (!url || typeof url !== 'string' || url.trim() === '') {
-      return 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&auto=format&fit=crop&q=60';
+      return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23f8fafc'/%3E%3Cpath fill='%23cbd5e1' d='M160 110a20 20 0 1 0 0-40 20 20 0 0 0 0 40zm100 120H140l50-65 35 45 25-30 40 50z'/%3E%3Ctext x='50%25' y='82%25' text-anchor='middle' fill='%2394a3b8' font-family='sans-serif' font-size='14' font-weight='500'%3EDealSpot%3C/text%3E%3C/svg%3E";
     }
 
     url = url.trim();
@@ -214,6 +248,53 @@ export class HomeComponent implements OnInit {
     }
 
     return base + url;
+  }
+
+  getOfferImageUrl(item: any): string {
+    if (!item) return this.getImageUrl(null);
+
+    // 1. Dedicated Offer Image
+    const offerImg = item.imageUrl || item.image_url || item.thumbnailUrl || item.thumbnail_url;
+    if (offerImg && typeof offerImg === 'string' && offerImg.trim() !== '' && !offerImg.startsWith('data:image/svg')) {
+      return this.getImageUrl(offerImg);
+    }
+
+    // 2. Product Image from DTO
+    const dtoProdImg = item.productPrimaryImageUrl || 
+                       item.product_primary_image_url || 
+                       item.productImageUrl || 
+                       item.product_image_url || 
+                       item.product?.primaryImageUrl || 
+                       item.product?.primary_image_url || 
+                       item.product?.imageUrl;
+    if (dtoProdImg && typeof dtoProdImg === 'string' && dtoProdImg.trim() !== '') {
+      return this.getImageUrl(dtoProdImg);
+    }
+
+    // 3. Product Image from Product Map
+    const pId = item.productId || item.product_id || item.product?.id;
+    if (pId !== undefined && pId !== null && pId !== '') {
+      const mappedProd = this.productMap()[Number(pId)] || this.productMap()[pId];
+      if (mappedProd) {
+        let prodImg = mappedProd.primaryImageUrl || mappedProd.primary_image_url || mappedProd.imageUrl || mappedProd.image_url;
+        if ((!prodImg || typeof prodImg !== 'string' || prodImg.trim() === '') && mappedProd.images && Array.isArray(mappedProd.images) && mappedProd.images.length > 0) {
+          const first = mappedProd.images[0];
+          prodImg = typeof first === 'string' ? first : (first?.imageUrl || first?.image_url);
+        }
+        if (prodImg && typeof prodImg === 'string' && prodImg.trim() !== '') {
+          return this.getImageUrl(prodImg);
+        }
+      }
+    }
+
+    return this.getImageUrl(null);
+  }
+
+  getCategoryImageUrl(url: string | null | undefined): string {
+    if (!url || typeof url !== 'string' || url.trim() === '') {
+      return '';
+    }
+    return this.getImageUrl(url);
   }
 
   getCategoryIcon(slug: string | null | undefined): string {
