@@ -21,8 +21,10 @@ import { StoreListComponent } from './features/store/store-list/store-list.compo
 import { StoreDetailComponent } from './features/store/store-detail/store-detail.component';
 import { FlyerListComponent } from './features/flyers/flyer-list/flyer-list.component';
 import { FlyerViewerComponent } from './features/flyers/flyer-viewer/flyer-viewer.component';
+import { UsersCrudComponent } from './features/admin/users-crud/users-crud';
 
 import { adminGuard } from './core/guards/admin.guard';
+
 
 export const routes: Routes = [
 
@@ -77,11 +79,13 @@ export const routes: Routes = [
             { path: 'coupons', component: CouponsCrudComponent },
             { path: 'flyers', component: FlyersCrudComponent },
             { path: 'flyers/:id/pages', component: FlyerPagesCrudComponent },
+            { path: 'users', component: UsersCrudComponent },
             {
                 path: 'product-specs/:productId/details',
                 component: ProductSpecsCrudComponent
             }]
     },
+
 
 
     {

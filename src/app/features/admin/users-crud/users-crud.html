@@ -1,0 +1,296 @@
+<div class="admin-page-container">
+
+  <!-- Page Header & Stats -->
+  <div class="page-header-row">
+    <div class="page-title-block">
+      <h1 class="page-title">
+        <span class="material-icons-round text-primary">admin_panel_settings</span>
+        {{ currentLang() === 'en' ? 'Admin Team & Staff Management' : 'إدارة فريق الإشراف والموظفين' }}
+      </h1>
+      <p class="page-subtitle">
+        {{ currentLang() === 'en' ? 'Register, assign roles, and manage permissions for system administrators.' : 'تسجيل وتعيين الأدوار وإدارة صلاحيات المشرفين على النظام.' }}
+      </p>
+    </div>
+
+    <button type="button" class="btn btn-primary btn-add-admin" (click)="openCreateModal()">
+      <span class="material-icons-round">person_add</span>
+      <span>{{ currentLang() === 'en' ? 'Register New Staff' : 'تسجيل مشرف جديد' }}</span>
+    </button>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-overview-grid">
+    <div class="stat-card">
+      <div class="stat-icon bg-primary-light text-primary">
+        <span class="material-icons-round">groups</span>
+      </div>
+      <div class="stat-content">
+        <span class="stat-num">{{ totalCount }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Total Staff' : 'إجمالي المشرفين' }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon bg-emerald-light text-emerald">
+        <span class="material-icons-round">check_circle</span>
+      </div>
+      <div class="stat-content">
+        <span class="stat-num">{{ activeCount }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Active Accounts' : 'الحسابات النشطة' }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon bg-amber-light text-amber">
+        <span class="material-icons-round">shield</span>
+      </div>
+      <div class="stat-content">
+        <span class="stat-num">{{ superAdminCount }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Super Admins' : 'المشرفين العامين' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Controls Bar -->
+  <div class="controls-bar card">
+    <div class="search-input-wrap">
+      <span class="material-icons-round search-icon">search</span>
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery" 
+        [placeholder]="currentLang() === 'en' ? 'Search by name, email, or role...' : 'ابحث بالاسم، البريد، أو الدور...'"
+        class="form-control"
+      >
+      <button *ngIf="searchQuery" (click)="searchQuery = ''" class="btn-clear-search">
+        <span class="material-icons-round">close</span>
+      </button>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">
+        <span class="material-icons-round">filter_list</span>
+        {{ currentLang() === 'en' ? 'Role Filter:' : 'تصفية بالدور:' }}
+      </label>
+      <select [(ngModel)]="roleFilter" class="form-control role-select">
+        <option value="ALL">{{ currentLang() === 'en' ? 'All Roles' : 'جميع الأدوار' }}</option>
+        <option *ngFor="let r of rolesList" [value]="r.value">
+          {{ currentLang() === 'en' ? r.labelEn : r.labelAr }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="table-card card">
+    <div class="table-responsive" *ngIf="!loading(); else loadingTpl">
+      <table class="data-table" *ngIf="getFilteredAdmins().length > 0; else emptyTpl">
+        <thead>
+          <tr>
+            <th>{{ currentLang() === 'en' ? 'Staff Member' : 'المشرف' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Role & Permissions' : 'الدور والصلاحيات' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Status' : 'الحالة' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Registered Date' : 'تاريخ التسجيل' }}</th>
+            <th class="text-end">{{ currentLang() === 'en' ? 'Actions' : 'إجراءات' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let admin of getFilteredAdmins()">
+            <td>
+              <div class="user-cell">
+                <div class="user-avatar" [class.avatar-super]="admin.role === 'SUPER_ADMIN'">
+                  {{ admin.fullName.charAt(0).toUpperCase() }}
+                </div>
+                <div class="user-info">
+                  <span class="user-fullname">{{ admin.fullName }}</span>
+                  <span class="user-email-text">{{ admin.email }}</span>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <span class="role-pill" [ngClass]="getRoleBadge(admin.role)">
+                <span class="material-icons-round pill-icon" *ngIf="admin.role === 'SUPER_ADMIN'">security</span>
+                <span class="material-icons-round pill-icon" *ngIf="admin.role === 'CONTENT_MANAGER'">edit_note</span>
+                <span class="material-icons-round pill-icon" *ngIf="admin.role === 'SUPPORT'">support_agent</span>
+                <span class="material-icons-round pill-icon" *ngIf="admin.role === 'ANALYST'">insights</span>
+                <span>{{ getRoleLabel(admin.role) }}</span>
+              </span>
+            </td>
+
+            <td>
+              <button 
+                type="button" 
+                class="status-toggle-btn" 
+                [class.active]="admin.active"
+                (click)="toggleStatus(admin)"
+                [title]="currentLang() === 'en' ? 'Click to toggle status' : 'انقر لتغيير الحالة'"
+              >
+                <span class="status-dot"></span>
+                <span>{{ admin.active ? (currentLang() === 'en' ? 'Active' : 'مفعّل') : (currentLang() === 'en' ? 'Inactive' : 'معطّل') }}</span>
+              </button>
+            </td>
+
+            <td>
+              <span class="date-text">
+                {{ admin.createdAt ? (admin.createdAt | date:'mediumDate') : '—' }}
+              </span>
+            </td>
+
+            <td class="text-end">
+              <button 
+                type="button" 
+                class="btn-icon-action btn-delete" 
+                (click)="onDeleteAdmin(admin)"
+                [title]="currentLang() === 'en' ? 'Delete admin' : 'حذف المشرف'"
+              >
+                <span class="material-icons-round">delete_outline</span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #loadingTpl>
+      <div class="loading-state">
+        <div class="spinner-large"></div>
+        <p>{{ currentLang() === 'en' ? 'Loading staff accounts...' : 'جاري تحميل المشرفين...' }}</p>
+      </div>
+    </ng-template>
+
+    <ng-template #emptyTpl>
+      <div class="empty-state">
+        <span class="material-icons-round empty-icon">manage_accounts</span>
+        <h3>{{ currentLang() === 'en' ? 'No Admin Accounts Found' : 'لم يتم العثور على مشرفين' }}</h3>
+        <p>{{ currentLang() === 'en' ? 'Try adjusting your search criteria or register a new staff member.' : 'جرب تغيير معايير البحث أو قم بتسجيل مشرف جديد.' }}</p>
+        <button type="button" class="btn btn-primary mt-3" (click)="openCreateModal()">
+          <span class="material-icons-round">person_add</span>
+          <span>{{ currentLang() === 'en' ? 'Register First Staff Member' : 'تسجيل أول مشرف' }}</span>
+        </button>
+      </div>
+    </ng-template>
+  </div>
+
+
+  <!-- REGISTRATION MODAL -->
+  <div class="modal-backdrop" *ngIf="isModalOpen()" (click)="closeModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-header-icon">
+            <span class="material-icons-round">person_add</span>
+          </div>
+          <div>
+            <h3>{{ currentLang() === 'en' ? 'Register New Staff Member' : 'تسجيل مشرف جديد' }}</h3>
+            <p class="modal-sub">{{ currentLang() === 'en' ? 'Create credentials and assign role for new DealSpot administrator.' : 'إنشاء بيانات الدخول وتعيين الصلاحيات لمشرف ديل سبوت.' }}</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close-modal" (click)="closeModal()">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <!-- Modal Body Form -->
+      <form [formGroup]="adminForm" (submit)="onSubmitCreate()" class="modal-body">
+        
+        <div class="form-group">
+          <label class="form-label">
+            {{ currentLang() === 'en' ? 'Full Name' : 'الاسم الكامل' }}
+            <span class="required">*</span>
+          </label>
+          <div class="input-wrap">
+            <span class="material-icons-round input-icon">badge</span>
+            <input 
+              type="text" 
+              formControlName="fullName" 
+              class="form-control with-icon" 
+              [placeholder]="currentLang() === 'en' ? 'e.g. Tariq Al-Ghamdi' : 'مثال: طارق الغامدي'"
+            >
+          </div>
+          <span class="error-msg" *ngIf="adminForm.get('fullName')?.touched && adminForm.get('fullName')?.invalid">
+            {{ currentLang() === 'en' ? 'Full name is required (at least 3 characters).' : 'الاسم الكامل مطلوب (3 أحرف على الأقل).' }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            {{ currentLang() === 'en' ? 'Official Work Email' : 'البريد الإلكتروني المهني' }}
+            <span class="required">*</span>
+          </label>
+          <div class="input-wrap">
+            <span class="material-icons-round input-icon">mail</span>
+            <input 
+              type="email" 
+              formControlName="email" 
+              class="form-control with-icon" 
+              placeholder="staff@dealspot.com"
+            >
+          </div>
+          <span class="error-msg" *ngIf="adminForm.get('email')?.touched && adminForm.get('email')?.invalid">
+            {{ currentLang() === 'en' ? 'Valid work email is required.' : 'يرجى إدخال بريد إلكتروني صحيح.' }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            {{ currentLang() === 'en' ? 'Assigned Role' : 'الدور والصلاحية' }}
+            <span class="required">*</span>
+          </label>
+          <div class="input-wrap">
+            <span class="material-icons-round input-icon">admin_panel_settings</span>
+            <select formControlName="role" class="form-control with-icon">
+              <option *ngFor="let r of rolesList" [value]="r.value">
+                {{ currentLang() === 'en' ? r.labelEn : r.labelAr }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label-with-action">
+            <label class="form-label">
+              {{ currentLang() === 'en' ? 'Initial Password' : 'كلمة المرور الأولية' }}
+              <span class="required">*</span>
+            </label>
+            <button type="button" class="btn-text-action" (click)="generateRandomPassword()">
+              <span class="material-icons-round">autorenew</span>
+              {{ currentLang() === 'en' ? 'Generate Random' : 'توليد كلمة مرور' }}
+            </button>
+          </div>
+          <div class="input-wrap">
+            <span class="material-icons-round input-icon">lock</span>
+            <input 
+              [type]="showPassword() ? 'text' : 'password'" 
+              formControlName="password" 
+              class="form-control with-icon with-action" 
+              placeholder="••••••••"
+            >
+            <button type="button" class="btn-toggle-eye" (click)="showPassword.set(!showPassword())" tabindex="-1">
+              <span class="material-icons-round">{{ showPassword() ? 'visibility_off' : 'visibility' }}</span>
+            </button>
+          </div>
+          <span class="error-msg" *ngIf="adminForm.get('password')?.touched && adminForm.get('password')?.invalid">
+            {{ currentLang() === 'en' ? 'Password must be at least 6 characters.' : 'كلمة المرور يجب أن لا تقل عن 6 أحرف.' }}
+          </span>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" (click)="closeModal()">
+            {{ currentLang() === 'en' ? 'Cancel' : 'إلغاء' }}
+          </button>
+          <button type="submit" [disabled]="adminForm.invalid || submitting()" class="btn btn-primary">
+            <span class="material-icons-round" *ngIf="!submitting()">how_to_reg</span>
+            <span *ngIf="!submitting()">{{ currentLang() === 'en' ? 'Save & Register Admin' : 'حفظ وتسجيل المشرف' }}</span>
+            <div class="spinner-small" *ngIf="submitting()"></div>
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+</div>
