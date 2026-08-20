@@ -1,150 +1,556 @@
-<div class="crud-container">
+<div class="crud-container" [dir]="currentLang() === 'ar' ? 'rtl' : 'ltr'">
+  <!-- Header with Title, Stats & Action Button -->
   <div class="crud-header">
-    <h2>Manage Retailers</h2>
-    <button class="btn btn-primary" (click)="openAddModal()">
-      <span class="material-icons-round">add</span>
-      <span>Add Store</span>
-    </button>
+    <div class="header-content">
+      <div class="header-icon-wrapper">
+        <span class="material-icons-round">storefront</span>
+      </div>
+      <div>
+        <h1 class="page-title">
+          {{ currentLang() === 'en' ? 'Store & Merchant Management' : 'إدارة المتاجر والشركاء' }}
+        </h1>
+        <p class="page-subtitle">
+          {{ currentLang() === 'en' ? 'Manage verified retailers, business profiles, and brand identities' : 'إدارة المتاجر المعتمدة والملفات التجارية والهوية البصرية' }}
+        </p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="openAddModal()" *ngIf="authService.isSuperAdmin()">
+        <span class="material-icons-round">add_business</span>
+        <span>{{ currentLang() === 'en' ? 'Add Store' : 'إضافة متجر جديد' }}</span>
+      </button>
+    </div>
   </div>
 
-  <!-- Table list -->
-  <div class="card table-wrapper">
+  <!-- Summary Stats Bar -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon-wrapper bg-blue-light">
+        <span class="material-icons-round text-blue">store</span>
+      </div>
+      <div class="stat-details">
+        <span class="stat-value">{{ totalStoresCount }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Total Retailers' : 'إجمالي المتاجر' }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrapper bg-emerald-light">
+        <span class="material-icons-round text-emerald">verified</span>
+      </div>
+      <div class="stat-details">
+        <span class="stat-value">{{ verifiedStoresCount }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Verified Partners' : 'شركاء معتمدون' }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrapper bg-primary-light">
+        <span class="material-icons-round text-primary-color">check_circle</span>
+      </div>
+      <div class="stat-details">
+        <span class="stat-value">{{ activeStoresCount }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Active Status' : 'متاجر نشطة' }}</span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Filter & Search Toolbar -->
+  <div class="card filter-card">
+    <div class="filter-row">
+      <div class="search-input-wrapper">
+        <span class="material-icons-round search-icon">search</span>
+        <input
+          type="text"
+          class="form-control search-input"
+          [placeholder]="currentLang() === 'en' ? 'Search by name, CR, VAT, or city...' : 'بحث بالاسم، السجل التجاري، الرقم الضريبي، أو المدينة...'"
+          [(ngModel)]="searchQuery"
+          (input)="applyFilter()"
+        />
+        <button *ngIf="searchQuery" class="clear-search-btn" (click)="searchQuery = ''; applyFilter()">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <div class="filters-group">
+        <select class="form-control filter-select" [(ngModel)]="selectedCityFilter" (change)="applyFilter()">
+          <option value="">{{ currentLang() === 'en' ? 'All Cities' : 'جميع المدن' }}</option>
+          <option *ngFor="let c of cities()" [value]="c.id">
+            {{ currentLang() === 'en' ? (c.nameEn || c.name_en) : (c.nameAr || c.name_ar || c.nameEn) }}
+          </option>
+        </select>
+
+        <select class="form-control filter-select" [(ngModel)]="selectedCategoryFilter" (change)="applyFilter()">
+          <option value="">{{ currentLang() === 'en' ? 'All Categories' : 'جميع الفئات' }}</option>
+          <option *ngFor="let cat of categories()" [value]="cat.id">
+            {{ currentLang() === 'en' ? (cat.nameEn || cat.name_en || cat.name) : (cat.nameAr || cat.name_ar || cat.nameEn || cat.name) }}
+          </option>
+        </select>
+
+        <select class="form-control filter-select" [(ngModel)]="selectedStatusFilter" (change)="applyFilter()">
+          <option value="">{{ currentLang() === 'en' ? 'All Status' : 'كل الحالات' }}</option>
+          <option value="active">{{ currentLang() === 'en' ? 'Active' : 'نشط' }}</option>
+          <option value="inactive">{{ currentLang() === 'en' ? 'Inactive' : 'غير نشط' }}</option>
+          <option value="verified">{{ currentLang() === 'en' ? 'Verified Only' : 'معتمد فقط' }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>{{ currentLang() === 'en' ? 'Loading retailers...' : 'جاري تحميل المتاجر...' }}</p>
+  </div>
+
+  <!-- Table Container -->
+  <div class="card table-wrapper" *ngIf="!loading">
     <table class="admin-table">
       <thead>
         <tr>
-          <th>Logo</th>
-          <th>Store ID</th>
-          <th>Name (EN)</th>
-          <th>Name (AR)</th>
-          <th>CR / VAT Codes</th>
-          <th>Verified</th>
-          <th>Status</th>
-          <th>Actions</th>
+          <th>{{ currentLang() === 'en' ? 'Brand / Logo' : 'الشعار / العلامة' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Store Name' : 'اسم المتجر' }}</th>
+          <th>{{ currentLang() === 'en' ? 'City & Category' : 'المدينة والفئة' }}</th>
+          <th>{{ currentLang() === 'en' ? 'CR & VAT' : 'السجل والرقم الضريبي' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Verification' : 'التوثيق' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Status' : 'الحالة' }}</th>
+          <th class="text-right">{{ currentLang() === 'en' ? 'Actions' : 'الإجراءات' }}</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let s of stores()">
-  <td>
-    <img [src]="filePath + s.logoUrl" class="admin-table-logo" alt="logo">
-  </td>
+        <tr *ngFor="let s of filteredStores()">
+          <td>
+            <div class="store-brand-cell">
+              <div class="logo-avatar">
+                <img
+                  *ngIf="s.logoUrl"
+                  [src]="filePath + s.logoUrl"
+                  alt="{{ s.nameEn }} logo"
+                  (error)="$any($event.target).src = 'assets/images/placeholder-store.png'"
+                />
+                <span *ngIf="!s.logoUrl" class="material-icons-round avatar-placeholder-icon">storefront</span>
+              </div>
+              <span class="store-id-chip">#{{ s.id }}</span>
+            </div>
+          </td>
 
-  <td>{{ s.id }}</td>
+          <td>
+            <div class="store-names-cell">
+              <span class="primary-name">{{ currentLang() === 'en' ? (s.nameEn || s.name_en) : (s.nameAr || s.name_ar || s.nameEn) }}</span>
+              <span class="secondary-name">{{ currentLang() === 'en' ? (s.nameAr || s.name_ar) : (s.nameEn || s.name_en) }}</span>
+            </div>
+          </td>
 
-  <td>{{ s.nameEn }}</td>
+          <td>
+            <div class="meta-cell">
+              <span class="city-badge" *ngIf="s.cityNameEn || s.cityNameAr || s.city?.nameEn || s.city?.name_en">
+                <span class="material-icons-round icon-xs">place</span>
+                {{ currentLang() === 'en' ? (s.cityNameEn || s.city?.nameEn || s.city?.name_en) : (s.cityNameAr || s.city?.nameAr || s.cityNameEn || s.city?.nameEn) }}
+              </span>
+              <span class="category-text" *ngIf="s.categoryNameEn || s.categoryNameAr || s.category?.nameEn || s.category?.name_en">
+                {{ currentLang() === 'en' ? (s.categoryNameEn || s.category?.nameEn || s.category?.name_en) : (s.categoryNameAr || s.category?.nameAr || s.categoryNameEn || s.category?.nameEn) }}
+              </span>
+            </div>
+          </td>
 
-  <td>{{ s.nameAr }}</td>
+          <td>
+            <div class="code-column-desc">
+              <div class="code-row" *ngIf="s.crNumber">
+                <span class="code-label">CR:</span>
+                <code>{{ s.crNumber }}</code>
+              </div>
+              <div class="code-row" *ngIf="s.vatNumber">
+                <span class="code-label">VAT:</span>
+                <code>{{ s.vatNumber }}</code>
+              </div>
+              <span class="text-muted" *ngIf="!s.crNumber && !s.vatNumber">—</span>
+            </div>
+          </td>
 
-  <td>
-    <div class="code-column-desc">
-      <span>CR: <code>{{ s.crNumber || 'N/A' }}</code></span>
-      <span>VAT: <code>{{ s.vatNumber || 'N/A' }}</code></span>
-    </div>
-  </td>
+          <td>
+            <span class="badge-verified" *ngIf="s.verified">
+              <span class="material-icons-round icon-xs">verified</span>
+              <span>{{ currentLang() === 'en' ? 'Verified' : 'معتمد' }}</span>
+            </span>
+            <span class="badge-unverified" *ngIf="!s.verified">
+              <span class="material-icons-round icon-xs">gpp_maybe</span>
+              <span>{{ currentLang() === 'en' ? 'Unverified' : 'غير معتمد' }}</span>
+            </span>
+          </td>
 
-  <td>
-    <span class="material-icons-round verified-icon" *ngIf="s.verified">
-      verified
-    </span>
+          <td>
+            <span class="status-chip" [class.active]="s.active" [class.inactive]="!s.active">
+              <span class="status-dot"></span>
+              {{ s.active ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'معطل') }}
+            </span>
+          </td>
 
-    <span class="text-muted" *ngIf="!s.verified">
-      No
-    </span>
+          <td class="text-right">
+            <div class="action-buttons-cell">
+              <a
+                [routerLink]="['/admin/stores', s.id, 'branches']"
+                class="btn-icon btn-icon-branches"
+                [title]="currentLang() === 'en' ? 'Manage Branches' : 'إدارة الفروع'"
+              >
+                <span class="material-icons-round">domain</span>
+              </a>
 
-    
-  </td>
+              <button
+                class="btn-icon btn-icon-edit"
+                (click)="openEditModal(s)"
+                [title]="currentLang() === 'en' ? 'Edit Store' : 'تعديل المتجر'"
+              >
+                <span class="material-icons-round">edit</span>
+              </button>
 
-  <td>
-    <span
-      class="badge"
-      [class.badge-featured]="s.active"
-      [class.badge-discount]="!s.active">
+              <button
+                *ngIf="authService.isSuperAdmin()"
+                class="btn-icon btn-icon-delete"
+                (click)="deleteStore(s)"
+                [title]="currentLang() === 'en' ? 'Delete Store' : 'حذف المتجر'"
+              >
+                <span class="material-icons-round">delete</span>
+              </button>
+            </div>
+          </td>
+        </tr>
 
-      {{ s.active ? 'Active' : 'Inactive' }}
-    </span>
-  </td>
-
-  <td>
-    <div class="action-buttons-cell">
-      <button
-        class="btn-icon"
-        (click)="openEditModal(s)"
-        title="Edit Store Profile">
-        <span class="material-icons-round">edit</span>
-      </button>
-
-      <a
-        [routerLink]="['/admin/stores', s.id, 'branches']"
-        class="btn-icon text-primary"
-        title="Manage Branches">
-        <span class="material-icons-round">storefront</span>
-      </a>
-
-      <button
-        class="btn-icon text-danger"
-        title="Delete Shop">
-        <span class="material-icons-round">delete</span>
-      </button>
-    </div>
-  </td>
-</tr>
+        <tr *ngIf="filteredStores().length === 0">
+          <td colspan="7" class="empty-table-state">
+            <span class="material-icons-round empty-icon">storefront</span>
+            <h4>{{ currentLang() === 'en' ? 'No Stores Found' : 'لم يتم العثور على متاجر' }}</h4>
+            <p>{{ currentLang() === 'en' ? 'Try adjusting your search criteria or register a new store.' : 'جرب تعديل خيارات البحث أو قم بإضافة متجر جديد.' }}</p>
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
 
-  <!-- Add/Edit Modal -->
+  <!-- Add / Edit Store Modal -->
   <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>{{ editingStoreId ? 'Edit Store Profile' : 'Add Store' }}</h3>
-        <button class="btn-icon border-none" (click)="closeModal()"><span class="material-icons-round">close</span></button>
+        <div class="modal-title-group">
+          <div class="modal-header-icon">
+            <span class="material-icons-round">{{ editingStoreId ? 'edit_note' : 'add_business' }}</span>
+          </div>
+          <div>
+            <h3>{{ editingStoreId ? (currentLang() === 'en' ? 'Edit Store Profile' : 'تعديل بيانات المتجر') : (currentLang() === 'en' ? 'Register New Store' : 'تسجيل متجر جديد') }}</h3>
+            <p class="modal-subtitle">{{ currentLang() === 'en' ? 'Provide store branding, official details, and localization info' : 'أدخل بيانات الهوية والتراخيص الرسمية وتفاصيل المتجر' }}</p>
+          </div>
+        </div>
+        <button class="btn-close" (click)="closeModal()">
+          <span class="material-icons-round">close</span>
+        </button>
       </div>
-      <div class="modal-body">
-        <form [formGroup]="storeForm" (submit)="onSubmit()" class="auth-form">
-          <div class="form-group">
-            <label class="form-label">Store Name (EN)</label>
-            <input type="text" formControlName="name_en" class="form-control">
+
+      <form [formGroup]="storeForm" (ngSubmit)="onSubmit()" class="modal-form">
+        <div class="modal-body">
+          <!-- Logo Upload Section -->
+          <div class="form-section">
+            <h4 class="section-title">
+              <span class="material-icons-round section-icon">image</span>
+              {{ currentLang() === 'en' ? 'Store Logo & Branding' : 'شعار المتجر والهوية البصرية' }}
+            </h4>
+
+            <div class="logo-upload-container">
+              <!-- Preview Area -->
+              <div class="logo-preview-box" *ngIf="logoPreviewUrl || existingLogoUrl">
+                <img
+                  [src]="logoPreviewUrl || (filePath + existingLogoUrl)"
+                  alt="Store Logo Preview"
+                  class="preview-img"
+                />
+                <button type="button" class="btn-remove-logo" (click)="removeSelectedLogo()" *ngIf="logoPreviewUrl">
+                  <span class="material-icons-round">delete</span>
+                </button>
+              </div>
+
+              <!-- Upload Dropzone -->
+              <label class="logo-dropzone" [class.has-preview]="logoPreviewUrl || existingLogoUrl">
+                <input
+                  type="file"
+                  accept="image/png, image/jpeg, image/webp, image/svg+xml"
+                  class="file-input-hidden"
+                  (change)="onLogoFileSelected($event)"
+                />
+                <div class="dropzone-content">
+                  <div class="dropzone-icon-circle">
+                    <span class="material-icons-round">cloud_upload</span>
+                  </div>
+                  <div class="dropzone-text">
+                    <span class="dropzone-title">
+                      {{ (logoPreviewUrl || existingLogoUrl) ? (currentLang() === 'en' ? 'Change Logo Image' : 'تغيير الشعار') : (currentLang() === 'en' ? 'Upload Store Logo' : 'رفع شعار المتجر') }}
+                    </span>
+                    <span class="dropzone-hint">PNG, JPG, WEBP or SVG (Max 5MB)</span>
+                  </div>
+                </div>
+              </label>
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Store Name (AR)</label>
-            <input type="text" formControlName="name_ar" class="form-control">
+
+          <!-- Basic Identity Section -->
+          <div class="form-section">
+            <h4 class="section-title">
+              <span class="material-icons-round section-icon">badge</span>
+              {{ currentLang() === 'en' ? 'Store Identity' : 'بيانات المتجر الأساسية' }}
+            </h4>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label required">{{ currentLang() === 'en' ? 'Store Name (EN)' : 'اسم المتجر (الإنجليزية)' }}</label>
+                <input
+                  type="text"
+                  formControlName="name_en"
+                  class="form-control"
+                  [placeholder]="currentLang() === 'en' ? 'e.g. Panda Supermarket' : 'مثال: Panda Supermarket'"
+                />
+                <span class="error-text" *ngIf="storeForm.get('name_en')?.touched && storeForm.get('name_en')?.invalid">
+                  {{ currentLang() === 'en' ? 'English name is required (min 2 chars)' : 'الاسم بالإنجليزية مطلوب (حرفين على الأقل)' }}
+                </span>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label required">{{ currentLang() === 'en' ? 'Store Name (AR)' : 'اسم المتجر (العربية)' }}</label>
+                <input
+                  type="text"
+                  formControlName="name_ar"
+                  class="form-control"
+                  dir="rtl"
+                  [placeholder]="currentLang() === 'en' ? 'e.g. أسواق بنده' : 'مثال: أسواق بنده'"
+                />
+                <span class="error-text" *ngIf="storeForm.get('name_ar')?.touched && storeForm.get('name_ar')?.invalid">
+                  {{ currentLang() === 'en' ? 'Arabic name is required (min 2 chars)' : 'الاسم بالعربية مطلوب (حرفين على الأقل)' }}
+                </span>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label required">{{ currentLang() === 'en' ? 'Headquarters City' : 'المدينة الرئيسية' }}</label>
+                <select formControlName="city_id" class="form-control">
+                  <option value="" disabled>{{ currentLang() === 'en' ? 'Select City' : 'اختر المدينة' }}</option>
+                  <option *ngFor="let c of cities()" [value]="c.id">
+                    {{ currentLang() === 'en' ? (c.nameEn || c.name_en) : (c.nameAr || c.name_ar || c.nameEn) }}
+                  </option>
+                </select>
+                <span class="error-text" *ngIf="storeForm.get('city_id')?.touched && storeForm.get('city_id')?.invalid">
+                  {{ currentLang() === 'en' ? 'City is required' : 'المدينة مطلوبة' }}
+                </span>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label required">{{ currentLang() === 'en' ? 'Primary Category' : 'الفئة الرئيسية' }}</label>
+                <select formControlName="category_id" class="form-control">
+                  <option value="" disabled>{{ currentLang() === 'en' ? 'Select Category' : 'اختر الفئة' }}</option>
+                  <option *ngFor="let cat of categories()" [value]="cat.id">
+                    {{ currentLang() === 'en' ? (cat.nameEn || cat.name_en || cat.name) : (cat.nameAr || cat.name_ar || cat.nameEn || cat.name) }}
+                  </option>
+                </select>
+                <span class="error-text" *ngIf="storeForm.get('category_id')?.touched && storeForm.get('category_id')?.invalid">
+                  {{ currentLang() === 'en' ? 'Category is required' : 'الفئة مطلوبة' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">{{ currentLang() === 'en' ? 'Description (EN)' : 'الوصف (الإنجليزية)' }}</label>
+                <textarea
+                  formControlName="description_en"
+                  class="form-control"
+                  rows="2"
+                  [placeholder]="currentLang() === 'en' ? 'Brief description about the retailer...' : 'وصف مختصر عن المتجر بالإنجليزية...'"
+                ></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">{{ currentLang() === 'en' ? 'Description (AR)' : 'الوصف (العربية)' }}</label>
+                <textarea
+                  formControlName="description_ar"
+                  class="form-control"
+                  dir="rtl"
+                  rows="2"
+                  [placeholder]="currentLang() === 'en' ? 'نبذة عن المتجر بالعربية...' : 'نبذة عن المتجر بالعربية...'"
+                ></textarea>
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Logo Image URL</label>
-            <input type="text" formControlName="logo_url" class="form-control">
+
+          <!-- Legal & Compliance Section -->
+          <div class="form-section">
+            <h4 class="section-title">
+              <span class="material-icons-round section-icon">gavel</span>
+              {{ currentLang() === 'en' ? 'Legal & Tax Registration' : 'السجل التجاري والضرائب' }}
+            </h4>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">{{ currentLang() === 'en' ? 'CR Number (Commercial Register)' : 'رقم السجل التجاري (CR)' }}</label>
+                <input
+                  type="text"
+                  formControlName="cr_number"
+                  class="form-control font-mono"
+                  placeholder="1010XXXXXX"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">{{ currentLang() === 'en' ? 'VAT Number (Tax ID)' : 'الرقم الضريبي (VAT)' }}</label>
+                <input
+                  type="text"
+                  formControlName="vat_number"
+                  class="form-control font-mono"
+                  placeholder="300XXXXXXXXXXXX"
+                />
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Primary City</label>
-            <select formControlName="city_id" class="form-control">
-              <option value="" disabled>Select City</option>
-              <option *ngFor="let c of cities()" [value]="c.id">{{ c.name_en }}</option>
-            </select>
+
+          <!-- Contact & Web Section -->
+          <div class="form-section">
+            <h4 class="section-title">
+              <span class="material-icons-round section-icon">contact_support</span>
+              {{ currentLang() === 'en' ? 'Contact & Online Presence' : 'التواصل والموقع الإلكتروني' }}
+            </h4>
+
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label class="form-label">{{ currentLang() === 'en' ? 'Contact Phone' : 'رقم الهاتف' }}</label>
+                <input
+                  type="text"
+                  formControlName="contact_phone"
+                  class="form-control"
+                  placeholder="+966 5X XXX XXXX"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">{{ currentLang() === 'en' ? 'Contact Email' : 'البريد الإلكتروني' }}</label>
+                <input
+                  type="email"
+                  formControlName="contact_email"
+                  class="form-control"
+                  placeholder="support@merchant.com"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">{{ currentLang() === 'en' ? 'Official Website' : 'الموقع الرسمي' }}</label>
+                <input
+                  type="url"
+                  formControlName="website"
+                  class="form-control"
+                  placeholder="https://panda.com.sa"
+                />
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Primary Category</label>
-            <select formControlName="category_id" class="form-control">
-              <option value="" disabled>Select Category</option>
-              <option *ngFor="let cat of categories()" [value]="cat.id">{{ cat.name_en }}</option>
-            </select>
+
+          <!-- Store Manager Account (Only on New Store Creation) -->
+          <div class="form-section" *ngIf="!editingStoreId">
+            <h4 class="section-title">
+              <span class="material-icons-round section-icon">manage_accounts</span>
+              {{ currentLang() === 'en' ? 'Store Manager Login Account' : 'حساب مدير المتجر لتسجيل الدخول' }}
+            </h4>
+
+
+            <div class="toggle-card" style="margin-bottom: 0.75rem;">
+              <label class="toggle-switch">
+                <input type="checkbox" formControlName="create_manager_account" />
+                <span class="slider"></span>
+              </label>
+              <div class="toggle-info">
+                <span class="toggle-title">
+                  {{ currentLang() === 'en' ? 'Auto-create Store Manager Account' : 'إنشاء حساب مدير متجر تلقائياً' }}
+                </span>
+                <span class="toggle-desc">
+                  {{ currentLang() === 'en' ? 'Provisions a STORE_MANAGER login for the merchant to manage this store.' : 'تفعيل حساب بصلاحية STORE_MANAGER لإتاحة الدخول وإدارة المتجر.' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="form-grid-3" *ngIf="storeForm.get('create_manager_account')?.value">
+              <div class="form-group">
+                <label class="form-label">{{ currentLang() === 'en' ? 'Manager Name' : 'اسم المدير' }}</label>
+                <input
+                  type="text"
+                  formControlName="manager_name"
+                  class="form-control"
+                  [placeholder]="currentLang() === 'en' ? 'e.g. John Doe (or store name)' : 'مثال: أحمد الحربي'"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">{{ currentLang() === 'en' ? 'Manager Login Email' : 'البريد الإلكتروني للدخول' }}</label>
+                <input
+                  type="email"
+                  formControlName="manager_email"
+                  class="form-control"
+                  [placeholder]="storeForm.get('contact_email')?.value || 'manager@merchant.com'"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">{{ currentLang() === 'en' ? 'Initial Password' : 'كلمة المرور الأولية' }}</label>
+                <input
+                  type="text"
+                  formControlName="manager_password"
+                  class="form-control font-mono"
+                  placeholder="Partner@123"
+                />
+              </div>
+            </div>
           </div>
-          <div class="form-group"> 
-            <label class="form-label">CR Number (Commercial Register)</label>
-            <input type="text" formControlName="cr_number" class="form-control">
+
+          <!-- Flags & Status Section -->
+          <div class="form-section toggles-section">
+
+            <div class="toggle-card">
+              <label class="toggle-switch">
+                <input type="checkbox" formControlName="is_verified" />
+                <span class="slider"></span>
+              </label>
+              <div class="toggle-info">
+                <span class="toggle-title">
+                  <span class="material-icons-round text-emerald icon-xs">verified</span>
+                  {{ currentLang() === 'en' ? 'Verified Partner' : 'شريك معتمد' }}
+                </span>
+                <span class="toggle-desc">
+                  {{ currentLang() === 'en' ? 'Display official blue verification checkmark across all store listings' : 'إظهار شارة التوثيق الزرقاء في كافة قوائم المتجر' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="toggle-card">
+              <label class="toggle-switch">
+                <input type="checkbox" formControlName="is_active" />
+                <span class="slider"></span>
+              </label>
+              <div class="toggle-info">
+                <span class="toggle-title">
+                  <span class="material-icons-round text-indigo icon-xs">power_settings_new</span>
+                  {{ currentLang() === 'en' ? 'Active Store' : 'متجر نشط' }}
+                </span>
+                <span class="toggle-desc">
+                  {{ currentLang() === 'en' ? 'Allow users to discover offers, flyers, and branches from this store' : 'السماح للعملاء باستكشاف العروض والمنشورات والفروع التابعة لهذا المتجر' }}
+                </span>
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">VAT Number</label>
-            <input type="text" formControlName="vat_number" class="form-control">
-          </div>
-          <div class="form-group checkbox-label">
-            <input type="checkbox" formControlName="is_verified">
-            <span>Verified Partner badge</span>
-          </div>
-          <div class="form-group checkbox-label">
-            <input type="checkbox" formControlName="is_active">
-            <span>Active Status</span>
-          </div>
-          <button type="submit" [disabled]="storeForm.invalid" class="btn btn-primary w-full">Save Changes</button>
-        </form>
-      </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">
+            {{ currentLang() === 'en' ? 'Cancel' : 'إلغاء' }}
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="storeForm.invalid || submitting">
+            <span class="spinner-sm" *ngIf="submitting"></span>
+            <span class="material-icons-round" *ngIf="!submitting">save</span>
+            <span>{{ editingStoreId ? (currentLang() === 'en' ? 'Save Changes' : 'حفظ التعديلات') : (currentLang() === 'en' ? 'Register Store' : 'تسجيل المتجر') }}</span>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
