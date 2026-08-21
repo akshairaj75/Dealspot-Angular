@@ -183,8 +183,25 @@
 
       <!-- Main Title & Bilingual Heading -->
       <div class="title-header-block">
+        <!-- Offer Summary / Description (Top) -->
+        <div class="detail-offer-desc-banner" *ngIf="offer()?.descriptionEn || offer()?.descriptionAr || product()?.descriptionEn || product()?.descriptionAr">
+          <span class="material-icons-round">campaign</span>
+          <span>{{ (offer() | translate:'description') || (product() | translate:'description') }}</span>
+        </div>
+
         <h1 class="offer-title-main">{{ offer() | translate:'title' }}</h1>
         <p class="offer-title-secondary" *ngIf="currentLang() === 'en' && offer()?.titleAr">{{ offer()?.titleAr }}</p>
+
+        <!-- Linked Product Name Banner (In place of description) -->
+        <div class="detail-product-banner" *ngIf="product()?.nameEn || offer()?.productNameEn">
+          <div class="product-banner-icon">
+            <span class="material-icons-round">inventory_2</span>
+          </div>
+          <div class="product-banner-info">
+            <span class="product-banner-label">{{ currentLang() === 'en' ? 'Product Name' : 'اسم المنتج' }}</span>
+            <strong class="product-banner-title">{{ currentLang() === 'en' ? (product()?.nameEn || offer()?.productNameEn) : (product()?.nameAr || offer()?.productNameAr || product()?.nameEn) }}</strong>
+          </div>
+        </div>
       </div>
 
       <!-- Brand Bar (If Product or Brand is present) -->

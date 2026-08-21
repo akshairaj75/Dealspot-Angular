@@ -473,7 +473,34 @@
 .title-header-block {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
+}
+
+/* Offer Description Banner (Top) */
+.detail-offer-desc-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+  border-left: 3px solid var(--primary);
+  padding: 8px 14px;
+  border-radius: var(--radius-md, 8px);
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  margin-bottom: 2px;
+}
+
+.rtl .detail-offer-desc-banner {
+  border-left: none;
+  border-right: 3px solid var(--primary);
+}
+
+.detail-offer-desc-banner .material-icons-round {
+  color: var(--primary);
+  font-size: 18px;
+  flex-shrink: 0;
 }
 
 .offer-title-main {
@@ -489,6 +516,72 @@
   font-weight: 600;
   color: var(--text-secondary);
   margin: 0;
+}
+
+/* Product Banner (Below Title) */
+.detail-product-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(59, 130, 246, 0.14) 100%);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  padding: 12px 18px;
+  border-radius: var(--radius-lg, 12px);
+  margin-top: 6px;
+  margin-bottom: 2px;
+}
+
+.product-banner-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: var(--primary);
+  color: #ffffff;
+  border-radius: 8px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}
+
+.product-banner-icon .material-icons-round {
+  font-size: 22px;
+}
+
+.product-banner-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.product-banner-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary);
+}
+
+.product-banner-title {
+  font-size: 16.5px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.dark-theme .detail-product-banner {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(30, 58, 138, 0.35) 100%);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.dark-theme .product-banner-title {
+  color: #f8fafc;
+}
+
+.dark-theme .detail-offer-desc-banner {
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
 }
 
 /* Brand Bar Pill */

@@ -8,6 +8,7 @@ import { ProductService } from '../../../core/services/product.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { environment } from '../../../environment/environment';
 
+import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
 import { AuthService } from '../../../core/services/auth.service';
 import Swal from 'sweetalert2';
 
@@ -16,7 +17,7 @@ type StoreTab = 'offers' | 'flyers' | 'branches';
 @Component({
   selector: 'app-store-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TranslatePipe],
   templateUrl: './store-detail.component.html',
   styleUrls: ['./store-detail.component.css']
 })

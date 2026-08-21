@@ -119,9 +119,25 @@
               >
             </div>
             <div class="offer-card-body">
+              <!-- Description -->
+              <p class="card-desc-text" *ngIf="(offer | translate:'description') || (offer.product | translate:'description') || offer.descriptionEn">
+                {{ (offer | translate:'description') || (offer.product | translate:'description') || (currentLang() === 'en' ? (offer.descriptionEn || offer.description_en) : (offer.descriptionAr || offer.description_ar || offer.descriptionEn)) }}
+              </p>
+
               <h3 class="offer-title-main">
-                <a [routerLink]="['/offers-list']">{{ currentLang() === 'en' ? (offer.titleEn || offer.title_en) : (offer.titleAr || offer.title_ar || offer.titleEn) }}</a>
+                <a [routerLink]="['/offers', offer.id]">{{ currentLang() === 'en' ? (offer.titleEn || offer.title_en) : (offer.titleAr || offer.title_ar || offer.titleEn) }}</a>
               </h3>
+
+              <!-- Prominent Product Name -->
+              <div class="offer-product-name-row" *ngIf="(offer | translate:'productName') || (offer.product | translate:'name') || offer.productNameEn">
+                <span class="product-icon-box">
+                  <span class="material-icons-round">inventory_2</span>
+                </span>
+                <span class="product-name-highlight">
+                  {{ (offer | translate:'productName') || (offer.product | translate:'name') || (currentLang() === 'en' ? offer.productNameEn : (offer.productNameAr || offer.productNameEn)) }}
+                </span>
+              </div>
+
               <div class="price-row">
                 <span class="offer-price">{{ offer.offerPrice || offer.offer_price || offer.price }} SAR</span>
                 <span class="original-price" *ngIf="offer.originalPrice || offer.original_price">{{ offer.originalPrice || offer.original_price }} SAR</span>
