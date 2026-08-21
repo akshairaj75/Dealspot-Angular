@@ -86,6 +86,15 @@
         </select>
       </div>
 
+      <!-- Brand Filter -->
+      <div class="filter-group">
+        <label class="form-label">{{ currentLang() === 'en' ? 'Brand' : 'الماركة' }}</label>
+        <select [(ngModel)]="selectedBrandId" (ngModelChange)="applyFilters()" class="form-control">
+          <option [ngValue]="null">{{ currentLang() === 'en' ? 'All Brands' : 'جميع الماركات' }}</option>
+          <option *ngFor="let b of brands()" [value]="b.id">{{ b | translate:'name' }}</option>
+        </select>
+      </div>
+
       <!-- Discount Percentage Slider -->
       <div class="filter-group">
         <div class="filter-group-title-row">
@@ -141,7 +150,7 @@
         </p>
       </div>
 
-      <div class="active-chips" *ngIf="selectedMainCategoryId || selectedSubCategoryId || selectedStoreId || showFlashOnly || showFeaturedOnly || selectedDiscountRange > 0 || searchQuery">
+      <div class="active-chips" *ngIf="selectedMainCategoryId || selectedSubCategoryId || selectedStoreId || selectedBrandId || selectedBrandName || showFlashOnly || showFeaturedOnly || selectedDiscountRange > 0 || searchQuery">
         <!-- Main Category chip -->
         <span class="active-filter-badge" *ngIf="getSelectedMainCategory()">
           <span>{{ getSelectedMainCategory() | translate:'name' }}</span>
@@ -154,6 +163,15 @@
         <span class="active-filter-badge sub-badge" *ngIf="getSelectedSubCategory()">
           <span>{{ getSelectedSubCategory() | translate:'name' }}</span>
           <button class="remove-chip-btn" (click)="onSubCategoryChange(null)">
+            <span class="material-icons-round">close</span>
+          </button>
+        </span>
+
+        <!-- Brand chip -->
+        <span class="active-filter-badge brand-badge" *ngIf="getSelectedBrand()">
+          <span class="material-icons-round font-xs">verified</span>
+          <span>{{ getSelectedBrand() | translate:'name' }}</span>
+          <button class="remove-chip-btn" (click)="clearBrandFilter()">
             <span class="material-icons-round">close</span>
           </button>
         </span>

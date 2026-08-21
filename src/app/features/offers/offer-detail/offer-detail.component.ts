@@ -453,4 +453,29 @@ export class OfferDetailComponent implements OnInit {
       return null;
     }
   }
+
+  getBrandName(): string {
+    const p = this.product();
+    const o = this.offer();
+    if (this.currentLang() === 'en') {
+      return p?.brandNameEn || p?.brand?.nameEn || (typeof p?.brand === 'string' ? p?.brand : '') || o?.brandNameEn || (typeof o?.product?.brand === 'string' ? o?.product?.brand : o?.product?.brand?.nameEn) || '';
+    } else {
+      return p?.brandNameAr || p?.brand?.nameAr || p?.brandNameEn || (typeof p?.brand === 'string' ? p?.brand : '') || o?.brandNameAr || o?.brandNameEn || (typeof o?.product?.brand === 'string' ? o?.product?.brand : o?.product?.brand?.nameAr) || '';
+    }
+  }
+
+  getBrandQueryParams(): any {
+    const p = this.product();
+    const o = this.offer();
+    const brandId = p?.brandId || p?.brand?.id || o?.brandId;
+    const brandName = p?.brandNameEn || p?.brand?.nameEn || o?.brandNameEn || (typeof p?.brand === 'string' ? p?.brand : '');
+    const params: any = {};
+    if (brandId) {
+      params['brandId'] = brandId;
+    }
+    if (brandName) {
+      params['brand'] = brandName;
+    }
+    return params;
+  }
 }

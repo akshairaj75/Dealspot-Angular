@@ -11,6 +11,7 @@ import { TranslationService } from '../../../core/services/translation.service';
 import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
 import { environment } from '../../../environment/environment';
 
+import { BrandService } from '../../../core/services/brand.service';
 import { AuthService } from '../../../core/services/auth.service';
 import Swal from 'sweetalert2';
 
@@ -26,6 +27,7 @@ export class OfferListComponent implements OnInit {
   private categoryService = inject(CategoryService);
   private storeService = inject(StoreService);
   private productService = inject(ProductService);
+  private brandService = inject(BrandService);
   private cityService = inject(CityService);
   private authService = inject(AuthService);
   private translationService = inject(TranslationService);
@@ -40,6 +42,8 @@ export class OfferListComponent implements OnInit {
   offers = signal<any[]>([]);
   categories = signal<any[]>([]);
   stores = signal<any[]>([]);
+  brands = signal<any[]>([]);
+  brandMap = signal<Record<number, any>>({});
   storeMap = signal<Record<number, any>>({});
   productMap = signal<Record<number, any>>({});
   cities = signal<any[]>([]);
@@ -62,6 +66,8 @@ export class OfferListComponent implements OnInit {
   selectedMainCategoryId: number | null = null;
   selectedSubCategoryId: number | null = null;
   selectedStoreId: number | null = null;
+  selectedBrandId: number | null = null;
+  selectedBrandName: string | null = null;
   selectedDiscountRange: number = 0;
   showFlashOnly = false;
   showFeaturedOnly = false;
@@ -103,13 +109,19 @@ export class OfferListComponent implements OnInit {
     this.loadOffers();
 
 
-    // Handle query parameters (from Home page or direct links)
+    // Handle query parameters (from Home page, Offer Detail, or direct links)
     this.route.queryParams.subscribe(params => {
       if (params['category']) {
         this.handleCategoryParam(params['category']);
       }
       if (params['store']) {
         this.selectedStoreId = Number(params['store']);
+      }
+      if (params['brandId']) {
+        this.selectedBrandId = Number(params['brandId']);
+      }
+      if (params['brand']) {
+        this.selectedBrandName = params['brand'];
       }
       if (params['flash']) {
         this.showFlashOnly = params['flash'] === 'true' || params['flash'] === true;
@@ -207,6 +219,21 @@ export class OfferListComponent implements OnInit {
       error: (err) => console.error('Failed to load stores:', err)
     });
 
+    this.brandService.getBrands().subscribe({
+      next: (b: any) => {
+        const list = Array.isArray(b) ? b : (b?.data || []);
+        this.brands.set(list);
+        const map: Record<number, any> = {};
+        list.forEach((brand: any) => {
+          if (brand && brand.id) map[brand.id] = brand;
+        });
+        this.brandMap.set(map);
+        this.applyFilters();
+        this.cd.detectChanges();
+      },
+      error: (err) => console.error('Failed to load brands:', err)
+    });
+
     this.cityService.getCities().subscribe({
       next: (c) => {
         this.cities.set(c || []);
@@ -226,6 +253,7 @@ export class OfferListComponent implements OnInit {
           }
         });
         this.productMap.set(map);
+        this.applyFilters();
         this.cd.detectChanges();
       },
       error: (err) => console.error('Failed to load products:', err)
@@ -283,6 +311,31 @@ export class OfferListComponent implements OnInit {
       list = list.filter(o => o.storeId === stId || o.store_id === stId);
     }
 
+    if (this.selectedBrandId) {
+      const bId = Number(this.selectedBrandId);
+      list = list.filter(o => {
+        if (Number(o.brandId || o.brand_id) === bId) return true;
+        const prod = this.productMap()[Number(o.productId || o.product_id)];
+        if (prod && (Number(prod.brandId || prod.brand_id || prod.brand?.id) === bId)) return true;
+        return false;
+      });
+    } else if (this.selectedBrandName && this.selectedBrandName.trim() !== '') {
+      const bName = this.selectedBrandName.toLowerCase().trim();
+      list = list.filter(o => {
+        const obEn = (o.brandNameEn || o.brand_name_en || '').toLowerCase();
+        const obAr = (o.brandNameAr || o.brand_name_ar || '').toLowerCase();
+        if ((obEn && (obEn.includes(bName) || bName.includes(obEn))) || (obAr && (obAr.includes(bName) || bName.includes(obAr)))) return true;
+        
+        const prod = this.productMap()[Number(o.productId || o.product_id)];
+        if (prod) {
+          const pbEn = (prod.brandNameEn || prod.brand?.nameEn || (typeof prod.brand === 'string' ? prod.brand : '')).toLowerCase();
+          const pbAr = (prod.brandNameAr || prod.brand?.nameAr || '').toLowerCase();
+          if ((pbEn && (pbEn.includes(bName) || bName.includes(pbEn))) || (pbAr && (pbAr.includes(bName) || bName.includes(pbAr)))) return true;
+        }
+        return false;
+      });
+    }
+
     if (this.selectedDiscountRange > 0) {
       list = list.filter(o => {
         const d = Number(o.discountPct || o.discount_pct || 0);
@@ -305,7 +358,10 @@ export class OfferListComponent implements OnInit {
         const tAr = (o.titleAr || o.title_ar || '').toLowerCase();
         const sEn = (o.storeNameEn || o.store_name_en || '').toLowerCase();
         const sAr = (o.storeNameAr || o.store_name_ar || '').toLowerCase();
-        return tEn.includes(q) || tAr.includes(q) || sEn.includes(q) || sAr.includes(q);
+        const pEn = (o.productNameEn || o.product_name_en || '').toLowerCase();
+        const pAr = (o.productNameAr || o.product_name_ar || '').toLowerCase();
+        const bEn = (o.brandNameEn || o.brand_name_en || '').toLowerCase();
+        return tEn.includes(q) || tAr.includes(q) || sEn.includes(q) || sAr.includes(q) || pEn.includes(q) || pAr.includes(q) || bEn.includes(q);
       });
     }
 
@@ -322,6 +378,8 @@ export class OfferListComponent implements OnInit {
     this.selectedMainCategoryId = null;
     this.selectedSubCategoryId = null;
     this.selectedStoreId = null;
+    this.selectedBrandId = null;
+    this.selectedBrandName = null;
     this.selectedDiscountRange = 0;
     this.showFlashOnly = false;
     this.showFeaturedOnly = false;
@@ -329,6 +387,16 @@ export class OfferListComponent implements OnInit {
     
     // Clear route query parameters
     this.router.navigate([], { queryParams: {} });
+    this.applyFilters();
+  }
+
+  clearBrandFilter(): void {
+    this.selectedBrandId = null;
+    this.selectedBrandName = null;
+    const currentParams = { ...this.route.snapshot.queryParams };
+    delete currentParams['brand'];
+    delete currentParams['brandId'];
+    this.router.navigate([], { queryParams: currentParams });
     this.applyFilters();
   }
 
@@ -340,6 +408,16 @@ export class OfferListComponent implements OnInit {
   getSelectedSubCategory(): any | null {
     if (!this.selectedSubCategoryId) return null;
     return this.categories().find(c => Number(c.id) === Number(this.selectedSubCategoryId)) || null;
+  }
+
+  getSelectedBrand(): any | null {
+    if (this.selectedBrandId) {
+      return this.brands().find(b => Number(b.id) === Number(this.selectedBrandId)) || null;
+    }
+    if (this.selectedBrandName) {
+      return { nameEn: this.selectedBrandName, nameAr: this.selectedBrandName };
+    }
+    return null;
   }
 
   // Image & Logo Helpers

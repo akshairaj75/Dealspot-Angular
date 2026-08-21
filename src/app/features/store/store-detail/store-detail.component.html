@@ -112,11 +112,13 @@
               -{{ offer.discountPct || offer.discount_pct }}%
             </span>
             <div class="offer-card-image">
-              <img 
-                [src]="getOfferImageUrl(offer)" 
-                [alt]="offer.titleEn || offer.title_en || 'Offer Image'"
-                (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300&auto=format&fit=crop&q=60'"
-              >
+              <a [routerLink]="['/offers', offer.id]" class="offer-card-img-link">
+                <img 
+                  [src]="getOfferImageUrl(offer)" 
+                  [alt]="offer.titleEn || offer.title_en || 'Offer Image'"
+                  (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300&auto=format&fit=crop&q=60'"
+                >
+              </a>
             </div>
             <div class="offer-card-body">
               <!-- Description -->
@@ -129,14 +131,14 @@
               </h3>
 
               <!-- Prominent Product Name -->
-              <div class="offer-product-name-row" *ngIf="(offer | translate:'productName') || (offer.product | translate:'name') || offer.productNameEn">
+              <a [routerLink]="['/offers', offer.id]" class="offer-product-name-row" *ngIf="(offer | translate:'productName') || (offer.product | translate:'name') || offer.productNameEn">
                 <span class="product-icon-box">
                   <span class="material-icons-round">inventory_2</span>
                 </span>
                 <span class="product-name-highlight">
                   {{ (offer | translate:'productName') || (offer.product | translate:'name') || (currentLang() === 'en' ? offer.productNameEn : (offer.productNameAr || offer.productNameEn)) }}
                 </span>
-              </div>
+              </a>
 
               <div class="price-row">
                 <span class="offer-price">{{ offer.offerPrice || offer.offer_price || offer.price }} SAR</span>

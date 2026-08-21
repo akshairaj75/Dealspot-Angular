@@ -13,126 +13,214 @@
         <span class="material-icons-round font-sm">home</span>
         <span>{{ currentLang() === 'en' ? 'Home' : 'الرئيسية' }}</span>
       </a>
-      <span class="breadcrumb-separator">/</span>
+      <span class="breadcrumb-separator">›</span>
       <a routerLink="/offers-list" class="breadcrumb-link">
         <span>{{ currentLang() === 'en' ? 'Offers' : 'العروض' }}</span>
       </a>
-      <span class="breadcrumb-separator" *ngIf="offer()?.categoryNameEn || offer()?.category?.nameEn">/</span>
+      <span class="breadcrumb-separator" *ngIf="offer()?.categoryNameEn || offer()?.category?.nameEn">›</span>
       <span class="breadcrumb-current" *ngIf="offer()?.categoryNameEn || offer()?.category?.nameEn">
         {{ currentLang() === 'en' ? (offer()?.categoryNameEn || offer()?.category?.nameEn) : (offer()?.categoryNameAr || offer()?.category?.nameAr || offer()?.categoryNameEn) }}
       </span>
     </nav>
 
     <div class="top-quick-actions">
-      <button class="btn btn-outline btn-sm btn-icon-text" (click)="toggleSave()" [class.saved]="isSaved()">
-        <span class="material-icons-round">{{ isSaved() ? 'bookmark' : 'bookmark_border' }}</span>
+      <button class="btn-top-action" (click)="toggleSave()" [class.saved]="isSaved()">
+        <span class="material-icons-round font-sm">{{ isSaved() ? 'favorite' : 'favorite_border' }}</span>
         <span>{{ isSaved() ? (currentLang() === 'en' ? 'Saved' : 'محفوظ') : (currentLang() === 'en' ? 'Save' : 'حفظ') }}</span>
       </button>
-      <button class="btn btn-outline btn-sm btn-icon-text" (click)="shareOffer()">
-        <span class="material-icons-round">{{ linkCopied ? 'check' : 'share' }}</span>
+      <button class="btn-top-action" (click)="shareOffer()">
+        <span class="material-icons-round font-sm">{{ linkCopied ? 'check' : 'share' }}</span>
         <span>{{ linkCopied ? (currentLang() === 'en' ? 'Copied!' : 'تم النسخ!') : (currentLang() === 'en' ? 'Share' : 'مشاركة') }}</span>
       </button>
     </div>
   </div>
 
-  <!-- Main 2-Column Hero Grid -->
-  <div class="detail-grid">
+  <!-- Noon-Style 3-Column Hero Grid -->
+  <div class="noon-main-grid">
     
     <!-- =========================================================================
-         Left Column: Gallery, Highlights & Store Card
+         1. LEFT COLUMN: Gallery with Vertical Thumbnails
          ========================================================================= -->
-    <div class="detail-left">
-      
-      <!-- Interactive Gallery Card -->
-      <div class="gallery-wrapper card">
-        <!-- Main Image with Overlay Badges & Controls -->
-        <div class="main-image-container">
-          <div class="main-image" (click)="openLightbox(activeImage())" title="Click to zoom">
-            <img [src]="activeImage()" [alt]="offer() | translate:'title'">
-          </div>
-
-          <!-- Discount Badge -->
-          <div class="gallery-discount-badge" *ngIf="offer()?.discountPct || offer()?.discount_pct">
-            <span class="discount-value">-{{ offer()?.discountPct || offer()?.discount_pct }}%</span>
-            <span class="discount-label">{{ currentLang() === 'en' ? 'OFF' : 'خصم' }}</span>
-          </div>
-
-          <!-- Zoom hint icon -->
-          <button class="gallery-zoom-btn" (click)="openLightbox(activeImage())" title="View Fullscreen">
-            <span class="material-icons-round">zoom_in</span>
-          </button>
-
-          <!-- Prev/Next Controls for Multi-Image -->
-          <button class="gallery-nav-btn btn-prev" *ngIf="images().length > 1" (click)="prevImage()" title="Previous Image">
-            <span class="material-icons-round">chevron_left</span>
-          </button>
-          <button class="gallery-nav-btn btn-next" *ngIf="images().length > 1" (click)="nextImage()" title="Next Image">
-            <span class="material-icons-round">chevron_right</span>
-          </button>
-
-          <!-- Image counter pill -->
-          <div class="gallery-counter-pill" *ngIf="images().length > 1">
-            <span class="material-icons-round font-xs">collections</span>
-            <span>{{ images().indexOf(activeImage()) + 1 }} / {{ images().length }}</span>
-          </div>
-        </div>
-
-        <!-- Thumbnails Strip -->
-        <div class="thumbnails-list" *ngIf="images().length > 1">
+    <div class="gallery-col">
+      <div class="gallery-layout-flex">
+        
+        <!-- Vertical Thumbnails Strip -->
+        <div class="thumb-strip-vertical" *ngIf="images().length > 1">
           <button 
             *ngFor="let img of images(); let idx = index" 
             (click)="activeImage.set(img)"
-            class="thumb-btn"
+            class="thumb-vertical-btn"
             [class.active]="activeImage() === img"
             [title]="'Image ' + (idx + 1)"
           >
             <img [src]="img" alt="Thumbnail">
           </button>
         </div>
+
+        <!-- Main Product Image Frame -->
+        <div class="main-image-frame">
+          <!-- Discount Badge -->
+          <div class="discount-badge-noon" *ngIf="offer()?.discountPct || offer()?.discount_pct">
+            <span>{{ offer()?.discountPct || offer()?.discount_pct }}% {{ currentLang() === 'en' ? 'OFF' : 'خصم' }}</span>
+          </div>
+
+          <!-- Wishlist / Favorite Button -->
+          <button class="wishlist-btn-noon" (click)="toggleSave()" [class.saved]="isSaved()" [title]="isSaved() ? 'Saved to Favorites' : 'Save to Favorites'">
+            <span class="material-icons-round">{{ isSaved() ? 'favorite' : 'favorite_border' }}</span>
+          </button>
+
+          <!-- Main Zoomable Image -->
+          <div class="main-image-viewport" (click)="openLightbox(activeImage())" title="Click to zoom">
+            <img [src]="activeImage()" [alt]="offer() | translate:'title'">
+          </div>
+
+          <!-- Zoom Hint -->
+          <button class="zoom-btn-noon" (click)="openLightbox(activeImage())" title="View Fullscreen">
+            <span class="material-icons-round font-sm">zoom_in</span>
+          </button>
+
+          <!-- Image counter -->
+          <div class="img-counter-noon" *ngIf="images().length > 1">
+            <span>{{ images().indexOf(activeImage()) + 1 }}/{{ images().length }}</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- =========================================================================
+         2. CENTER COLUMN: Core Info, Price, Top Deal Bar, Channels & Coupons
+         ========================================================================= -->
+    <div class="center-info-col">
+      
+      <!-- Brand Link Header (Clickable to show all brand offers) -->
+      <a class="brand-link-row" *ngIf="getBrandName()" [routerLink]="['/offers-list']" [queryParams]="getBrandQueryParams()" [title]="currentLang() === 'en' ? 'View all offers for ' + getBrandName() : 'عرض كل عروض ' + getBrandName()">
+        <span class="brand-name-link">{{ getBrandName() }}</span>
+        <span class="material-icons-round font-xs">chevron_right</span>
+      </a>
+
+      <!-- Main Offer Title -->
+      <h1 class="noon-offer-title">{{ offer() | translate:'title' }}</h1>
+      <p class="noon-offer-subtitle" *ngIf="currentLang() === 'en' && offer()?.titleAr">{{ offer()?.titleAr }}</p>
+
+      <!-- Rating & Verified Tag Row -->
+      <div class="rating-badge-row">
+        <div class="stars-rating-badge">
+          <span class="rating-num">4.8</span>
+          <span class="material-icons-round rating-star">star</span>
+          <span class="rating-count">(47 {{ currentLang() === 'en' ? 'Ratings' : 'تقييم' }})</span>
+        </div>
+        <span class="rating-divider">•</span>
+        <span class="verified-deal-tag">
+          <span class="material-icons-round font-xs">verified</span>
+          <span>{{ currentLang() === 'en' ? 'Verified Deal' : 'عرض موثق' }}</span>
+        </span>
+        <span class="rating-divider" *ngIf="offer()?.flash === true || offer()?.badgeType === 'FLASH' || offer()?.is_flash === 1">•</span>
+        <span class="flash-deal-tag" *ngIf="offer()?.flash === true || offer()?.badgeType === 'FLASH' || offer()?.is_flash === 1">
+          <span class="material-icons-round font-xs">bolt</span>
+          <span>{{ currentLang() === 'en' ? 'Flash Deal' : 'عرض خاطف' }}</span>
+        </span>
       </div>
 
-      <!-- Retail Partner Card -->
-      <div class="store-partner-card card">
-        <div class="store-partner-header">
-          <img [src]="getStoreLogoUrl(offer())" class="store-partner-logo" [alt]="offer()?.storeNameEn || 'Store Logo'">
-          <div class="store-partner-info">
-            <div class="store-title-row">
-              <h3>
-                <a [routerLink]="['/stores', offer()?.storeId || offer()?.store_id]">
-                  {{ offer()?.store ? (offer()?.store | translate:'name') : (currentLang() === 'en' ? (offer()?.storeNameEn || offer()?.store_name_en) : (offer()?.storeNameAr || offer()?.store_name_ar || offer()?.storeNameEn)) }}
-                </a>
-              </h3>
-              <span class="verified-badge-pill" *ngIf="offer()?.store?.is_verified === 1 || offer()?.storeVerified">
-                <span class="material-icons-round font-xs">verified</span>
-                <span>{{ currentLang() === 'en' ? 'Verified Partner' : 'متجر موثق' }}</span>
-              </span>
+      <!-- Pricing Bar -->
+      <div class="noon-pricing-bar">
+        <div class="price-main-line">
+          <span class="currency-label">SAR</span>
+          <span class="price-number">{{ offer()?.offerPrice || offer()?.offer_price }}</span>
+          
+          <span class="old-price-strikethrough" *ngIf="offer()?.originalPrice || offer()?.original_price">
+            {{ offer()?.originalPrice || offer()?.original_price }}
+          </span>
+          
+          <span class="discount-pct-tag" *ngIf="offer()?.discountPct || offer()?.discount_pct">
+            {{ offer()?.discountPct || offer()?.discount_pct }}% {{ currentLang() === 'en' ? 'Off' : 'خصم' }}
+          </span>
+        </div>
+
+        <div class="savings-inline-note" *ngIf="getSavingsAmount() !== '0.00'">
+          <span>{{ currentLang() === 'en' ? 'Total Savings: ' : 'إجمالي التوفير: ' }}</span>
+          <strong>{{ getSavingsAmount() }} SAR</strong>
+        </div>
+      </div>
+
+      <!-- Top Deal / Best Seller Highlight Bar -->
+      <div class="noon-bestseller-bar" *ngIf="offer()?.categoryNameEn || offer()?.category?.nameEn">
+        <div class="bestseller-left">
+          <span class="material-icons-round star-icon">stars</span>
+          <span class="bestseller-text">
+            <strong>{{ currentLang() === 'en' ? 'Top Deal' : 'أفضل عرض' }}</strong> {{ currentLang() === 'en' ? 'in ' + (offer()?.categoryNameEn || offer()?.category?.nameEn) : 'في ' + (offer()?.categoryNameAr || offer()?.category?.nameAr || offer()?.categoryNameEn) }}
+          </span>
+        </div>
+        <span class="material-icons-round arrow-icon">chevron_right</span>
+      </div>
+
+      <!-- Channel & Location Information -->
+      <div class="delivery-info-section">
+        <div class="section-micro-label">{{ currentLang() === 'en' ? 'DELIVERY & AVAILABILITY' : 'طرق الاستلام والتوفر' }}</div>
+        
+        <div class="delivery-chips-group">
+          <!-- In-store option -->
+          <div class="delivery-chip-card" *ngIf="offer()?.inStore || offer()?.in_store">
+            <span class="chip-badge in-store">
+              <span class="material-icons-round font-xs">store</span>
+              <span>{{ currentLang() === 'en' ? 'In-Store' : 'في الفروع' }}</span>
+            </span>
+            <span class="chip-desc">{{ currentLang() === 'en' ? 'Redeemable directly at checkout' : 'ساري مباشرة في فروع المتجر' }}</span>
+          </div>
+
+          <!-- Online option -->
+          <div class="delivery-chip-card" *ngIf="offer()?.online || offer()?.is_online">
+            <span class="chip-badge online">
+              <span class="material-icons-round font-xs">language</span>
+              <span>{{ currentLang() === 'en' ? 'Online Store' : 'أونلاين' }}</span>
+            </span>
+            <span class="chip-desc">{{ currentLang() === 'en' ? 'Available on website & app' : 'متاح عبر موقع وتطبيق المتجر' }}</span>
+          </div>
+
+          <!-- City coverage option -->
+          <div class="delivery-chip-card" *ngIf="offer()?.cityNameEn || offer()?.city?.nameEn">
+            <span class="chip-badge city">
+              <span class="material-icons-round font-xs">place</span>
+              <span>{{ currentLang() === 'en' ? (offer()?.cityNameEn || offer()?.city?.nameEn) : (offer()?.cityNameAr || offer()?.city?.nameAr || offer()?.cityNameEn) }}</span>
+            </span>
+            <span class="chip-desc">{{ currentLang() === 'en' ? 'Branch coverage available' : 'تغطية الفروع متوفرة' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coupons Section -->
+      <div class="noon-coupons-section" *ngIf="coupon() || (offer()?.couponCode || offer()?.coupon_code)">
+        <div class="section-micro-label">{{ currentLang() === 'en' ? 'COUPONS & OFFERS' : 'كوبونات الخصم' }}</div>
+        
+        <div class="coupon-noon-card">
+          <div class="coupon-noon-left">
+            <div class="coupon-icon-box">
+              <span class="material-icons-round">local_offer</span>
             </div>
-            <p class="store-partner-sub">{{ currentLang() === 'en' ? ('Official retailer partner on ' + appConfig.appNameEn) : ('شريك تجزئة معتمد في ' + appConfig.appNameAr) }}</p>
+            <div class="coupon-noon-text">
+              <strong>{{ currentLang() === 'en' ? 'Exclusive Savings Voucher' : 'قسيمة خصم حصرية' }}</strong>
+              <span>{{ coupon()?.descriptionEn || offer()?.descriptionEn || 'Redeem code at retailer checkout' }}</span>
+            </div>
           </div>
-        </div>
 
-        <div class="store-partner-footer">
-          <a [routerLink]="['/stores', offer()?.storeId || offer()?.store_id]" class="btn btn-outline btn-sm w-full">
-            <span class="material-icons-round">storefront</span>
-            <span>{{ currentLang() === 'en' ? 'View All Store Offers' : 'تصفح كل عروض المتجر' }}</span>
-          </a>
+          <div class="coupon-noon-right">
+            <button class="btn-noon-coupon" (click)="revealCoupon()">
+              <span>{{ couponRevealed ? (coupon()?.code || offer()?.couponCode || offer()?.coupon_code) : (currentLang() === 'en' ? 'REVEAL CODE' : 'عرض الكوبون') }}</span>
+              <span class="material-icons-round font-sm" *ngIf="couponRevealed">{{ couponCopied ? 'check' : 'content_copy' }}</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Trust & Features Banner -->
-      <div class="trust-features-grid">
-        <div class="trust-feature-item">
-          <span class="material-icons-round text-primary">verified_user</span>
-          <div class="trust-text">
-            <strong>{{ currentLang() === 'en' ? '100% Genuine Offer' : 'عرض موثوق ومعتمد' }}</strong>
-            <span>{{ currentLang() === 'en' ? 'Direct from official retail partners' : 'مباشرة من شركائنا المعتمدين' }}</span>
-          </div>
-        </div>
-        <div class="trust-feature-item">
-          <span class="material-icons-round text-primary">savings</span>
-          <div class="trust-text">
-            <strong>{{ currentLang() === 'en' ? 'Instant Savings' : 'توفير فوري مؤكد' }}</strong>
-            <span>{{ currentLang() === 'en' ? 'Redeemable directly in-store or online' : 'ساري في الفروع أو عبر المتجر' }}</span>
+      <!-- Linked Product Showcase Box -->
+      <div class="noon-product-box" *ngIf="product()?.nameEn || offer()?.productNameEn">
+        <div class="product-box-badge">{{ currentLang() === 'en' ? 'PRODUCT' : 'المنتج' }}</div>
+        <div class="product-box-content">
+          <div class="product-box-info">
+            <h4 class="product-box-title">{{ currentLang() === 'en' ? (product()?.nameEn || offer()?.productNameEn) : (product()?.nameAr || offer()?.productNameAr || product()?.nameEn) }}</h4>
+            <p class="product-box-desc" *ngIf="product()?.descriptionEn || product()?.descriptionAr">
+              {{ product() | translate:'description' }}
+            </p>
           </div>
         </div>
       </div>
@@ -140,371 +228,275 @@
     </div>
 
     <!-- =========================================================================
-         Right Column: Key Information, Brand Pill, Pricing, Tabs & Specs
+         3. RIGHT COLUMN: Seller Card, Primary Action & Trust Points
          ========================================================================= -->
-    <div class="detail-right">
+    <div class="right-action-col">
       
-      <!-- Unified Offer Main Hero Card -->
-      <div class="offer-hero-card card">
-        
-        <!-- Key Chips & Badges Row -->
-        <div class="key-chips-row">
-          <!-- Category Pill -->
-          <span class="info-pill category-pill" *ngIf="offer()?.categoryNameEn || offer()?.category?.nameEn">
-            <span class="material-icons-round font-sm">category</span>
-            <span>{{ currentLang() === 'en' ? (offer()?.categoryNameEn || offer()?.category?.nameEn) : (offer()?.categoryNameAr || offer()?.category?.nameAr || offer()?.categoryNameEn) }}</span>
-          </span>
-
-          <!-- Flash Deal Badge -->
-          <span class="info-pill flash-pill" *ngIf="offer()?.flash === true || offer()?.badgeType === 'FLASH' || offer()?.is_flash === 1">
-            <span class="material-icons-round font-sm">bolt</span>
-            <span>{{ currentLang() === 'en' ? 'Flash Deal' : 'عرض خاطف' }}</span>
-          </span>
-
-          <!-- Featured Badge -->
-          <span class="info-pill featured-pill" *ngIf="offer()?.featured === true || offer()?.badgeType === 'FEATURED' || offer()?.is_featured === 1">
-            <span class="material-icons-round font-sm">star</span>
-            <span>{{ currentLang() === 'en' ? 'Featured' : 'عرض مميز' }}</span>
-          </span>
-
-          <!-- City Coverage Pill -->
-          <span class="info-pill city-pill" *ngIf="offer()?.cityNameEn || offer()?.city?.nameEn">
-            <span class="material-icons-round font-sm">place</span>
-            <span>{{ currentLang() === 'en' ? (offer()?.cityNameEn || offer()?.city?.nameEn) : (offer()?.cityNameAr || offer()?.city?.nameAr || offer()?.cityNameEn) }}</span>
-          </span>
-
-          <!-- Channel Availability (In-Store / Online) -->
-          <span class="info-pill channel-pill in-store" *ngIf="offer()?.inStore || offer()?.in_store">
-            <span class="material-icons-round font-sm">store</span>
-            <span>{{ currentLang() === 'en' ? 'In-Store' : 'في الفروع' }}</span>
-          </span>
-          <span class="info-pill channel-pill online" *ngIf="offer()?.online || offer()?.is_online">
-            <span class="material-icons-round font-sm">language</span>
-            <span>{{ currentLang() === 'en' ? 'Online' : 'أونلاين' }}</span>
-          </span>
-        </div>
-
-        <!-- Main Title & Bilingual Heading -->
-        <div class="title-header-block">
-          <h1 class="offer-title-main">{{ offer() | translate:'title' }}</h1>
-          <p class="offer-title-secondary" *ngIf="currentLang() === 'en' && offer()?.titleAr">{{ offer()?.titleAr }}</p>
-          
-          <p class="offer-lead-desc" *ngIf="offer()?.descriptionEn || offer()?.descriptionAr || product()?.descriptionEn || product()?.descriptionAr">
-            {{ (offer() | translate:'description') || (product() | translate:'description') }}
-          </p>
-        </div>
-
-        <!-- Unified Product & Brand Metadata Strip -->
-        <div class="product-brand-meta-strip" *ngIf="(product()?.nameEn || offer()?.productNameEn) || (product()?.brandNameEn || product()?.brand || offer()?.product?.brand)">
-          <!-- Product Name Item -->
-          <div class="meta-strip-item" *ngIf="product()?.nameEn || offer()?.productNameEn">
-            <div class="meta-strip-icon-box">
-              <span class="material-icons-round">inventory_2</span>
-            </div>
-            <div class="meta-strip-info">
-              <span class="meta-strip-label">{{ currentLang() === 'en' ? 'Product' : 'المنتج' }}</span>
-              <strong class="meta-strip-value">{{ currentLang() === 'en' ? (product()?.nameEn || offer()?.productNameEn) : (product()?.nameAr || offer()?.productNameAr || product()?.nameEn) }}</strong>
+      <!-- Store Partner Card -->
+      <div class="seller-box-noon card">
+        <div class="seller-header">
+          <img [src]="getStoreLogoUrl(offer())" class="seller-logo" [alt]="offer()?.storeNameEn || 'Store Logo'">
+          <div class="seller-info">
+            <span class="sold-by-label">{{ currentLang() === 'en' ? 'Sold by' : 'البائع' }}</span>
+            <h4 class="seller-name">
+              <a [routerLink]="['/stores', offer()?.storeId || offer()?.store_id]">
+                {{ offer()?.store ? (offer()?.store | translate:'name') : (currentLang() === 'en' ? (offer()?.storeNameEn || offer()?.store_name_en) : (offer()?.storeNameAr || offer()?.store_name_ar || offer()?.storeNameEn)) }}
+              </a>
+            </h4>
+            <div class="seller-rating-pill" *ngIf="offer()?.store?.is_verified === 1 || offer()?.storeVerified">
+              <span class="material-icons-round font-xs">verified</span>
+              <span>{{ currentLang() === 'en' ? 'Verified Partner' : 'متجر موثق' }}</span>
             </div>
           </div>
-
-          <!-- Brand Item -->
-          <div class="meta-strip-item" *ngIf="product()?.brandNameEn || product()?.brandNameAr || product()?.brand || offer()?.product?.brand">
-            <img *ngIf="product()?.brandImage" [src]="getImageUrl(product()?.brandImage)" class="meta-brand-logo" alt="Brand Logo">
-            <div class="meta-strip-icon-box brand-icon" *ngIf="!product()?.brandImage">
-              <span class="material-icons-round">verified</span>
-            </div>
-            <div class="meta-strip-info">
-              <span class="meta-strip-label">{{ currentLang() === 'en' ? 'Brand' : 'الماركة' }}</span>
-              <strong class="meta-strip-value">{{ currentLang() === 'en' ? (product()?.brandNameEn || product()?.brand) : (product()?.brandNameAr || product()?.brand || product()?.brandNameEn) }}</strong>
-            </div>
-            <span class="official-brand-pill">
-              <span class="material-icons-round font-xs">check_circle</span>
-              <span>{{ currentLang() === 'en' ? 'Official' : 'أصلي' }}</span>
-            </span>
-          </div>
         </div>
 
-        <!-- Refined Pricing & Savings Box -->
-        <div class="pricing-card-hero">
-          <div class="pricing-header-row">
-            <div class="pricing-main-wrap">
-              <div class="current-price-row">
-                <span class="price-val">{{ offer()?.offerPrice || offer()?.offer_price }}</span>
-                <span class="currency-tag">SAR</span>
-              </div>
-              
-              <div class="original-price-row" *ngIf="offer()?.originalPrice || offer()?.original_price">
-                <span class="old-price">{{ offer()?.originalPrice || offer()?.original_price }} SAR</span>
-                <span class="save-tag" *ngIf="offer()?.discountPct || offer()?.discount_pct">
-                  -{{ offer()?.discountPct || offer()?.discount_pct }}%
-                </span>
-              </div>
-            </div>
-
-            <!-- Sleek Savings Pill -->
-            <div class="savings-highlight-badge" *ngIf="getSavingsAmount() !== '0.00'">
-              <span class="material-icons-round">savings</span>
-              <span class="savings-text">{{ currentLang() === 'en' ? 'Save ' : 'توفير ' }}<strong>{{ getSavingsAmount() }} SAR</strong></span>
-            </div>
-          </div>
-
-          <!-- Offer Validity / Countdown Bar -->
-          <div class="validity-countdown-bar" *ngIf="getDaysRemaining() || offer()?.validUntil || offer()?.valid_until">
-            <div class="validity-dates-info">
-              <span class="material-icons-round">event</span>
-              <span>
-                {{ currentLang() === 'en' ? 'Valid until: ' : 'ساري حتى: ' }}
-                <strong>{{ offer()?.validUntil || offer()?.valid_until }}</strong>
-              </span>
-            </div>
-
-            <span class="countdown-pill" *ngIf="getDaysRemaining()" [class.urgent]="getDaysRemaining()?.urgent">
-              <span class="material-icons-round font-xs">{{ getDaysRemaining()?.urgent ? 'alarm' : 'schedule' }}</span>
-              <span>{{ getDaysRemaining()?.text }}</span>
-            </span>
-          </div>
-        </div>
-
-        <!-- Primary Action Buttons (Save & Share) -->
-        <div class="detail-action-buttons-row">
-          <button class="btn btn-save-detail" [class.saved]="isSaved()" (click)="toggleSaveOffer()">
-            <span class="material-icons-round">{{ isSaved() ? 'bookmark' : 'bookmark_border' }}</span>
-            <span>{{ isSaved() ? (currentLang() === 'en' ? 'Saved to Favorites' : 'محفوظ في المفضلة') : (currentLang() === 'en' ? 'Save to Favorites' : 'حفظ في المفضلة') }}</span>
-          </button>
-
-          <button class="btn btn-share-detail" (click)="shareOffer()">
-            <span class="material-icons-round">{{ linkCopied ? 'check' : 'share' }}</span>
-            <span>{{ linkCopied ? (currentLang() === 'en' ? 'Link Copied!' : 'تم النسخ!') : (currentLang() === 'en' ? 'Share Offer' : 'مشاركة العرض') }}</span>
-          </button>
-        </div>
-
-      </div> <!-- End offer-hero-card -->
-
-      <!-- Coupon Voucher Card (If Available) -->
-
-      <div class="coupon-ticket-card card" *ngIf="coupon()">
-        <div class="coupon-ticket-left">
-          <span class="material-icons-round coupon-ticket-icon">confirmation_number</span>
-          <div class="coupon-ticket-info">
-            <h4>{{ currentLang() === 'en' ? 'Exclusive Voucher Code' : 'كوبون خصم إضافي متاح' }}</h4>
-            <p *ngIf="coupon()?.discountType === 'PERCENT' || coupon()?.discount_type === 'PERCENT' || coupon()?.discountType === 'PERCENTAGE'">
-              {{ coupon()?.discountValue || coupon()?.discount_value }}% {{ currentLang() === 'en' ? 'off orders above ' : 'خصم على الطلبات فوق ' }}{{ coupon()?.minCartValue || coupon()?.min_cart_value || 0 }} SAR
-            </p>
-            <p *ngIf="coupon()?.discountType === 'FIXED_SAR' || coupon()?.discount_type === 'FIXED_SAR' || coupon()?.discountType === 'FIXED'">
-              {{ coupon()?.discountValue || coupon()?.discount_value }} SAR {{ currentLang() === 'en' ? 'off orders above ' : 'خصم على الطلبات فوق ' }}{{ coupon()?.minCartValue || coupon()?.min_cart_value || 0 }} SAR
-            </p>
-          </div>
-        </div>
-
-        <div class="coupon-ticket-right">
-          <button class="btn btn-primary btn-reveal" *ngIf="!couponRevealed" (click)="revealCoupon()">
-            <span class="material-icons-round">visibility</span>
-            <span>{{ currentLang() === 'en' ? 'Reveal Code' : 'إظهار الكود' }}</span>
-          </button>
-
-          <div class="coupon-revealed-box" *ngIf="couponRevealed">
-            <span class="coupon-code-string">{{ coupon()?.code }}</span>
-            <button class="btn btn-primary btn-sm btn-copy-code" (click)="copyCouponCode(coupon()!.code)">
-              <span class="material-icons-round font-xs">{{ couponCopied ? 'check' : 'content_copy' }}</span>
-              <span>{{ couponCopied ? (currentLang() === 'en' ? 'Copied' : 'تم') : (currentLang() === 'en' ? 'Copy' : 'نسخ') }}</span>
-            </button>
-          </div>
-        </div>
+        <a [routerLink]="['/stores', offer()?.storeId || offer()?.store_id]" class="more-from-seller-link">
+          <span>{{ currentLang() === 'en' ? 'View all store offers' : 'تصفح كل عروض المتجر' }}</span>
+          <span class="material-icons-round font-sm">chevron_right</span>
+        </a>
       </div>
 
-      <!-- Navigation Tabs -->
-      <div class="tabs-nav-wrapper">
-        <button 
-          class="tab-nav-item" 
-          [class.active]="activeTab() === 'overview'" 
-          (click)="switchTab('overview')"
-        >
-          <span class="material-icons-round font-sm">description</span>
-          <span>{{ currentLang() === 'en' ? 'Offer Overview' : 'نظرة عامة' }}</span>
+      <!-- Action Card -->
+      <div class="action-box-noon card">
+        <!-- Main CTA Button -->
+        <button class="btn-noon-primary" (click)="toggleSave()" [class.saved]="isSaved()">
+          <span class="material-icons-round">{{ isSaved() ? 'bookmark' : 'bookmark_add' }}</span>
+          <span>{{ isSaved() ? (currentLang() === 'en' ? 'Saved to Favorites' : 'تم الحفظ في المفضلة') : (currentLang() === 'en' ? 'Save to Favorites' : 'حفظ في المفضلة') }}</span>
         </button>
 
-        <button 
-          class="tab-nav-item" 
-          [class.active]="activeTab() === 'specs'" 
-          (click)="switchTab('specs')"
-          *ngIf="product() || offer()?.productId || productSpecs().length > 0"
-        >
-          <span class="material-icons-round font-sm">tune</span>
-          <span>{{ currentLang() === 'en' ? 'Product Specifications' : 'مواصفات المنتج' }}</span>
-        </button>
-
-        <button 
-          class="tab-nav-item" 
-          [class.active]="activeTab() === 'store'" 
-          (click)="switchTab('store')"
-          *ngIf="branches().length > 0"
-        >
-          <span class="material-icons-round font-sm">place</span>
-          <span>{{ currentLang() === 'en' ? 'Store Branches' : 'الفروع المتاحة' }}</span>
-          <span class="tab-badge" *ngIf="branches().length > 0">{{ branches().length }}</span>
-        </button>
-
-        <button 
-          class="tab-nav-item" 
-          [class.active]="activeTab() === 'terms'" 
-          (click)="switchTab('terms')"
-          *ngIf="offer()?.termsEn || offer()?.termsAr"
-        >
-          <span class="material-icons-round font-sm">gavel</span>
-          <span>{{ currentLang() === 'en' ? 'Terms & Rules' : 'الشروط والأحكام' }}</span>
+        <!-- Secondary Share Button -->
+        <button class="btn-noon-secondary" (click)="shareOffer()">
+          <span class="material-icons-round font-sm">{{ linkCopied ? 'check' : 'share' }}</span>
+          <span>{{ linkCopied ? (currentLang() === 'en' ? 'Link Copied!' : 'تم نسخ الرابط!') : (currentLang() === 'en' ? 'Share Offer' : 'مشاركة العرض') }}</span>
         </button>
       </div>
 
-      <!-- Tab 1: Overview & Description -->
-      <div class="tab-pane card" *ngIf="activeTab() === 'overview'">
-        <div class="tab-pane-section" *ngIf="offer()?.descriptionEn || offer()?.descriptionAr">
-          <h4 class="section-title">
-            <span class="material-icons-round text-primary font-md">info</span>
-            <span>{{ currentLang() === 'en' ? 'About this Offer' : 'عن هذا العرض' }}</span>
-          </h4>
-          <p class="section-paragraph">
-            {{ currentLang() === 'en' ? (offer()?.descriptionEn || offer()?.descriptionAr) : (offer()?.descriptionAr || offer()?.descriptionEn) }}
-          </p>
-        </div>
-
-        <div class="tab-pane-section" *ngIf="product()?.descriptionEn || product()?.descriptionAr">
-          <h4 class="section-title">
-            <span class="material-icons-round text-primary font-md">inventory_2</span>
-            <span>{{ currentLang() === 'en' ? 'Product Description' : 'وصف المنتج' }}</span>
-          </h4>
-          <p class="section-paragraph">
-            {{ currentLang() === 'en' ? (product()?.descriptionEn || product()?.descriptionAr) : (product()?.descriptionAr || product()?.descriptionEn) }}
-          </p>
-        </div>
-
-        <!-- Quick highlights summary -->
-        <div class="quick-highlights-grid">
-          <div class="highlight-item" *ngIf="offer()?.discountPct || offer()?.discount_pct">
-            <span class="highlight-label">{{ currentLang() === 'en' ? 'Discount' : 'نسبة الخصم' }}</span>
-            <span class="highlight-value text-primary font-bold">{{ offer()?.discountPct || offer()?.discount_pct }}% OFF</span>
-          </div>
-          <div class="highlight-item" *ngIf="product()?.unitSize || product()?.unit">
-            <span class="highlight-label">{{ currentLang() === 'en' ? 'Unit Size' : 'الحجم / الوحدة' }}</span>
-            <span class="highlight-value font-bold">{{ product()?.unitSize }} {{ product()?.unit }}</span>
-          </div>
-          <div class="highlight-item" *ngIf="offer()?.cityNameEn || offer()?.city?.nameEn">
-            <span class="highlight-label">{{ currentLang() === 'en' ? 'City' : 'المدينة' }}</span>
-            <span class="highlight-value font-bold">{{ currentLang() === 'en' ? (offer()?.cityNameEn || offer()?.city?.nameEn) : (offer()?.cityNameAr || offer()?.city?.nameAr) }}</span>
-          </div>
-          <div class="highlight-item" *ngIf="offer()?.validUntil || offer()?.valid_until">
-            <span class="highlight-label">{{ currentLang() === 'en' ? 'End Date' : 'تاريخ الانتهاء' }}</span>
-            <span class="highlight-value font-bold">{{ offer()?.validUntil || offer()?.valid_until }}</span>
+      <!-- Trust & Guarantee Checklist -->
+      <div class="trust-box-noon card">
+        <div class="trust-row">
+          <span class="material-icons-round text-primary font-sm">verified_user</span>
+          <div class="trust-row-text">
+            <strong>{{ currentLang() === 'en' ? '100% Genuine Offer' : 'عرض موثوق ومعتمد' }}</strong>
+            <span>{{ currentLang() === 'en' ? 'Direct from official retail partners' : 'مباشرة من شركائنا المعتمدين' }}</span>
           </div>
         </div>
-      </div>
 
-      <!-- Tab 2: Technical Specifications & Features -->
-      <div class="tab-pane card" *ngIf="activeTab() === 'specs'">
-        <div class="specs-table-container">
-          <table class="specs-custom-table">
-            <tbody>
-              <!-- Product Name -->
-              <tr *ngIf="product()?.nameEn || offer()?.productNameEn">
-                <td class="spec-label">{{ currentLang() === 'en' ? 'Product Name' : 'اسم المنتج' }}</td>
-                <td class="spec-val">
-                  <strong>{{ currentLang() === 'en' ? (product()?.nameEn || offer()?.productNameEn) : (product()?.nameAr || offer()?.productNameAr || product()?.nameEn) }}</strong>
-                </td>
-              </tr>
-
-              <!-- Brand -->
-              <tr *ngIf="product()?.brandNameEn || product()?.brandNameAr || product()?.brand || offer()?.product?.brand">
-                <td class="spec-label">{{ currentLang() === 'en' ? 'Brand' : 'الماركة' }}</td>
-                <td class="spec-val">
-                  <div class="spec-brand-inline">
-                    <img *ngIf="product()?.brandImage" [src]="getImageUrl(product()?.brandImage)" class="table-brand-logo" alt="Brand Logo">
-                    <span>{{ currentLang() === 'en' ? (product()?.brandNameEn || product()?.brand) : (product()?.brandNameAr || product()?.brand || product()?.brandNameEn) }}</span>
-                  </div>
-                </td>
-              </tr>
-
-              <!-- Category -->
-              <tr *ngIf="offer()?.categoryNameEn || offer()?.category?.nameEn">
-                <td class="spec-label">{{ currentLang() === 'en' ? 'Category' : 'القسم' }}</td>
-                <td class="spec-val">{{ currentLang() === 'en' ? (offer()?.categoryNameEn || offer()?.category?.nameEn) : (offer()?.categoryNameAr || offer()?.category?.nameAr) }}</td>
-              </tr>
-
-              <!-- SKU -->
-              <tr *ngIf="product()?.sku">
-                <td class="spec-label">{{ currentLang() === 'en' ? 'SKU Code' : 'رمز المنتج (SKU)' }}</td>
-                <td class="spec-val"><code class="mono-code">{{ product()?.sku }}</code></td>
-              </tr>
-
-              <!-- Barcode -->
-              <tr *ngIf="product()?.barcode">
-                <td class="spec-label">{{ currentLang() === 'en' ? 'Barcode' : 'الباركود' }}</td>
-                <td class="spec-val"><code class="mono-code">{{ product()?.barcode }}</code></td>
-              </tr>
-
-              <!-- Unit / Size -->
-              <tr *ngIf="product()?.unitSize || product()?.unit">
-                <td class="spec-label">{{ currentLang() === 'en' ? 'Size / Unit' : 'الحجم / الوحدة' }}</td>
-                <td class="spec-val">{{ product()?.unitSize }} {{ product()?.unit }}</td>
-              </tr>
-
-              <!-- Dynamic Specifications Attributes -->
-              <tr *ngFor="let spec of productSpecs()">
-                <td class="spec-label">{{ currentLang() === 'en' ? (spec.attrKeyAr || spec.attributeKeyEn || spec.attributeKey) : (spec.attrKeyAr || spec.attributeKeyAr || spec.attributeKey) }}</td>
-                <td class="spec-val">{{ currentLang() === 'en' ? (spec.attrValueEn || spec.valueEn || spec.attrValueAr || spec.valueAr) : (spec.attrValueAr || spec.valueAr || spec.attrValueEn || spec.valueEn) }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Tab 3: Store & Branches -->
-      <div class="tab-pane card" *ngIf="activeTab() === 'store'">
-        <div class="branches-grid-list">
-          <div class="branch-card-item" *ngFor="let b of branches()">
-            <div class="branch-card-header">
-              <span class="material-icons-round text-primary">store</span>
-              <h4>{{ currentLang() === 'en' ? (b.branchNameEn || b.branch_name || b.nameEn) : (b.branchNameAr || b.branch_name || b.nameAr || b.nameEn) }}</h4>
-            </div>
-            
-            <div class="branch-card-body">
-              <p class="branch-detail-row" *ngIf="b.cityNameEn || b.cityNameAr || b.city">
-                <span class="material-icons-round font-xs text-muted">place</span>
-                <span>{{ currentLang() === 'en' ? (b.cityNameEn || b.city?.nameEn || b.addressEn) : (b.cityNameAr || b.city?.nameAr || b.addressAr || b.cityNameEn) }}</span>
-              </p>
-
-              <p class="branch-detail-row" *ngIf="b.openTime || b.open_time">
-                <span class="material-icons-round font-xs text-muted">schedule</span>
-                <span>{{ b.openTime || b.open_time }} - {{ b.closeTime || b.close_time }}</span>
-              </p>
-
-              <p class="branch-detail-row" *ngIf="b.phone || b.phoneNumber">
-                <span class="material-icons-round font-xs text-muted">phone</span>
-                <span>{{ b.phone || b.phoneNumber }}</span>
-              </p>
-            </div>
+        <div class="trust-row">
+          <span class="material-icons-round text-primary font-sm">savings</span>
+          <div class="trust-row-text">
+            <strong>{{ currentLang() === 'en' ? 'Instant Savings' : 'توفير فوري مؤكد' }}</strong>
+            <span>{{ currentLang() === 'en' ? 'Redeemable directly in-store or online' : 'ساري في الفروع أو أونلاين' }}</span>
           </div>
         </div>
-      </div>
 
-      <!-- Tab 4: Terms & Conditions -->
-      <div class="tab-pane card" *ngIf="activeTab() === 'terms'">
-        <div class="terms-content-box">
-          <h4 class="section-title">
-            <span class="material-icons-round text-primary font-md">verified</span>
-            <span>{{ currentLang() === 'en' ? 'Promotion Terms & Conditions' : 'الشروط والأحكام الخاصة بالعرض' }}</span>
-          </h4>
-          <p class="terms-paragraph">
-            {{ currentLang() === 'en' ? (offer()?.termsEn || offer()?.termsAr) : (offer()?.termsAr || offer()?.termsEn) }}
-          </p>
-
-          <div class="terms-notes-box">
-            <span class="material-icons-round text-muted font-sm">help_outline</span>
-            <span>{{ currentLang() === 'en' ? 'Prices and promotional quantities are subject to retailer stock availability.' : 'الأسعار والكميات الترويجية خاضعة لتوفر المخزون لدى المتجر.' }}</span>
+        <div class="trust-row" *ngIf="getDaysRemaining() || offer()?.validUntil || offer()?.valid_until">
+          <span class="material-icons-round text-primary font-sm">schedule</span>
+          <div class="trust-row-text">
+            <strong>{{ getDaysRemaining()?.text || (currentLang() === 'en' ? 'Active Promotion' : 'عرض ساري') }}</strong>
+            <span>{{ currentLang() === 'en' ? 'Valid until ' + (offer()?.validUntil || offer()?.valid_until) : 'ساري حتى ' + (offer()?.validUntil || offer()?.valid_until) }}</span>
           </div>
         </div>
       </div>
 
     </div>
+
   </div>
+
+  <!-- Full-Width Bottom Tabs Section -->
+  <div class="noon-tabs-section">
+    <!-- Navigation Tabs -->
+    <div class="tabs-nav-wrapper">
+      <button 
+        class="tab-nav-item" 
+        [class.active]="activeTab() === 'overview'" 
+        (click)="switchTab('overview')"
+      >
+        <span class="material-icons-round font-sm">description</span>
+        <span>{{ currentLang() === 'en' ? 'Offer Overview' : 'نظرة عامة' }}</span>
+      </button>
+
+      <button 
+        class="tab-nav-item" 
+        [class.active]="activeTab() === 'specs'" 
+        (click)="switchTab('specs')"
+        *ngIf="product() || offer()?.productId || productSpecs().length > 0"
+      >
+        <span class="material-icons-round font-sm">tune</span>
+        <span>{{ currentLang() === 'en' ? 'Product Specifications' : 'مواصفات المنتج' }}</span>
+      </button>
+
+      <button 
+        class="tab-nav-item" 
+        [class.active]="activeTab() === 'store'" 
+        (click)="switchTab('store')"
+        *ngIf="branches().length > 0"
+      >
+        <span class="material-icons-round font-sm">place</span>
+        <span>{{ currentLang() === 'en' ? 'Store Branches' : 'الفروع المتاحة' }}</span>
+        <span class="tab-badge" *ngIf="branches().length > 0">{{ branches().length }}</span>
+      </button>
+
+      <button 
+        class="tab-nav-item" 
+        [class.active]="activeTab() === 'terms'" 
+        (click)="switchTab('terms')"
+        *ngIf="offer()?.termsEn || offer()?.termsAr"
+      >
+        <span class="material-icons-round font-sm">gavel</span>
+        <span>{{ currentLang() === 'en' ? 'Terms & Rules' : 'الشروط والأحكام' }}</span>
+      </button>
+    </div>
+
+    <!-- Tab 1: Overview & Description -->
+    <div class="tab-pane card" *ngIf="activeTab() === 'overview'">
+      <div class="tab-pane-section" *ngIf="offer()?.descriptionEn || offer()?.descriptionAr">
+        <h4 class="section-title">
+          <span class="material-icons-round text-primary font-md">info</span>
+          <span>{{ currentLang() === 'en' ? 'About this Offer' : 'عن هذا العرض' }}</span>
+        </h4>
+        <p class="section-paragraph">
+          {{ currentLang() === 'en' ? (offer()?.descriptionEn || offer()?.descriptionAr) : (offer()?.descriptionAr || offer()?.descriptionEn) }}
+        </p>
+      </div>
+
+      <div class="tab-pane-section" *ngIf="product()?.descriptionEn || product()?.descriptionAr">
+        <h4 class="section-title">
+          <span class="material-icons-round text-primary font-md">inventory_2</span>
+          <span>{{ currentLang() === 'en' ? 'Product Description' : 'وصف المنتج' }}</span>
+        </h4>
+        <p class="section-paragraph">
+          {{ currentLang() === 'en' ? (product()?.descriptionEn || product()?.descriptionAr) : (product()?.descriptionAr || product()?.descriptionEn) }}
+        </p>
+      </div>
+
+      <!-- Quick highlights summary -->
+      <div class="quick-highlights-grid">
+        <div class="highlight-item" *ngIf="offer()?.discountPct || offer()?.discount_pct">
+          <span class="highlight-label">{{ currentLang() === 'en' ? 'Discount' : 'نسبة الخصم' }}</span>
+          <span class="highlight-value text-primary font-bold">{{ offer()?.discountPct || offer()?.discount_pct }}% OFF</span>
+        </div>
+        <div class="highlight-item" *ngIf="product()?.unitSize || product()?.unit">
+          <span class="highlight-label">{{ currentLang() === 'en' ? 'Unit Size' : 'الحجم / الوحدة' }}</span>
+          <span class="highlight-value font-bold">{{ product()?.unitSize }} {{ product()?.unit }}</span>
+        </div>
+        <div class="highlight-item" *ngIf="offer()?.cityNameEn || offer()?.city?.nameEn">
+          <span class="highlight-label">{{ currentLang() === 'en' ? 'City' : 'المدينة' }}</span>
+          <span class="highlight-value font-bold">{{ currentLang() === 'en' ? (offer()?.cityNameEn || offer()?.city?.nameEn) : (offer()?.cityNameAr || offer()?.city?.nameAr) }}</span>
+        </div>
+        <div class="highlight-item" *ngIf="offer()?.validUntil || offer()?.valid_until">
+          <span class="highlight-label">{{ currentLang() === 'en' ? 'End Date' : 'تاريخ الانتهاء' }}</span>
+          <span class="highlight-value font-bold">{{ offer()?.validUntil || offer()?.valid_until }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: Technical Specifications & Features -->
+    <div class="tab-pane card" *ngIf="activeTab() === 'specs'">
+      <div class="specs-table-container">
+        <table class="specs-custom-table">
+          <tbody>
+            <!-- Product Name -->
+            <tr *ngIf="product()?.nameEn || offer()?.productNameEn">
+              <td class="spec-label">{{ currentLang() === 'en' ? 'Product Name' : 'اسم المنتج' }}</td>
+              <td class="spec-val">
+                <strong>{{ currentLang() === 'en' ? (product()?.nameEn || offer()?.productNameEn) : (product()?.nameAr || offer()?.productNameAr || product()?.nameEn) }}</strong>
+              </td>
+            </tr>
+
+            <!-- Brand -->
+            <tr *ngIf="getBrandName()">
+              <td class="spec-label">{{ currentLang() === 'en' ? 'Brand' : 'الماركة' }}</td>
+              <td class="spec-val">
+                <a class="spec-brand-inline brand-clickable" [routerLink]="['/offers-list']" [queryParams]="getBrandQueryParams()" [title]="currentLang() === 'en' ? 'View all offers for ' + getBrandName() : 'عرض كل عروض ' + getBrandName()">
+                  <img *ngIf="product()?.brandImage || product()?.brand?.logoUrl" [src]="getImageUrl(product()?.brandImage || product()?.brand?.logoUrl)" class="table-brand-logo" alt="Brand Logo">
+                  <span>{{ getBrandName() }}</span>
+                  <span class="material-icons-round font-xs text-primary">open_in_new</span>
+                </a>
+              </td>
+            </tr>
+
+            <!-- Category -->
+            <tr *ngIf="offer()?.categoryNameEn || offer()?.category?.nameEn">
+              <td class="spec-label">{{ currentLang() === 'en' ? 'Category' : 'القسم' }}</td>
+              <td class="spec-val">{{ currentLang() === 'en' ? (offer()?.categoryNameEn || offer()?.category?.nameEn) : (offer()?.categoryNameAr || offer()?.category?.nameAr) }}</td>
+            </tr>
+
+            <!-- SKU -->
+            <tr *ngIf="product()?.sku">
+              <td class="spec-label">{{ currentLang() === 'en' ? 'SKU Code' : 'رمز المنتج (SKU)' }}</td>
+              <td class="spec-val"><code class="mono-code">{{ product()?.sku }}</code></td>
+            </tr>
+
+            <!-- Barcode -->
+            <tr *ngIf="product()?.barcode">
+              <td class="spec-label">{{ currentLang() === 'en' ? 'Barcode' : 'الباركود' }}</td>
+              <td class="spec-val"><code class="mono-code">{{ product()?.barcode }}</code></td>
+            </tr>
+
+            <!-- Unit / Size -->
+            <tr *ngIf="product()?.unitSize || product()?.unit">
+              <td class="spec-label">{{ currentLang() === 'en' ? 'Size / Unit' : 'الحجم / الوحدة' }}</td>
+              <td class="spec-val">{{ product()?.unitSize }} {{ product()?.unit }}</td>
+            </tr>
+
+            <!-- Dynamic Specifications Attributes -->
+            <tr *ngFor="let spec of productSpecs()">
+              <td class="spec-label">{{ currentLang() === 'en' ? (spec.attrKeyAr || spec.attributeKeyEn || spec.attributeKey) : (spec.attrKeyAr || spec.attributeKeyAr || spec.attributeKey) }}</td>
+              <td class="spec-val">{{ currentLang() === 'en' ? (spec.attrValueEn || spec.valueEn || spec.attrValueAr || spec.valueAr) : (spec.attrValueAr || spec.valueAr || spec.attrValueEn || spec.valueEn) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab 3: Store & Branches -->
+    <div class="tab-pane card" *ngIf="activeTab() === 'store'">
+      <div class="branches-grid-list">
+        <div class="branch-card-item" *ngFor="let b of branches()">
+          <div class="branch-card-header">
+            <span class="material-icons-round text-primary">store</span>
+            <h4>{{ currentLang() === 'en' ? (b.branchNameEn || b.branch_name || b.nameEn) : (b.branchNameAr || b.branch_name || b.nameAr || b.nameEn) }}</h4>
+          </div>
+          
+          <div class="branch-card-body">
+            <p class="branch-detail-row" *ngIf="b.cityNameEn || b.cityNameAr || b.city">
+              <span class="material-icons-round font-xs text-muted">place</span>
+              <span>{{ currentLang() === 'en' ? (b.cityNameEn || b.city?.nameEn || b.addressEn) : (b.cityNameAr || b.city?.nameAr || b.addressAr || b.cityNameEn) }}</span>
+            </p>
+
+            <p class="branch-detail-row" *ngIf="b.openTime || b.open_time">
+              <span class="material-icons-round font-xs text-muted">schedule</span>
+              <span>{{ b.openTime || b.open_time }} - {{ b.closeTime || b.close_time }}</span>
+            </p>
+
+            <p class="branch-detail-row" *ngIf="b.phone || b.phoneNumber">
+              <span class="material-icons-round font-xs text-muted">phone</span>
+              <span>{{ b.phone || b.phoneNumber }}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 4: Terms & Conditions -->
+    <div class="tab-pane card" *ngIf="activeTab() === 'terms'">
+      <div class="terms-content-box">
+        <h4 class="section-title">
+          <span class="material-icons-round text-primary font-md">verified</span>
+          <span>{{ currentLang() === 'en' ? 'Promotion Terms & Conditions' : 'الشروط والأحكام الخاصة بالعرض' }}</span>
+        </h4>
+        <p class="terms-paragraph">
+          {{ currentLang() === 'en' ? (offer()?.termsEn || offer()?.termsAr) : (offer()?.termsAr || offer()?.termsEn) }}
+        </p>
+
+        <div class="terms-notes-box">
+          <span class="material-icons-round text-muted font-sm">help_outline</span>
+          <span>{{ currentLang() === 'en' ? 'Prices and promotional quantities are subject to retailer stock availability.' : 'الأسعار والكميات الترويجية خاضعة لتوفر المخزون لدى المتجر.' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Lightbox Modal for Full Image Zoom -->
