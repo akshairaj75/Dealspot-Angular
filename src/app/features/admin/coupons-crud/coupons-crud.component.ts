@@ -1,6 +1,8 @@
-import { Component, inject, OnInit, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { CouponService } from '../../../core/services/coupon.service';
 import { StoreService } from '../../../core/services/store.service';
 import { OfferService } from '../../../core/services/offer.service';
@@ -17,7 +19,7 @@ import Swal from 'sweetalert2';
   templateUrl: './coupons-crud.component.html',
   styleUrl: './coupons-crud.component.css'
 })
-export class CouponsCrudComponent implements OnInit {
+export class CouponsCrudComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private couponService = inject(CouponService);
   private storeService = inject(StoreService);
@@ -33,9 +35,16 @@ export class CouponsCrudComponent implements OnInit {
   coupons = signal<any[]>([]);
   stores = signal<any[]>([]);
   offers = signal<any[]>([]);
+
+  // Product Selection & Live Search State
+  selectedProduct = signal<any | null>(null);
   productOptions = signal<any[]>([]);
   productSearchLoading = signal<boolean>(false);
+  isProductDropdownOpen = signal<boolean>(false);
   productSearchText = '';
+  private productSearchSubject = new Subject<string>();
+  private productSearchSub?: Subscription;
+
   filteredCoupons = signal<any[]>([]);
 
   searchQuery = '';
@@ -56,8 +65,18 @@ export class CouponsCrudComponent implements OnInit {
     this.initForm();
     this.loadCoupons();
     this.loadDropdowns();
+
+    this.productSearchSub = this.productSearchSubject.pipe(
+      debounceTime(250),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      this.searchProducts(query);
+    });
   }
 
+  ngOnDestroy(): void {
+    this.productSearchSub?.unsubscribe();
+  }
 
   initForm(): void {
     this.couponForm = this.fb.group({
@@ -111,6 +130,60 @@ export class CouponsCrudComponent implements OnInit {
     this.searchProducts('');
   }
 
+  onProductSearchInput(query: string): void {
+    this.productSearchText = query;
+    this.isProductDropdownOpen.set(true);
+    this.productSearchSubject.next(query);
+  }
+
+  openProductDropdown(): void {
+    this.isProductDropdownOpen.set(true);
+    if (this.productOptions().length === 0) {
+      this.searchProducts(this.productSearchText);
+    }
+  }
+
+  closeProductDropdown(): void {
+    setTimeout(() => {
+      this.isProductDropdownOpen.set(false);
+      this.cd.detectChanges();
+    }, 250);
+  }
+
+  selectProduct(product: any | null): void {
+    this.selectedProduct.set(product);
+    this.couponForm.patchValue({ product_id: product ? product.id : null });
+    this.isProductDropdownOpen.set(false);
+    this.productSearchText = '';
+    this.cd.detectChanges();
+  }
+
+  clearSelectedProduct(): void {
+    this.selectProduct(null);
+  }
+
+  getProductImageUrl(product: any): string {
+    if (!product) return 'assets/images/placeholder-product.png';
+    const raw = product.primaryImageUrl || product.primary_image_url || product.imageUrl || product.image_url;
+    if (raw && typeof raw === 'string' && raw.trim() !== '') {
+      if (raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('data:')) {
+        return raw;
+      }
+      return this.filePath + raw;
+    }
+    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+      const first = product.images[0];
+      const img = typeof first === 'string' ? first : (first.imageUrl || first.image_url);
+      if (img) {
+        if (img.startsWith('http://') || img.startsWith('https://') || img.startsWith('data:')) {
+          return img;
+        }
+        return this.filePath + img;
+      }
+    }
+    return 'assets/images/placeholder-product.png';
+  }
+
   searchProducts(query: string = ''): void {
     this.productSearchLoading.set(true);
     this.productService.getPagedProducts(0, 30, query).subscribe({
@@ -162,6 +235,8 @@ export class CouponsCrudComponent implements OnInit {
 
   openAddModal(): void {
     this.editingCouponId = null;
+    this.selectedProduct.set(null);
+    this.isProductDropdownOpen.set(false);
     this.productSearchText = '';
     this.searchProducts('');
     const today = new Date().toISOString().split('T')[0];
@@ -190,6 +265,7 @@ export class CouponsCrudComponent implements OnInit {
 
   openEditModal(c: any): void {
     this.editingCouponId = c.id;
+    this.isProductDropdownOpen.set(false);
     this.productSearchText = '';
     this.searchProducts('');
     let dType = c.discountType || c.discount_type || 'PERCENT';
@@ -198,15 +274,25 @@ export class CouponsCrudComponent implements OnInit {
 
     const pId = c.productId || c.product_id || null;
 
-    // If product is linked, ensure it is in productOptions
-    if (pId && (c.productNameEn || c.product?.nameEn)) {
-      const existing = this.productOptions().find(p => p.id === pId);
-      if (!existing) {
-        this.productOptions.update(prev => [
-          { id: pId, nameEn: c.productNameEn || c.product?.nameEn, nameAr: c.productNameAr || c.product?.nameAr },
-          ...prev
-        ]);
-      }
+    if (pId) {
+      this.productService.getProductById(pId).subscribe({
+        next: (prod) => {
+          if (prod) {
+            this.selectedProduct.set(prod);
+          }
+          this.cd.detectChanges();
+        },
+        error: () => {
+          this.selectedProduct.set({
+            id: pId,
+            nameEn: c.productNameEn || c.product?.nameEn,
+            nameAr: c.productNameAr || c.product?.nameAr
+          });
+          this.cd.detectChanges();
+        }
+      });
+    } else {
+      this.selectedProduct.set(null);
     }
 
     this.couponForm.reset({

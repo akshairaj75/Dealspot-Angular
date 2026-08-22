@@ -212,26 +212,136 @@
               </select>
             </div>
 
-            <div class="form-group">
+            <div class="form-group product-link-section">
               <div class="d-flex justify-between items-center mb-1">
                 <label class="form-label mb-0">{{ currentLang() === 'en' ? 'Linked Catalog Product (Optional)' : 'ربط بمنتج محدد (اختياري)' }}</label>
-                <span class="text-xs text-muted" *ngIf="productSearchLoading()">{{ currentLang() === 'en' ? 'Searching...' : 'جاري البحث...' }}</span>
+                <span class="text-xs text-muted" *ngIf="productSearchLoading()">
+                  <span class="spinner-inline"></span>
+                  <span>{{ currentLang() === 'en' ? 'Searching...' : 'جاري البحث...' }}</span>
+                </span>
               </div>
-              <div class="product-picker-container">
-                <input 
-                  type="text" 
-                  [(ngModel)]="productSearchText"
-                  [ngModelOptions]="{standalone: true}"
-                  (ngModelChange)="searchProducts($event)"
-                  [placeholder]="currentLang() === 'en' ? 'Type to search products...' : 'اكتب للبحث عن منتج...'" 
-                  class="form-control mb-1 product-search-small"
-                />
-                <select formControlName="product_id" class="form-control">
-                  <option [ngValue]="null">{{ currentLang() === 'en' ? '-- Store-wide / All Products --' : '-- شامل للمتجر / جميع المنتجات --' }}</option>
-                  <option *ngFor="let p of productOptions()" [value]="p.id">
-                    {{ currentLang() === 'en' ? (p.nameEn || p.name_en) : (p.nameAr || p.name_ar || p.nameEn) }} (#{{ p.id }})
-                  </option>
-                </select>
+
+              <!-- 1. Display Selected Product Tile Card if a product is selected -->
+              <div class="selected-product-tile card" *ngIf="selectedProduct() as prod">
+                <div class="tile-image-wrapper">
+                  <img 
+                    [src]="getProductImageUrl(prod)" 
+                    alt="Product preview" 
+                    class="tile-product-img"
+                    (error)="$any($event.target).src = 'assets/images/placeholder-product.png'"
+                  />
+                </div>
+                <div class="tile-content">
+                  <div class="tile-header-row">
+                    <div class="tile-title-group">
+                      <h4 class="tile-name-en">{{ currentLang() === 'en' ? (prod.nameEn || prod.name_en) : (prod.nameAr || prod.name_ar || prod.nameEn) }}</h4>
+                      <span class="tile-name-secondary text-muted text-xs" *ngIf="currentLang() === 'en' && (prod.nameAr || prod.name_ar)">{{ prod.nameAr || prod.name_ar }}</span>
+                      <span class="tile-name-secondary text-muted text-xs" *ngIf="currentLang() === 'ar' && (prod.nameEn || prod.name_en)">{{ prod.nameEn || prod.name_en }}</span>
+                    </div>
+                    <button 
+                      type="button" 
+                      class="btn-remove-linked-product" 
+                      (click)="clearSelectedProduct()" 
+                      [title]="currentLang() === 'en' ? 'Remove product link' : 'إلغاء ربط المنتج'"
+                    >
+                      <span class="material-icons-round">close</span>
+                    </button>
+                  </div>
+
+                  <div class="tile-badges-row">
+                    <span class="badge-chip brand-chip" *ngIf="prod.brand || prod.brandNameEn">
+                      <span class="material-icons-round chip-icon">verified</span>
+                      <span>{{ currentLang() === 'en' ? (prod.brand || prod.brandNameEn) : (prod.brandAr || prod.brand_ar || prod.brandNameAr || prod.brand || prod.brandNameEn) }}</span>
+                    </span>
+                    <span class="badge-chip code-chip" *ngIf="prod.sku">
+                      SKU: <code>{{ prod.sku }}</code>
+                    </span>
+                    <span class="badge-chip code-chip" *ngIf="prod.barcode">
+                      UPC: <code>{{ prod.barcode }}</code>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. Display Live Search Autocomplete when no product is selected -->
+              <div class="product-autocomplete-container" *ngIf="!selectedProduct()">
+                <div class="autocomplete-input-wrapper">
+                  <span class="material-icons-round search-leading-icon">search</span>
+                  <input 
+                    type="text" 
+                    [ngModel]="productSearchText"
+                    [ngModelOptions]="{standalone: true}"
+                    (input)="onProductSearchInput($any($event.target).value)"
+                    (focus)="openProductDropdown()"
+                    [placeholder]="currentLang() === 'en' ? 'Search product by name, brand, SKU or barcode...' : 'ابحث باسم المنتج، الماركة، SKU أو الباركود...'" 
+                    class="form-control autocomplete-search-input"
+                  />
+                  <button 
+                    type="button" 
+                    class="btn-clear-search-input" 
+                    *ngIf="productSearchText" 
+                    (click)="onProductSearchInput('')"
+                  >
+                    <span class="material-icons-round">close</span>
+                  </button>
+                </div>
+
+                <!-- Floating Live Results Dropdown Popup -->
+                <div class="autocomplete-dropdown-menu card" *ngIf="isProductDropdownOpen()">
+                  <div class="dropdown-header-bar">
+                    <span class="dropdown-heading-text">{{ currentLang() === 'en' ? 'Catalog Products' : 'منتجات الدليل' }}</span>
+                    <button type="button" class="btn-dismiss-dropdown" (click)="isProductDropdownOpen.set(false)">
+                      <span class="material-icons-round">close</span>
+                    </button>
+                  </div>
+
+                  <div class="dropdown-scroll-body">
+                    <!-- General Store-Wide Option -->
+                    <div class="dropdown-item-row general-option" (click)="selectProduct(null)">
+                      <div class="general-icon-wrap">
+                        <span class="material-icons-round">storefront</span>
+                      </div>
+                      <div class="item-text-info">
+                        <strong class="item-primary-name">{{ currentLang() === 'en' ? 'All Products (Store-Wide)' : 'جميع المنتجات (شامل للمتجر)' }}</strong>
+                        <span class="item-sub-desc text-muted text-xs">{{ currentLang() === 'en' ? 'No specific catalog product linked' : 'بدون ربط بمنتج محدد' }}</span>
+                      </div>
+                      <span class="material-icons-round item-action-icon">check</span>
+                    </div>
+
+                    <!-- Product Items -->
+                    <div 
+                      class="dropdown-item-row" 
+                      *ngFor="let p of productOptions()" 
+                      (click)="selectProduct(p)"
+                    >
+                      <img 
+                        [src]="getProductImageUrl(p)" 
+                        class="item-thumbnail-img" 
+                        alt="thumbnail"
+                        (error)="$any($event.target).src = 'assets/images/placeholder-product.png'"
+                      />
+                      <div class="item-text-info">
+                        <div class="item-title-row">
+                          <strong class="item-primary-name">{{ currentLang() === 'en' ? (p.nameEn || p.name_en) : (p.nameAr || p.name_ar || p.nameEn) }}</strong>
+                          <span class="item-brand-tag" *ngIf="p.brand || p.brandNameEn">
+                            {{ currentLang() === 'en' ? (p.brand || p.brandNameEn) : (p.brandAr || p.brand_ar || p.brandNameAr || p.brand || p.brandNameEn) }}
+                          </span>
+                        </div>
+                        <div class="item-meta-row text-xs text-muted">
+                          <span *ngIf="p.sku">SKU: <code>{{ p.sku }}</code></span>
+                          <span *ngIf="p.barcode">UPC: <code>{{ p.barcode }}</code></span>
+                        </div>
+                      </div>
+                      <span class="material-icons-round item-action-icon select-btn-icon">add_circle</span>
+                    </div>
+
+                    <!-- Empty Results Message -->
+                    <div class="dropdown-empty-state" *ngIf="!productSearchLoading() && productOptions().length === 0">
+                      <span class="material-icons-round empty-icon">sentiment_dissatisfied</span>
+                      <p>{{ currentLang() === 'en' ? 'No catalog products match your search.' : 'لا توجد منتجات مطابقة في الدليل.' }}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
