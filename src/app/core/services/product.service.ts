@@ -1,5 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { Observable } from 'rxjs';
 import { environment } from '../../environment/environment';
 
 @Injectable({
@@ -12,6 +13,34 @@ export class ProductService {
 
   getProducts() {
     return this.http.get<any[]>(this.apiUrl + '/fetch-all-products');
+  }
+
+  getPagedProducts(
+    page: number = 0,
+    size: number = 20,
+    search?: string,
+    categoryId?: number | null,
+    brandId?: number | null,
+    sortBy: string = 'createdAt',
+    direction: string = 'desc'
+  ): Observable<any> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sortBy', sortBy)
+      .set('direction', direction);
+
+    if (search && search.trim()) {
+      params = params.set('search', search.trim());
+    }
+    if (categoryId !== undefined && categoryId !== null && categoryId !== ('' as any)) {
+      params = params.set('categoryId', categoryId.toString());
+    }
+    if (brandId !== undefined && brandId !== null && brandId !== ('' as any)) {
+      params = params.set('brandId', brandId.toString());
+    }
+
+    return this.http.get<any>(this.apiUrl + '/paged', { params });
   }
   getProductsById(id: string | number) {
     return this.http.get<any>(this.apiUrl + '/fetch-product/' + id);

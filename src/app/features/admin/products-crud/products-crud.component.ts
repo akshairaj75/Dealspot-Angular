@@ -1,7 +1,9 @@
-import { ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, HostListener, inject, OnDestroy, OnInit, signal, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { CategoryService } from '../../../core/services/category.service';
 import { ProductService } from '../../../core/services/product.service';
 import { BrandService } from '../../../core/services/brand.service';
@@ -16,7 +18,9 @@ import { environment } from '../../../environment/environment';
   templateUrl: './products-crud.component.html',
   styleUrls: ['./products-crud.component.css']
 })
-export class ProductsCrudComponent implements OnInit {
+export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('scrollSentinel') scrollSentinel?: ElementRef<HTMLDivElement>;
+
   private fb = inject(FormBuilder);
   private categoryService = inject(CategoryService);
   private productService = inject(ProductService);
@@ -27,27 +31,75 @@ export class ProductsCrudComponent implements OnInit {
   currentLang = this.translationService.currentLang;
   filePath = environment.filePath;
 
+  // Products state
   products = signal<any[]>([]);
+  loading = signal<boolean>(false);
+  loadingMore = signal<boolean>(false);
+  currentPage = signal<number>(0);
+  pageSize = 20;
+  totalElements = signal<number>(0);
+  totalPages = signal<number>(0);
+  hasMore = signal<boolean>(false);
+
+  // Search & Filter state
+  searchQuery = '';
+  private searchSubject = new Subject<string>();
+  private searchSub?: Subscription;
+  filterCategoryId = signal<number | null>(null);
+  filterBrandId = signal<number | null>(null);
+
+  // Categories & Brands
   allCategories = signal<any[]>([]);
   mainCategories = signal<any[]>([]);
   availableSubcategories = signal<any[]>([]);
-  filteredProducts = signal<any[]>([]);
-  searchQuery = '';
+  brands = signal<any[]>([]);
 
+  // Category selection in modal
   selectedMainCategoryId: number | null = null;
   selectedSubCategoryId: number | null = null;
 
+  // Modal state
   productForm!: FormGroup;
   isModalOpen = false;
   editingProductId: number | null = null;
   previewUrl: string | null = null;
-  brands: any[] = [];
+
+  // Scroll to top
+  showScrollTop = signal<boolean>(false);
+  private observer?: IntersectionObserver;
+
+  @HostListener('window:scroll', [])
+  onWindowScroll(): void {
+    const yOffset = window.pageYOffset || document.documentElement.scrollTop;
+    this.showScrollTop.set(yOffset > 400);
+  }
+
+  scrollToTop(): void {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   ngOnInit(): void {
-    this.loadProducts();
+    this.initForm();
     this.fetchBrands();
     this.loadCategories();
-    this.initForm();
+    this.resetAndLoadProducts();
+
+    this.searchSub = this.searchSubject.pipe(
+      debounceTime(350),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      this.searchQuery = query;
+      this.resetAndLoadProducts();
+    });
+  }
+
+  ngAfterViewInit(): void {
+    this.setupIntersectionObserver();
+  }
+
+  ngOnDestroy(): void {
+    this.searchSub?.unsubscribe();
+    this.observer?.disconnect();
   }
 
   initForm(): void {
@@ -79,43 +131,124 @@ export class ProductsCrudComponent implements OnInit {
     });
   }
 
-  loadProducts(): void {
-    this.productService.getProducts().subscribe({
+  private setupIntersectionObserver(): void {
+    if (typeof IntersectionObserver === 'undefined') return;
+
+    this.observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (entry && entry.isIntersecting) {
+        if (!this.loading() && !this.loadingMore() && this.hasMore()) {
+          this.loadNextPage();
+        }
+      }
+    }, {
+      rootMargin: '250px'
+    });
+
+    if (this.scrollSentinel?.nativeElement) {
+      this.observer.observe(this.scrollSentinel.nativeElement);
+    }
+  }
+
+  private reobserveSentinel(): void {
+    setTimeout(() => {
+      if (this.observer && this.scrollSentinel?.nativeElement) {
+        this.observer.disconnect();
+        this.observer.observe(this.scrollSentinel.nativeElement);
+      }
+    }, 100);
+  }
+
+  onSearchChange(value: string): void {
+    this.searchSubject.next(value);
+  }
+
+  onFilterCategoryChange(catId: any): void {
+    this.filterCategoryId.set(catId ? Number(catId) : null);
+    this.resetAndLoadProducts();
+  }
+
+  onFilterBrandChange(brandId: any): void {
+    this.filterBrandId.set(brandId ? Number(brandId) : null);
+    this.resetAndLoadProducts();
+  }
+
+  clearAllFilters(): void {
+    this.searchQuery = '';
+    this.filterCategoryId.set(null);
+    this.filterBrandId.set(null);
+    this.resetAndLoadProducts();
+  }
+
+  resetAndLoadProducts(): void {
+    this.currentPage.set(0);
+    this.loading.set(true);
+    this.loadingMore.set(false);
+
+    this.productService.getPagedProducts(
+      0,
+      this.pageSize,
+      this.searchQuery,
+      this.filterCategoryId(),
+      this.filterBrandId(),
+      'createdAt',
+      'desc'
+    ).subscribe({
       next: (res) => {
-        this.products.set(res || []);
-        this.applyFilter();
+        const items = res?.content || [];
+        this.products.set(items);
+        this.totalElements.set(res?.totalElements || 0);
+        this.totalPages.set(res?.totalPages || 0);
+        this.hasMore.set((res?.number + 1) < (res?.totalPages || 0));
+        this.loading.set(false);
         this.cd.detectChanges();
+        this.reobserveSentinel();
       },
-      error: (err) => console.error('Failed to load products:', err)
+      error: (err) => {
+        console.error('Failed to load paged products:', err);
+        this.loading.set(false);
+        this.cd.detectChanges();
+      }
     });
   }
 
-  applyFilter(): void {
-    const query = this.searchQuery.toLowerCase().trim();
-    if (!query) {
-      this.filteredProducts.set(this.products());
-      return;
-    }
+  loadNextPage(): void {
+    if (this.loadingMore() || !this.hasMore()) return;
 
-    const filtered = this.products().filter(p =>
-      (p.nameEn && p.nameEn.toLowerCase().includes(query)) ||
-      (p.name_en && p.name_en.toLowerCase().includes(query)) ||
-      (p.nameAr && p.nameAr.toLowerCase().includes(query)) ||
-      (p.name_ar && p.name_ar.toLowerCase().includes(query)) ||
-      (p.brand && p.brand.toLowerCase().includes(query)) ||
-      (p.brandAr && p.brandAr.toLowerCase().includes(query)) ||
-      (p.brand_ar && p.brand_ar.toLowerCase().includes(query)) ||
-      (p.sku && p.sku.toLowerCase().includes(query)) ||
-      (p.barcode && p.barcode.toLowerCase().includes(query)) ||
-      (p.id && p.id.toString().includes(query))
-    );
-    this.filteredProducts.set(filtered);
+    const nextPage = this.currentPage() + 1;
+    this.loadingMore.set(true);
+
+    this.productService.getPagedProducts(
+      nextPage,
+      this.pageSize,
+      this.searchQuery,
+      this.filterCategoryId(),
+      this.filterBrandId(),
+      'createdAt',
+      'desc'
+    ).subscribe({
+      next: (res) => {
+        const newItems = res?.content || [];
+        this.products.update(prev => [...prev, ...newItems]);
+        this.currentPage.set(res?.number ?? nextPage);
+        this.totalElements.set(res?.totalElements || this.totalElements());
+        this.totalPages.set(res?.totalPages || this.totalPages());
+        this.hasMore.set((res?.number + 1) < (res?.totalPages || 0));
+        this.loadingMore.set(false);
+        this.cd.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load next page of products:', err);
+        this.loadingMore.set(false);
+        this.cd.detectChanges();
+      }
+    });
   }
 
   fetchBrands(): void {
     this.brandService.getBrands().subscribe({
       next: (res: any[]) => {
-        this.brands = res || [];
+        this.brands.set(res || []);
         this.cd.detectChanges();
       },
       error: (err) => console.error('Failed to load brands:', err)
@@ -169,7 +302,7 @@ export class ProductsCrudComponent implements OnInit {
     this.productForm.patchValue({
       name_en: p.nameEn || p.name_en || '',
       name_ar: p.nameAr || p.name_ar || '',
-      brandId: p.brandId ?? null,
+      brandId: p.brandId ?? (p.brand ? p.brand.id : null),
       sku: p.sku || '',
       barcode: p.barcode || '',
       category_id: catId || '',
@@ -182,6 +315,8 @@ export class ProductsCrudComponent implements OnInit {
 
     if (p.images && p.images.length > 0) {
       this.previewUrl = this.filePath + p.images[0].imageUrl;
+    } else if (p.primaryImageUrl || p.primary_image_url) {
+      this.previewUrl = this.filePath + (p.primaryImageUrl || p.primary_image_url);
     } else {
       this.previewUrl = null;
     }
@@ -282,7 +417,7 @@ export class ProductsCrudComponent implements OnInit {
     }
 
     const val = this.productForm.value;
-    const selectedBrand = this.brands.find((b: any) => b.id === Number(val.brandId));
+    const selectedBrand = this.brands().find((b: any) => b.id === Number(val.brandId));
     const product: any = {
       nameEn: val.name_en,
       nameAr: val.name_ar,
@@ -330,7 +465,7 @@ export class ProductsCrudComponent implements OnInit {
           timer: 2000,
           showConfirmButton: false
         });
-        this.loadProducts();
+        this.resetAndLoadProducts();
         this.closeModal();
       },
       error: (err) => {
@@ -367,7 +502,7 @@ export class ProductsCrudComponent implements OnInit {
               this.currentLang() === 'en' ? 'Product has been deleted.' : 'تم حذف المنتج بنجاح.',
               'success'
             );
-            this.loadProducts();
+            this.resetAndLoadProducts();
           },
           error: (err) => {
             console.error(err);

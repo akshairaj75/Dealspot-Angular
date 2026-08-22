@@ -1,27 +1,89 @@
 <div class="crud-container">
   <div class="crud-header">
-    <h2>{{ currentLang() === 'en' ? 'Product Catalogue' : 'دليل المنتجات' }}</h2>
+    <div class="header-title-block">
+      <h2>{{ currentLang() === 'en' ? 'Product Catalogue' : 'دليل المنتجات' }}</h2>
+      <p class="header-subtitle">
+        {{ currentLang() === 'en' ? 'Manage Master Product items, categories, barcodes, and technical specifications.' : 'إدارة قاعدة بيانات المنتجات، الأقسام، الباركود والمواصفات الفنية.' }}
+      </p>
+    </div>
     <button class="btn btn-primary" (click)="openAddModal()">
       <span class="material-icons-round">add</span>
       <span>{{ currentLang() === 'en' ? 'Add Product' : 'إضافة منتج' }}</span>
     </button>
   </div>
 
-  <!-- Search and Stats Row -->
-  <div class="search-stats-row">
+  <!-- Search and Multi-Filter Toolbar -->
+  <div class="filters-toolbar card">
     <div class="search-box-wrapper">
       <span class="material-icons-round search-icon">search</span>
       <input 
         type="text" 
         [(ngModel)]="searchQuery" 
-        (ngModelChange)="applyFilter()"
-        [placeholder]="currentLang() === 'en' ? 'Search products by name, brand, SKU, UPC...' : 'ابحث عن المنتجات بالاسم، الماركة، الباركود...'" 
+        (ngModelChange)="onSearchChange($event)"
+        [placeholder]="currentLang() === 'en' ? 'Search by name, brand, SKU, barcode, ID...' : 'ابحث بالاسم، الماركة، SKU، الباركود أو الرقم...'" 
         class="search-input" 
       />
+      <button 
+        type="button" 
+        class="btn-clear-search" 
+        *ngIf="searchQuery" 
+        (click)="searchQuery = ''; onSearchChange('')"
+        [title]="currentLang() === 'en' ? 'Clear search' : 'مسح البحث'"
+      >
+        <span class="material-icons-round">close</span>
+      </button>
     </div>
-    <div class="stats-badge">
-      <span class="material-icons-round">analytics</span>
-      <span>{{ currentLang() === 'en' ? 'Total Products:' : 'إجمالي المنتجات:' }} <strong>{{ products().length }}</strong></span>
+
+    <!-- Category Filter -->
+    <div class="filter-dropdown-wrap">
+      <select 
+        [ngModel]="filterCategoryId()" 
+        (ngModelChange)="onFilterCategoryChange($event)" 
+        class="filter-select"
+      >
+        <option [ngValue]="null">{{ currentLang() === 'en' ? 'All Categories' : 'جميع الأقسام' }}</option>
+        <option *ngFor="let cat of allCategories()" [value]="cat.id">
+          {{ currentLang() === 'en' ? (cat.nameEn || cat.name_en) : (cat.nameAr || cat.name_ar || cat.nameEn) }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Brand Filter -->
+    <div class="filter-dropdown-wrap">
+      <select 
+        [ngModel]="filterBrandId()" 
+        (ngModelChange)="onFilterBrandChange($event)" 
+        class="filter-select"
+      >
+        <option [ngValue]="null">{{ currentLang() === 'en' ? 'All Brands' : 'جميع الماركات' }}</option>
+        <option *ngFor="let b of brands()" [value]="b.id">
+          {{ currentLang() === 'en' ? (b.nameEn || b.name_en) : (b.nameAr || b.name_ar || b.nameEn) }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Stats and Reset Filter -->
+    <div class="stats-badge-group">
+      <span class="stats-pill">
+        <span class="material-icons-round icon-tiny">inventory_2</span>
+        <span>
+          {{ currentLang() === 'en' ? 'Showing' : 'عرض' }} 
+          <strong>{{ products().length }}</strong> 
+          {{ currentLang() === 'en' ? 'of' : 'من' }} 
+          <strong>{{ totalElements() }}</strong>
+        </span>
+      </span>
+
+      <button 
+        type="button" 
+        class="btn-reset-filters" 
+        *ngIf="searchQuery || filterCategoryId() !== null || filterBrandId() !== null" 
+        (click)="clearAllFilters()"
+        [title]="currentLang() === 'en' ? 'Reset all filters' : 'إعادة ضبط التصفية'"
+      >
+        <span class="material-icons-round">filter_alt_off</span>
+        <span>{{ currentLang() === 'en' ? 'Clear' : 'إلغاء التصفية' }}</span>
+      </button>
     </div>
   </div>
 
@@ -38,24 +100,40 @@
           <th>{{ currentLang() === 'en' ? 'SKU / Barcode' : 'الرمز / الباركود' }}</th>
           <th>{{ currentLang() === 'en' ? 'Unit' : 'الوحدة' }}</th>
           <th>{{ currentLang() === 'en' ? 'Status' : 'الحالة' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Actions' : 'الإجراءات' }}</th>
+          <th class="text-right">{{ currentLang() === 'en' ? 'Actions' : 'الإجراءات' }}</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let p of filteredProducts()">
+        <!-- Initial Loading Skeleton -->
+        <tr *ngIf="loading()">
+          <td colspan="9" class="loading-state-cell">
+            <div class="skeleton-spinner"></div>
+            <p>{{ currentLang() === 'en' ? 'Loading product catalogue...' : 'جاري تحميل المنتجات...' }}</p>
+          </td>
+        </tr>
+
+        <!-- Products Rows -->
+        <tr *ngFor="let p of products()">
           <td>
             <img 
               *ngIf="p.images && p.images.length > 0" 
               [src]="filePath + p.images[0].imageUrl" 
               class="admin-table-product-img" 
               alt="product"
-              (error)="$any($event.target).src = 'https://placehold.co/60x60?text=No+Img'"
+              (error)="$any($event.target).src = 'assets/images/placeholder-product.png'"
             >
-            <span *ngIf="!p.images || p.images.length === 0" class="no-img-placeholder">
+            <img 
+              *ngIf="(!p.images || p.images.length === 0) && (p.primaryImageUrl || p.primary_image_url)" 
+              [src]="filePath + (p.primaryImageUrl || p.primary_image_url)" 
+              class="admin-table-product-img" 
+              alt="product"
+              (error)="$any($event.target).src = 'assets/images/placeholder-product.png'"
+            >
+            <span *ngIf="(!p.images || p.images.length === 0) && !p.primaryImageUrl && !p.primary_image_url" class="no-img-placeholder">
               <span class="material-icons-round">inventory_2</span>
             </span>
           </td>
-          <td>{{ p.id }}</td>
+          <td><span class="id-chip">#{{ p.id }}</span></td>
           <td><code>{{ currentLang() === 'en' ? (p.brand || p.brandNameEn) : (p.brandAr || p.brand || p.brandNameEn) }}</code></td>
           <td>
             <div class="product-names-cell">
@@ -90,7 +168,7 @@
               {{ (p.is_active === 1 || p.active === true || p.isActive === true) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}
             </span>
           </td>
-          <td>
+          <td class="text-right">
             <div class="action-buttons-cell">
               <button class="btn-icon" (click)="openEditModal(p)" [title]="currentLang() === 'en' ? 'Edit Product' : 'تعديل المنتج'">
                 <span class="material-icons-round">edit</span>
@@ -104,15 +182,50 @@
             </div>
           </td>
         </tr>
-        <tr *ngIf="filteredProducts().length === 0">
+
+        <!-- Empty Results Message -->
+        <tr *ngIf="!loading() && products().length === 0">
           <td colspan="9" class="empty-table-cell">
             <span class="material-icons-round empty-table-icon">inventory_2</span>
-            <p>{{ currentLang() === 'en' ? 'No products found matching your search.' : 'لا توجد منتجات مطابقة لعملية البحث.' }}</p>
+            <p>{{ currentLang() === 'en' ? 'No products found matching your search or filters.' : 'لا توجد منتجات مطابقة لعملية البحث أو التصفية الحالية.' }}</p>
+            <button class="btn btn-secondary btn-sm" (click)="clearAllFilters()" *ngIf="searchQuery || filterCategoryId() !== null || filterBrandId() !== null">
+              <span class="material-icons-round">refresh</span>
+              <span>{{ currentLang() === 'en' ? 'Reset Filters' : 'إعادة ضبط التصفية' }}</span>
+            </button>
           </td>
         </tr>
       </tbody>
     </table>
+
+    <!-- Infinite Scroll Sentinel & Bottom Loading Feedback -->
+    <div #scrollSentinel class="scroll-sentinel-container">
+      <div class="loading-more-pill" *ngIf="loadingMore()">
+        <div class="spinner-tiny"></div>
+        <span>{{ currentLang() === 'en' ? 'Loading more products...' : 'جاري تحميل المزيد من المنتجات...' }}</span>
+      </div>
+
+      <div class="end-of-catalog-pill" *ngIf="!loading() && !hasMore() && products().length > 0">
+        <span class="material-icons-round tiny-check">check_circle</span>
+        <span>
+          {{ currentLang() === 'en' 
+            ? 'All ' + totalElements() + ' products loaded' 
+            : 'تم عرض كافة المنتجات بالكامل (' + totalElements() + ')' 
+          }}
+        </span>
+      </div>
+    </div>
   </div>
+
+  <!-- Floating Scroll To Top Button -->
+  <button 
+    type="button" 
+    class="btn-floating-scroll-top" 
+    *ngIf="showScrollTop()" 
+    (click)="scrollToTop()" 
+    [title]="currentLang() === 'en' ? 'Scroll to top' : 'العودة للأعلى'"
+  >
+    <span class="material-icons-round">arrow_upward</span>
+  </button>
 
   <!-- Add/Edit Modal -->
   <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
@@ -130,7 +243,7 @@
             <label class="form-label">{{ currentLang() === 'en' ? 'Brand *' : 'الماركة *' }}</label>
             <select formControlName="brandId" class="form-control">
               <option [ngValue]="null" disabled>{{ currentLang() === 'en' ? '-- Select Brand --' : '-- اختر الماركة --' }}</option>
-              <option *ngFor="let brand of brands" [ngValue]="brand.id">
+              <option *ngFor="let brand of brands()" [ngValue]="brand.id">
                 {{ currentLang() === 'en' ? brand.nameEn : (brand.nameAr || brand.nameEn) }}
               </option>
             </select>
