@@ -5,7 +5,6 @@ import { FormsModule } from '@angular/forms';
 import { OfferService } from '../../../core/services/offer.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { StoreService } from '../../../core/services/store.service';
-import { ProductService } from '../../../core/services/product.service';
 import { CityService } from '../../../core/services/city.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
@@ -26,7 +25,6 @@ export class OfferListComponent implements OnInit {
   private offerService = inject(OfferService);
   private categoryService = inject(CategoryService);
   private storeService = inject(StoreService);
-  private productService = inject(ProductService);
   private brandService = inject(BrandService);
   private cityService = inject(CityService);
   private authService = inject(AuthService);
@@ -45,7 +43,6 @@ export class OfferListComponent implements OnInit {
   brands = signal<any[]>([]);
   brandMap = signal<Record<number, any>>({});
   storeMap = signal<Record<number, any>>({});
-  productMap = signal<Record<number, any>>({});
   cities = signal<any[]>([]);
   savedOfferIds = signal<number[]>([]);
   onlySaved = signal<boolean>(false);
@@ -241,23 +238,6 @@ export class OfferListComponent implements OnInit {
       },
       error: (err) => console.error('Failed to load cities:', err)
     });
-
-    this.productService.getProducts().subscribe({
-      next: (prods: any[]) => {
-        const list = prods || [];
-        const map: Record<number, any> = {};
-        list.forEach((p: any) => {
-          if (p && p.id) {
-            map[Number(p.id)] = p;
-            map[p.id] = p;
-          }
-        });
-        this.productMap.set(map);
-        this.applyFilters();
-        this.cd.detectChanges();
-      },
-      error: (err) => console.error('Failed to load products:', err)
-    });
   }
 
   loadOffers(): void {
@@ -313,26 +293,13 @@ export class OfferListComponent implements OnInit {
 
     if (this.selectedBrandId) {
       const bId = Number(this.selectedBrandId);
-      list = list.filter(o => {
-        if (Number(o.brandId || o.brand_id) === bId) return true;
-        const prod = this.productMap()[Number(o.productId || o.product_id)];
-        if (prod && (Number(prod.brandId || prod.brand_id || prod.brand?.id) === bId)) return true;
-        return false;
-      });
+      list = list.filter(o => Number(o.brandId || o.brand_id) === bId);
     } else if (this.selectedBrandName && this.selectedBrandName.trim() !== '') {
       const bName = this.selectedBrandName.toLowerCase().trim();
       list = list.filter(o => {
         const obEn = (o.brandNameEn || o.brand_name_en || '').toLowerCase();
         const obAr = (o.brandNameAr || o.brand_name_ar || '').toLowerCase();
-        if ((obEn && (obEn.includes(bName) || bName.includes(obEn))) || (obAr && (obAr.includes(bName) || bName.includes(obAr)))) return true;
-        
-        const prod = this.productMap()[Number(o.productId || o.product_id)];
-        if (prod) {
-          const pbEn = (prod.brandNameEn || prod.brand?.nameEn || (typeof prod.brand === 'string' ? prod.brand : '')).toLowerCase();
-          const pbAr = (prod.brandNameAr || prod.brand?.nameAr || '').toLowerCase();
-          if ((pbEn && (pbEn.includes(bName) || bName.includes(pbEn))) || (pbAr && (pbAr.includes(bName) || bName.includes(pbAr)))) return true;
-        }
-        return false;
+        return (obEn && (obEn.includes(bName) || bName.includes(obEn))) || (obAr && (obAr.includes(bName) || bName.includes(obAr)));
       });
     }
 
@@ -440,22 +407,6 @@ export class OfferListComponent implements OnInit {
                        item.product?.imageUrl;
     if (dtoProdImg && typeof dtoProdImg === 'string' && dtoProdImg.trim() !== '') {
       return this.getImageUrl(dtoProdImg);
-    }
-
-    // 3. Product Image from Product Map
-    const pId = item.productId || item.product_id || item.product?.id;
-    if (pId !== undefined && pId !== null && pId !== '') {
-      const mappedProd = this.productMap()[Number(pId)] || this.productMap()[pId];
-      if (mappedProd) {
-        let prodImg = mappedProd.primaryImageUrl || mappedProd.primary_image_url || mappedProd.imageUrl || mappedProd.image_url;
-        if ((!prodImg || typeof prodImg !== 'string' || prodImg.trim() === '') && mappedProd.images && Array.isArray(mappedProd.images) && mappedProd.images.length > 0) {
-          const first = mappedProd.images[0];
-          prodImg = typeof first === 'string' ? first : (first?.imageUrl || first?.image_url);
-        }
-        if (prodImg && typeof prodImg === 'string' && prodImg.trim() !== '') {
-          return this.getImageUrl(prodImg);
-        }
-      }
     }
 
     return this.getImageUrl(null);

@@ -34,9 +34,11 @@ export class OffersCrudComponent implements OnInit {
 
   offers = signal<any[]>([]);
   stores = signal<any[]>([]);
-  products = signal<any[]>([]);
   categories = signal<any[]>([]);
   cities = signal<any[]>([]);
+  productOptions = signal<any[]>([]);
+  productSearchLoading = signal<boolean>(false);
+  productSearchText = '';
   filteredOffers = signal<any[]>([]);
 
   searchQuery = '';
@@ -131,14 +133,6 @@ export class OffersCrudComponent implements OnInit {
       error: (err) => console.error('Failed to load stores:', err)
     });
 
-    this.productService.getProducts().subscribe({
-      next: (res) => {
-        this.products.set(res || []);
-        this.cd.detectChanges();
-      },
-      error: (err) => console.error('Failed to load products:', err)
-    });
-
     this.categoryService.getCategories().subscribe({
       next: (res: any) => {
         const cats = Array.isArray(res) ? res : (res?.data || []);
@@ -154,6 +148,25 @@ export class OffersCrudComponent implements OnInit {
         this.cd.detectChanges();
       },
       error: (err) => console.error('Failed to load cities:', err)
+    });
+
+    this.searchProducts('');
+  }
+
+  searchProducts(query: string = ''): void {
+    this.productSearchLoading.set(true);
+    this.productService.getPagedProducts(0, 30, query).subscribe({
+      next: (res) => {
+        const items = res?.content || [];
+        this.productOptions.set(items);
+        this.productSearchLoading.set(false);
+        this.cd.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to query products for offers:', err);
+        this.productSearchLoading.set(false);
+        this.cd.detectChanges();
+      }
     });
   }
 
@@ -188,6 +201,8 @@ export class OffersCrudComponent implements OnInit {
     this.selectedImageFiles = [];
     this.imagePreviewUrls = [];
     this.existingImageUrl = null;
+    this.productSearchText = '';
+    this.searchProducts('');
 
     const today = new Date().toISOString().split('T')[0];
     const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -228,6 +243,20 @@ export class OffersCrudComponent implements OnInit {
     this.selectedImageFiles = [];
     this.imagePreviewUrls = [];
     this.existingImageUrl = o.imageUrl || o.thumbnailUrl || o.image_url || null;
+    this.productSearchText = '';
+    this.searchProducts('');
+
+    const pId = o.productId || o.product_id || null;
+
+    if (pId && (o.productNameEn || o.product?.nameEn)) {
+      const existing = this.productOptions().find(p => p.id === pId);
+      if (!existing) {
+        this.productOptions.update(prev => [
+          { id: pId, nameEn: o.productNameEn || o.product?.nameEn, nameAr: o.productNameAr || o.product?.nameAr },
+          ...prev
+        ]);
+      }
+    }
 
     this.offerForm.reset({
       title_en: o.titleEn || o.title_en || '',
@@ -235,7 +264,7 @@ export class OffersCrudComponent implements OnInit {
       store_id: o.storeId || o.store_id || '',
       category_id: o.categoryId || o.category_id || '',
       city_id: o.cityId || o.city_id || '',
-      product_id: o.productId || o.product_id || null,
+      product_id: pId,
       original_price: o.originalPrice || o.original_price || 0,
       offer_price: o.offerPrice || o.offer_price || 0,
       discount_pct: o.discountPct || o.discount_pct || 0,

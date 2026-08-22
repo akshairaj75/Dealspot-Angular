@@ -4,7 +4,6 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { StoreService } from '../../../core/services/store.service';
 import { OfferService } from '../../../core/services/offer.service';
 import { FlyerService } from '../../../core/services/flyer.service';
-import { ProductService } from '../../../core/services/product.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { environment } from '../../../environment/environment';
 
@@ -27,7 +26,6 @@ export class StoreDetailComponent implements OnInit {
   private storeService = inject(StoreService);
   private offerService = inject(OfferService);
   private flyerService = inject(FlyerService);
-  private productService = inject(ProductService);
   private authService = inject(AuthService);
   private translationService = inject(TranslationService);
   private cd = inject(ChangeDetectorRef);
@@ -39,7 +37,6 @@ export class StoreDetailComponent implements OnInit {
   offers = signal<any[]>([]);
   flyers = signal<any[]>([]);
   branches = signal<any[]>([]);
-  productMap = signal<Record<number, any>>({});
   
   isFollowing = signal<boolean>(false);
   followersCount = signal<number>(0);
@@ -92,19 +89,6 @@ export class StoreDetailComponent implements OnInit {
           error: (err) => {
             console.warn('Could not load offers:', err);
           }
-        });
-
-        // Fetch Products for real image fallback
-        this.productService.getProducts().subscribe({
-          next: (prods: any[]) => {
-            const map: Record<number, any> = {};
-            (prods || []).forEach((p: any) => {
-              if (p && p.id) map[p.id] = p;
-            });
-            this.productMap.set(map);
-            this.cd.detectChanges();
-          },
-          error: () => {}
         });
 
         // Fetch Flyers for this store
@@ -225,22 +209,6 @@ export class StoreDetailComponent implements OnInit {
                        item.product?.imageUrl;
     if (dtoProdImg && typeof dtoProdImg === 'string' && dtoProdImg.trim() !== '') {
       return this.getImageUrl(dtoProdImg);
-    }
-
-    // 3. Product Image from Product Map
-    const pId = item.productId || item.product_id || item.product?.id;
-    if (pId !== undefined && pId !== null && pId !== '') {
-      const mappedProd = this.productMap()[Number(pId)] || this.productMap()[pId];
-      if (mappedProd) {
-        let prodImg = mappedProd.primaryImageUrl || mappedProd.primary_image_url || mappedProd.imageUrl || mappedProd.image_url;
-        if ((!prodImg || typeof prodImg !== 'string' || prodImg.trim() === '') && mappedProd.images && Array.isArray(mappedProd.images) && mappedProd.images.length > 0) {
-          const first = mappedProd.images[0];
-          prodImg = typeof first === 'string' ? first : (first?.imageUrl || first?.image_url);
-        }
-        if (prodImg && typeof prodImg === 'string' && prodImg.trim() !== '') {
-          return this.getImageUrl(prodImg);
-        }
-      }
     }
 
     return this.getImageUrl(null);

@@ -33,13 +33,15 @@ export class CouponsCrudComponent implements OnInit {
   coupons = signal<any[]>([]);
   stores = signal<any[]>([]);
   offers = signal<any[]>([]);
-  products = signal<any[]>([]);
+  productOptions = signal<any[]>([]);
+  productSearchLoading = signal<boolean>(false);
+  productSearchText = '';
   filteredCoupons = signal<any[]>([]);
 
   searchQuery = '';
   selectedStoreFilter: number | string = '';
   selectedDiscountTypeFilter: string = '';
-  selectedStatusFilter: string = '';
+  selectedStatusFilter: string = 'all';
 
   couponForm!: FormGroup;
   isModalOpen = false;
@@ -64,9 +66,9 @@ export class CouponsCrudComponent implements OnInit {
       offer_id: [null],
       product_id: [null],
       discount_type: ['PERCENT', Validators.required],
-      discount_value: [10, [Validators.required, Validators.min(0)]],
+      discount_value: [10, [Validators.required, Validators.min(0.01)]],
       min_cart_value: [0, [Validators.required, Validators.min(0)]],
-      max_uses: [100, [Validators.min(1)]],
+      max_uses: [100, [Validators.required, Validators.min(1)]],
       valid_from: ['', Validators.required],
       valid_until: ['', Validators.required],
       is_active: [true]
@@ -74,7 +76,6 @@ export class CouponsCrudComponent implements OnInit {
   }
 
   loadCoupons(): void {
-    this.loading = true;
     this.couponService.getAllCoupons().subscribe({
       next: (res) => {
         this.coupons.set(res || []);
@@ -107,12 +108,23 @@ export class CouponsCrudComponent implements OnInit {
       error: (err) => console.error('Failed to load offers:', err)
     });
 
-    this.productService.getProducts().subscribe({
+    this.searchProducts('');
+  }
+
+  searchProducts(query: string = ''): void {
+    this.productSearchLoading.set(true);
+    this.productService.getPagedProducts(0, 30, query).subscribe({
       next: (res) => {
-        this.products.set(res || []);
+        const items = res?.content || [];
+        this.productOptions.set(items);
+        this.productSearchLoading.set(false);
         this.cd.detectChanges();
       },
-      error: (err) => console.error('Failed to load products:', err)
+      error: (err) => {
+        console.error('Failed to query products:', err);
+        this.productSearchLoading.set(false);
+        this.cd.detectChanges();
+      }
     });
   }
 
@@ -150,6 +162,8 @@ export class CouponsCrudComponent implements OnInit {
 
   openAddModal(): void {
     this.editingCouponId = null;
+    this.productSearchText = '';
+    this.searchProducts('');
     const today = new Date().toISOString().split('T')[0];
     const nextMonth = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
@@ -176,15 +190,30 @@ export class CouponsCrudComponent implements OnInit {
 
   openEditModal(c: any): void {
     this.editingCouponId = c.id;
+    this.productSearchText = '';
+    this.searchProducts('');
     let dType = c.discountType || c.discount_type || 'PERCENT';
     if (dType === 'PERCENTAGE') dType = 'PERCENT';
     if (dType === 'FIXED') dType = 'FIXED_SAR';
+
+    const pId = c.productId || c.product_id || null;
+
+    // If product is linked, ensure it is in productOptions
+    if (pId && (c.productNameEn || c.product?.nameEn)) {
+      const existing = this.productOptions().find(p => p.id === pId);
+      if (!existing) {
+        this.productOptions.update(prev => [
+          { id: pId, nameEn: c.productNameEn || c.product?.nameEn, nameAr: c.productNameAr || c.product?.nameAr },
+          ...prev
+        ]);
+      }
+    }
 
     this.couponForm.reset({
       code: c.code || '',
       store_id: c.storeId || c.store_id || '',
       offer_id: c.offerId || c.offer_id || null,
-      product_id: c.productId || c.product_id || null,
+      product_id: pId,
       discount_type: dType,
       discount_value: c.discountValue !== undefined ? c.discountValue : (c.discount_value !== undefined ? c.discount_value : 10),
       min_cart_value: c.minCartValue !== undefined ? c.minCartValue : (c.min_cart_value !== undefined ? c.min_cart_value : 0),

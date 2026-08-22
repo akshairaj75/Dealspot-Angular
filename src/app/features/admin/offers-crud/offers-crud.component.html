@@ -237,14 +237,26 @@
 
           <!-- Catalog Linked Product -->
           <div class="form-group">
-            <label class="form-label">{{ currentLang() === 'en' ? 'Catalog Linked Product (Optional)' : 'ربط بمنتج من
-              الدليل (اختياري)' }}</label>
-            <select formControlName="product_id" class="form-control">
-              <option [ngValue]="null">{{ currentLang() === 'en' ? 'No catalog link (General Store Promotion)' : 'بدون
-                ربط بمنتج محدد (عرض عام للمتجر)' }}</option>
-              <option *ngFor="let p of products()" [value]="p.id">{{ currentLang() === 'en' ? (p.nameEn || p.name_en) :
-                (p.nameAr || p.name_ar || p.nameEn) }}</option>
-            </select>
+            <div class="d-flex justify-between items-center mb-1">
+              <label class="form-label mb-0">{{ currentLang() === 'en' ? 'Catalog Linked Product (Optional)' : 'ربط بمنتج من الدليل (اختياري)' }}</label>
+              <span class="text-xs text-muted" *ngIf="productSearchLoading()">{{ currentLang() === 'en' ? 'Searching...' : 'جاري البحث...' }}</span>
+            </div>
+            <div class="product-picker-container">
+              <input 
+                type="text" 
+                [(ngModel)]="productSearchText"
+                [ngModelOptions]="{standalone: true}"
+                (ngModelChange)="searchProducts($event)"
+                [placeholder]="currentLang() === 'en' ? 'Type to search products...' : 'اكتب للبحث عن منتج...'" 
+                class="form-control mb-1 product-search-small"
+              />
+              <select formControlName="product_id" class="form-control">
+                <option [ngValue]="null">{{ currentLang() === 'en' ? '-- No catalog link (General Store Promotion) --' : '-- بدون ربط بمنتج محدد (عرض عام للمتجر) --' }}</option>
+                <option *ngFor="let p of productOptions()" [value]="p.id">
+                  {{ currentLang() === 'en' ? (p.nameEn || p.name_en) : (p.nameAr || p.name_ar || p.nameEn) }} (#{{ p.id }})
+                </option>
+              </select>
+            </div>
           </div>
 
           <!-- Pricing & Computed Discount -->
