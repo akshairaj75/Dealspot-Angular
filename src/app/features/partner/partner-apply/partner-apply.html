@@ -125,9 +125,16 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">{{ currentLang() === 'en' ? 'Store Description / Bio' : 'نبذة عن المتجر' }}</label>
-            <textarea formControlName="descriptionEn" class="form-control" rows="2" [placeholder]="currentLang() === 'en' ? 'Brief description about your goods and specialties...' : 'وصف موجز عن المتجر ومنتجاته...'"></textarea>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Store Description (English)' : 'نبذة عن المتجر (بالإنجليزي)' }}</label>
+              <textarea formControlName="descriptionEn" class="form-control" rows="2" [placeholder]="currentLang() === 'en' ? 'Brief description about your goods and specialties...' : 'وصف موجز عن المتجر بالإنجليزي...'"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Store Description (Arabic)' : 'نبذة عن المتجر (بالعربي)' }}</label>
+              <textarea formControlName="descriptionAr" class="form-control" rows="2" [placeholder]="currentLang() === 'en' ? 'Brief description in Arabic...' : 'وصف موجز عن المتجر ومنتجاته بالعربي...'"></textarea>
+            </div>
           </div>
 
           <div class="form-group">

@@ -99,9 +99,25 @@
         <span class="material-icons-round font-xs">chevron_right</span>
       </a>
 
-      <!-- Main Offer Title -->
-      <h1 class="noon-offer-title">{{ offer() | translate:'title' }}</h1>
-      <p class="noon-offer-subtitle" *ngIf="currentLang() === 'en' && offer()?.titleAr">{{ offer()?.titleAr }}</p>
+      <!-- Main Product Name Title -->
+      <h1 class="noon-offer-title">{{ getProductName() || getOfferTitle() }}</h1>
+
+      <!-- Offer Promotion Spotlight Box (Immediate First View) -->
+      <div class="product-spotlight-card" *ngIf="getOfferTitle() || getOfferDescription()">
+        <div class="product-spotlight-header" *ngIf="getOfferTitle()">
+          <span class="product-spotlight-icon-box">
+            <span class="material-icons-round">local_offer</span>
+          </span>
+          <div class="product-spotlight-title-wrap">
+            <span class="product-spotlight-tag">{{ currentLang() === 'en' ? 'SPECIAL OFFER' : 'العرض الخاص' }}</span>
+            <h2 class="product-spotlight-title">{{ getOfferTitle() }}</h2>
+          </div>
+        </div>
+
+        <p class="product-spotlight-desc" *ngIf="getOfferDescription()">
+          {{ getOfferDescription() }}
+        </p>
+      </div>
 
       <!-- Rating & Verified Tag Row -->
       <div class="rating-badge-row">
@@ -212,18 +228,7 @@
         </div>
       </div>
 
-      <!-- Linked Product Showcase Box -->
-      <div class="noon-product-box" *ngIf="product()?.nameEn || offer()?.productNameEn">
-        <div class="product-box-badge">{{ currentLang() === 'en' ? 'PRODUCT' : 'المنتج' }}</div>
-        <div class="product-box-content">
-          <div class="product-box-info">
-            <h4 class="product-box-title">{{ currentLang() === 'en' ? (product()?.nameEn || offer()?.productNameEn) : (product()?.nameAr || offer()?.productNameAr || product()?.nameEn) }}</h4>
-            <p class="product-box-desc" *ngIf="product()?.descriptionEn || product()?.descriptionAr">
-              {{ product() | translate:'description' }}
-            </p>
-          </div>
-        </div>
-      </div>
+
 
     </div>
 

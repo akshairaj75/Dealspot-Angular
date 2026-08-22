@@ -222,16 +222,16 @@ export class StoresCrudComponent implements OnInit {
     this.existingLogoUrl = store.logoUrl || null;
 
     this.storeForm.patchValue({
-      name_en: store.nameEn,
-      name_ar: store.nameAr,
-      city_id: store.cityId || (store.city ? store.city.id : ''),
-      category_id: store.categoryId || (store.category ? store.category.id : ''),
-      description_en: store.descriptionEn || '',
-      description_ar: store.descriptionAr || '',
-      cr_number: store.crNumber || '',
-      vat_number: store.vatNumber || '',
-      contact_phone: store.contactPhone || '',
-      contact_email: store.contactEmail || '',
+      name_en: store.nameEn || store.name_en || '',
+      name_ar: store.nameAr || store.name_ar || '',
+      city_id: store.cityId || store.city_id || (store.city ? store.city.id : ''),
+      category_id: store.categoryId || store.category_id || (store.category ? store.category.id : ''),
+      description_en: store.descriptionEn || store.description_en || '',
+      description_ar: store.descriptionAr || store.description_ar || '',
+      cr_number: store.crNumber || store.cr_number || '',
+      vat_number: store.vatNumber || store.vat_number || '',
+      contact_phone: store.contactPhone || store.contact_phone || '',
+      contact_email: store.contactEmail || store.contact_email || '',
       website: store.website || '',
       is_verified: store.verified === true || store.is_verified === true,
       is_active: store.active === true || store.is_active === true

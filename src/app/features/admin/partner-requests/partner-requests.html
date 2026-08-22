@@ -227,7 +227,16 @@
 
         <div class="inspect-section full-width" *ngIf="selectedRequest.descriptionEn || selectedRequest.descriptionAr">
           <h4>{{ currentLang() === 'en' ? 'Store Description' : 'نبذة عن المتجر' }}</h4>
-          <p class="desc-box">{{ selectedRequest.descriptionEn || selectedRequest.descriptionAr }}</p>
+          <div class="desc-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div *ngIf="selectedRequest.descriptionEn">
+              <span class="info-label">{{ currentLang() === 'en' ? 'English Description:' : 'الوصف بالإنجليزي:' }}</span>
+              <p class="desc-box">{{ selectedRequest.descriptionEn }}</p>
+            </div>
+            <div *ngIf="selectedRequest.descriptionAr">
+              <span class="info-label">{{ currentLang() === 'en' ? 'Arabic Description:' : 'الوصف بالعربي:' }}</span>
+              <p class="desc-box" dir="rtl">{{ selectedRequest.descriptionAr }}</p>
+            </div>
+          </div>
         </div>
 
         <div class="inspect-section full-width" *ngIf="selectedRequest.rejectionReason">

@@ -478,4 +478,44 @@ export class OfferDetailComponent implements OnInit {
     }
     return params;
   }
+
+  getProductName(): string {
+    const p = this.product();
+    const o = this.offer();
+    if (this.currentLang() === 'en') {
+      return p?.nameEn || o?.productNameEn || o?.product_name_en || (typeof p?.name === 'string' ? p.name : '') || '';
+    } else {
+      return p?.nameAr || o?.productNameAr || o?.product_name_ar || p?.nameEn || o?.productNameEn || '';
+    }
+  }
+
+  getProductDescription(): string {
+    const p = this.product();
+    const o = this.offer();
+    if (this.currentLang() === 'en') {
+      return p?.descriptionEn || p?.description_en || o?.descriptionEn || o?.description_en || (typeof p?.description === 'string' ? p.description : '') || (typeof o?.description === 'string' ? o.description : '');
+    } else {
+      return p?.descriptionAr || p?.description_ar || o?.descriptionAr || o?.description_ar || p?.descriptionEn || o?.descriptionEn || '';
+    }
+  }
+
+  getOfferTitle(): string {
+    const o = this.offer();
+    if (!o) return '';
+    if (this.currentLang() === 'en') {
+      return o.titleEn || o.title_en || (typeof o.title === 'string' ? o.title : '');
+    } else {
+      return o.titleAr || o.title_ar || o.titleEn || (typeof o.title === 'string' ? o.title : '');
+    }
+  }
+
+  getOfferDescription(): string {
+    const o = this.offer();
+    if (!o) return '';
+    if (this.currentLang() === 'en') {
+      return o.descriptionEn || o.description_en || (typeof o.description === 'string' ? o.description : '');
+    } else {
+      return o.descriptionAr || o.description_ar || o.descriptionEn || (typeof o.description === 'string' ? o.description : '');
+    }
+  }
 }
