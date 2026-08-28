@@ -1,7 +1,9 @@
-import { Component, inject, signal, computed, OnInit, effect, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy, effect, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { OfferService } from '../../../core/services/offer.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { StoreService } from '../../../core/services/store.service';
@@ -21,7 +23,7 @@ import Swal from 'sweetalert2';
   templateUrl: './offer-list.component.html',
   styleUrls: ['./offer-list.component.css']
 })
-export class OfferListComponent implements OnInit {
+export class OfferListComponent implements OnInit, OnDestroy {
   private offerService = inject(OfferService);
   private categoryService = inject(CategoryService);
   private storeService = inject(StoreService);
@@ -46,6 +48,19 @@ export class OfferListComponent implements OnInit {
   cities = signal<any[]>([]);
   savedOfferIds = signal<number[]>([]);
   onlySaved = signal<boolean>(false);
+
+  // Brand Search & Infinite Scroll State
+  isBrandDropdownOpen = signal<boolean>(false);
+  brandSearchText: string = '';
+  brandOptions = signal<any[]>([]);
+  brandPage = signal<number>(0);
+  brandPageSize: number = 20;
+  brandHasMore = signal<boolean>(true);
+  brandLoading = signal<boolean>(false);
+  brandLoadingMore = signal<boolean>(false);
+  selectedBrand = signal<any | null>(null);
+  private brandSearchSubject = new Subject<string>();
+  private brandSearchSub?: Subscription;
 
   // Hierarchical Category Computed Signals
   mainCategories = computed(() => {
@@ -101,10 +116,18 @@ export class OfferListComponent implements OnInit {
       }
     });
 
+    // Setup debounced brand search
+    this.brandSearchSub = this.brandSearchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(term => {
+      this.brandPage.set(0);
+      this.loadBrandOptions(term, 0, false);
+    });
+
     this.loadSavedOffers();
     this.loadDropdowns();
     this.loadOffers();
-
 
     // Handle query parameters (from Home page, Offer Detail, or direct links)
     this.route.queryParams.subscribe(params => {
@@ -115,7 +138,25 @@ export class OfferListComponent implements OnInit {
         this.selectedStoreId = Number(params['store']);
       }
       if (params['brandId']) {
-        this.selectedBrandId = Number(params['brandId']);
+        const bId = Number(params['brandId']);
+        this.selectedBrandId = bId;
+        if (!this.selectedBrand() || Number(this.selectedBrand().id) !== bId) {
+          if (this.brandMap()[bId]) {
+            this.selectedBrand.set(this.brandMap()[bId]);
+          } else {
+            this.brandService.getBrand(bId).subscribe({
+              next: (b) => {
+                if (b) {
+                  this.selectedBrand.set(b);
+                  const m = { ...this.brandMap(), [b.id]: b };
+                  this.brandMap.set(m);
+                  this.cd.detectChanges();
+                }
+              },
+              error: () => {}
+            });
+          }
+        }
       }
       if (params['brand']) {
         this.selectedBrandName = params['brand'];
@@ -135,6 +176,10 @@ export class OfferListComponent implements OnInit {
 
       this.applyFilters();
     });
+  }
+
+  ngOnDestroy(): void {
+    this.brandSearchSub?.unsubscribe();
   }
 
   handleCategoryParam(catIdParam: any): void {
@@ -216,20 +261,7 @@ export class OfferListComponent implements OnInit {
       error: (err) => console.error('Failed to load stores:', err)
     });
 
-    this.brandService.getBrands().subscribe({
-      next: (b: any) => {
-        const list = Array.isArray(b) ? b : (b?.data || []);
-        this.brands.set(list);
-        const map: Record<number, any> = {};
-        list.forEach((brand: any) => {
-          if (brand && brand.id) map[brand.id] = brand;
-        });
-        this.brandMap.set(map);
-        this.applyFilters();
-        this.cd.detectChanges();
-      },
-      error: (err) => console.error('Failed to load brands:', err)
-    });
+    this.loadBrandOptions('', 0, false);
 
     this.cityService.getCities().subscribe({
       next: (c) => {
@@ -238,6 +270,134 @@ export class OfferListComponent implements OnInit {
       },
       error: (err) => console.error('Failed to load cities:', err)
     });
+  }
+
+  // =========================================================================
+  // Brand Search & Infinite Scroll Methods
+  // =========================================================================
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (this.isBrandDropdownOpen() && target && !target.closest('.brand-filter-dropdown-container')) {
+      this.isBrandDropdownOpen.set(false);
+    }
+  }
+
+  loadBrandOptions(query: string = '', page: number = 0, isAppend: boolean = false): void {
+    if (page === 0) {
+      this.brandLoading.set(true);
+    } else {
+      this.brandLoadingMore.set(true);
+    }
+
+    this.brandService.searchBrands(query, page, this.brandPageSize).subscribe({
+      next: (res: any) => {
+        const items = res?.content || (Array.isArray(res) ? res : []);
+        const totalPages = res?.totalPages ?? 1;
+        const isLast = res?.last ?? (items.length < this.brandPageSize);
+        this.brandHasMore.set(!isLast && (page + 1 < totalPages));
+
+        if (isAppend) {
+          const current = this.brandOptions();
+          const existingIds = new Set(current.map(b => Number(b.id)));
+          const filteredNew = items.filter((b: any) => !existingIds.has(Number(b.id)));
+          this.brandOptions.set([...current, ...filteredNew]);
+        } else {
+          this.brandOptions.set(items);
+        }
+
+        // Cache loaded brands into brandMap for quick access
+        const currentMap = { ...this.brandMap() };
+        items.forEach((b: any) => {
+          if (b && b.id) currentMap[b.id] = b;
+        });
+        this.brandMap.set(currentMap);
+
+        // Keep brands signal in sync for any legacy consumers
+        this.brands.set(this.brandOptions());
+
+        // Reconcile selected brand object if we only had ID
+        if (this.selectedBrandId && !this.selectedBrand()) {
+          const found = currentMap[this.selectedBrandId] || items.find((b: any) => Number(b.id) === Number(this.selectedBrandId));
+          if (found) {
+            this.selectedBrand.set(found);
+          }
+        }
+
+        this.brandLoading.set(false);
+        this.brandLoadingMore.set(false);
+        this.cd.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load brands:', err);
+        this.brandLoading.set(false);
+        this.brandLoadingMore.set(false);
+        this.cd.detectChanges();
+      }
+    });
+  }
+
+  onBrandSearchInput(query: string): void {
+    this.brandSearchText = query;
+    this.isBrandDropdownOpen.set(true);
+    this.brandSearchSubject.next(query);
+  }
+
+  clearBrandSearch(event: Event): void {
+    event.stopPropagation();
+    this.brandSearchText = '';
+    this.brandPage.set(0);
+    this.loadBrandOptions('', 0, false);
+  }
+
+  onBrandScroll(event: Event): void {
+    const el = event.target as HTMLElement;
+    if (el && el.scrollTop + el.clientHeight >= el.scrollHeight - 35) {
+      if (this.brandHasMore() && !this.brandLoading() && !this.brandLoadingMore()) {
+        const nextPage = this.brandPage() + 1;
+        this.brandPage.set(nextPage);
+        this.loadBrandOptions(this.brandSearchText, nextPage, true);
+      }
+    }
+  }
+
+  toggleBrandDropdown(event: Event): void {
+    event.stopPropagation();
+    const nextState = !this.isBrandDropdownOpen();
+    this.isBrandDropdownOpen.set(nextState);
+    if (nextState && this.brandOptions().length === 0) {
+      this.loadBrandOptions(this.brandSearchText, 0, false);
+    }
+  }
+
+  closeBrandDropdown(): void {
+    this.isBrandDropdownOpen.set(false);
+  }
+
+  selectBrand(brand: any | null): void {
+    this.selectedBrandId = brand ? Number(brand.id) : null;
+    this.selectedBrandName = null;
+    this.selectedBrand.set(brand);
+    this.isBrandDropdownOpen.set(false);
+
+    const currentParams = { ...this.route.snapshot.queryParams };
+    if (brand && brand.id) {
+      currentParams['brandId'] = brand.id;
+      delete currentParams['brand'];
+    } else {
+      delete currentParams['brandId'];
+      delete currentParams['brand'];
+    }
+    this.router.navigate([], { queryParams: currentParams });
+    this.applyFilters();
+  }
+
+  getBrandLogoUrl(brand: any): string | null {
+    if (!brand) return null;
+    const url = brand.logoUrl || brand.logo_url;
+    if (!url || typeof url !== 'string' || url.trim() === '') return null;
+    return this.getImageUrl(url);
   }
 
   loadOffers(): void {
@@ -347,6 +507,9 @@ export class OfferListComponent implements OnInit {
     this.selectedStoreId = null;
     this.selectedBrandId = null;
     this.selectedBrandName = null;
+    this.selectedBrand.set(null);
+    this.brandSearchText = '';
+    this.isBrandDropdownOpen.set(false);
     this.selectedDiscountRange = 0;
     this.showFlashOnly = false;
     this.showFeaturedOnly = false;
@@ -358,13 +521,7 @@ export class OfferListComponent implements OnInit {
   }
 
   clearBrandFilter(): void {
-    this.selectedBrandId = null;
-    this.selectedBrandName = null;
-    const currentParams = { ...this.route.snapshot.queryParams };
-    delete currentParams['brand'];
-    delete currentParams['brandId'];
-    this.router.navigate([], { queryParams: currentParams });
-    this.applyFilters();
+    this.selectBrand(null);
   }
 
   getSelectedMainCategory(): any | null {
@@ -378,8 +535,14 @@ export class OfferListComponent implements OnInit {
   }
 
   getSelectedBrand(): any | null {
+    if (this.selectedBrand()) {
+      return this.selectedBrand();
+    }
     if (this.selectedBrandId) {
-      return this.brands().find(b => Number(b.id) === Number(this.selectedBrandId)) || null;
+      if (this.brandMap()[this.selectedBrandId]) {
+        return this.brandMap()[this.selectedBrandId];
+      }
+      return this.brandOptions().find(b => Number(b.id) === Number(this.selectedBrandId)) || null;
     }
     if (this.selectedBrandName) {
       return { nameEn: this.selectedBrandName, nameAr: this.selectedBrandName };

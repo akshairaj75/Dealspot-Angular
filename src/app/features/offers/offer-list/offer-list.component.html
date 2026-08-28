@@ -86,13 +86,128 @@
         </select>
       </div>
 
-      <!-- Brand Filter -->
-      <div class="filter-group">
+      <!-- Brand Filter (Searchable + Infinite Scroll) -->
+      <div class="filter-group brand-filter-group">
         <label class="form-label">{{ currentLang() === 'en' ? 'Brand' : 'الماركة' }}</label>
-        <select [(ngModel)]="selectedBrandId" (ngModelChange)="applyFilters()" class="form-control">
-          <option [ngValue]="null">{{ currentLang() === 'en' ? 'All Brands' : 'جميع الماركات' }}</option>
-          <option *ngFor="let b of brands()" [value]="b.id">{{ b | translate:'name' }}</option>
-        </select>
+        
+        <div class="brand-filter-dropdown-container" [class.dropdown-active]="isBrandDropdownOpen()">
+          <!-- Dropdown Trigger Button -->
+          <button 
+            type="button" 
+            class="brand-select-trigger form-control"
+            (click)="toggleBrandDropdown($event)"
+            [attr.aria-expanded]="isBrandDropdownOpen()"
+          >
+            <div class="selected-brand-display">
+              <ng-container *ngIf="getSelectedBrand(); else noBrandSelected">
+                <img 
+                  *ngIf="getBrandLogoUrl(getSelectedBrand())" 
+                  [src]="getBrandLogoUrl(getSelectedBrand())" 
+                  alt="Brand" 
+                  class="brand-trigger-logo"
+                >
+                <span *ngIf="!getBrandLogoUrl(getSelectedBrand())" class="material-icons-round brand-trigger-icon">loyalty</span>
+                <span class="brand-trigger-name">{{ getSelectedBrand() | translate:'name' }}</span>
+              </ng-container>
+              <ng-template #noBrandSelected>
+                <span class="material-icons-round brand-placeholder-icon">loyalty</span>
+                <span class="brand-placeholder-text">{{ currentLang() === 'en' ? 'All Brands' : 'جميع الماركات' }}</span>
+              </ng-template>
+            </div>
+            
+            <div class="trigger-actions">
+              <button 
+                *ngIf="selectedBrandId || selectedBrandName" 
+                type="button" 
+                class="btn-clear-brand-selection" 
+                (click)="clearBrandFilter(); $event.stopPropagation();"
+                [title]="currentLang() === 'en' ? 'Clear brand' : 'مسح الماركة'"
+              >
+                <span class="material-icons-round">close</span>
+              </button>
+              <span class="material-icons-round dropdown-arrow-icon" [class.rotated]="isBrandDropdownOpen()">
+                expand_more
+              </span>
+            </div>
+          </button>
+
+          <!-- Dropdown Menu Overlay -->
+          <div class="brand-dropdown-menu" *ngIf="isBrandDropdownOpen()" (click)="$event.stopPropagation()">
+            <!-- Brand Search Input Box -->
+            <div class="brand-search-box">
+              <span class="material-icons-round search-icon">search</span>
+              <input 
+                type="text" 
+                [placeholder]="currentLang() === 'en' ? 'Search brands...' : 'ابحث عن ماركة...'" 
+                [ngModel]="brandSearchText"
+                (ngModelChange)="onBrandSearchInput($event)"
+                class="brand-search-input"
+              >
+              <button 
+                type="button" 
+                class="btn-clear-search" 
+                *ngIf="brandSearchText" 
+                (click)="clearBrandSearch($event)"
+              >
+                <span class="material-icons-round">close</span>
+              </button>
+            </div>
+
+            <!-- Scrollable Brands List -->
+            <div class="brand-options-list" (scroll)="onBrandScroll($event)">
+              <!-- 'All Brands' Option -->
+              <div 
+                class="brand-option-item all-brands-option" 
+                [class.selected]="!selectedBrandId && !selectedBrandName"
+                (click)="selectBrand(null)"
+              >
+                <div class="brand-item-content">
+                  <span class="material-icons-round option-icon">grid_view</span>
+                  <span class="brand-name">{{ currentLang() === 'en' ? 'All Brands' : 'جميع الماركات' }}</span>
+                </div>
+                <span class="material-icons-round check-icon" *ngIf="!selectedBrandId && !selectedBrandName">check</span>
+              </div>
+
+              <!-- Brand List Items -->
+              <div 
+                *ngFor="let b of brandOptions()" 
+                class="brand-option-item" 
+                [class.selected]="selectedBrandId === b.id"
+                (click)="selectBrand(b)"
+              >
+                <div class="brand-item-content">
+                  <img 
+                    *ngIf="getBrandLogoUrl(b)" 
+                    [src]="getBrandLogoUrl(b)" 
+                    alt="logo" 
+                    class="brand-item-logo"
+                  >
+                  <span *ngIf="!getBrandLogoUrl(b)" class="material-icons-round brand-item-fallback-icon">loyalty</span>
+                  <span class="brand-name">{{ b | translate:'name' }}</span>
+                </div>
+                <span class="material-icons-round check-icon" *ngIf="selectedBrandId === b.id">check</span>
+              </div>
+
+              <!-- Initial Loading Spinner -->
+              <div class="brand-loading-state" *ngIf="brandLoading()">
+                <span class="spinner-border spinner-border-sm"></span>
+                <span>{{ currentLang() === 'en' ? 'Loading brands...' : 'جاري تحميل الماركات...' }}</span>
+              </div>
+
+              <!-- Load More Indicator -->
+              <div class="brand-loading-more" *ngIf="brandLoadingMore()">
+                <span class="spinner-border spinner-border-sm"></span>
+                <span>{{ currentLang() === 'en' ? 'Loading more...' : 'جاري تحميل المزيد...' }}</span>
+              </div>
+
+              <!-- Empty State -->
+              <div class="brand-empty-state" *ngIf="!brandLoading() && brandOptions().length === 0">
+                <span class="material-icons-round empty-icon">sentiment_dissatisfied</span>
+                <p>{{ currentLang() === 'en' ? 'No brands match your search' : 'لا توجد ماركات مطابقة للبحث' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Discount Percentage Slider -->

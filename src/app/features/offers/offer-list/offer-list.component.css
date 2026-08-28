@@ -811,3 +811,346 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   Searchable Brand Filter with Infinite Scroll
+   ========================================================================== */
+.brand-filter-group {
+  position: relative;
+}
+
+.brand-filter-dropdown-container {
+  position: relative;
+  width: 100%;
+}
+
+.brand-select-trigger {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  user-select: none;
+  font-family: inherit;
+}
+
+[dir="rtl"] .brand-select-trigger {
+  text-align: right;
+}
+
+.brand-select-trigger:hover {
+  border-color: var(--primary);
+  background: var(--surface-hover);
+}
+
+.dropdown-active .brand-select-trigger {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.selected-brand-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.brand-trigger-logo {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  object-fit: contain;
+  background: #fff;
+  padding: 2px;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.brand-trigger-icon,
+.brand-placeholder-icon {
+  font-size: 18px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.brand-trigger-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brand-placeholder-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.trigger-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline-start: 6px;
+  flex-shrink: 0;
+}
+
+.btn-clear-brand-selection {
+  background: transparent;
+  border: none;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-clear-brand-selection .material-icons-round {
+  font-size: 16px;
+}
+
+.btn-clear-brand-selection:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.dropdown-arrow-icon {
+  font-size: 20px;
+  color: var(--text-secondary);
+  transition: transform 0.2s ease;
+}
+
+.dropdown-arrow-icon.rotated {
+  transform: rotate(180deg);
+}
+
+/* Brand Dropdown Menu Overlay */
+.brand-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.16);
+  z-index: 100;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: brandDropdownFade 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes brandDropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Search Box inside dropdown */
+.brand-search-box {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  background: var(--surface-hover);
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+}
+
+.brand-search-box .search-icon {
+  font-size: 18px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.brand-search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  color: var(--text-primary);
+  outline: none;
+  padding: 2px 0;
+  font-family: inherit;
+}
+
+.brand-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.btn-clear-search {
+  background: transparent;
+  border: none;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.15s ease;
+}
+
+.btn-clear-search .material-icons-round {
+  font-size: 16px;
+}
+
+.btn-clear-search:hover {
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* Brand options scrollable list */
+.brand-options-list {
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.brand-options-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.brand-options-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.brand-option-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  user-select: none;
+}
+
+.brand-option-item:hover {
+  background: var(--surface-hover);
+}
+
+.brand-option-item.selected {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.brand-item-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.brand-item-logo {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  object-fit: contain;
+  background: #fff;
+  padding: 2px;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.brand-item-fallback-icon,
+.option-icon {
+  font-size: 18px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.brand-option-item.selected .brand-item-fallback-icon,
+.brand-option-item.selected .option-icon {
+  color: var(--primary);
+}
+
+.brand-name {
+  font-size: 13px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brand-option-item.selected .brand-name {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.check-icon {
+  font-size: 18px;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+/* Loading & Empty states */
+.brand-loading-state,
+.brand-loading-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.brand-loading-state .spinner-border,
+.brand-loading-more .spinner-border {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spinner-border-rot 0.75s linear infinite;
+}
+
+@keyframes spinner-border-rot {
+  to { transform: rotate(360deg); }
+}
+
+.brand-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 12px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.brand-empty-state .empty-icon {
+  font-size: 28px;
+  margin-bottom: 4px;
+  opacity: 0.6;
+}
+
+.brand-empty-state p {
+  font-size: 12px;
+  margin: 0;
+}
+

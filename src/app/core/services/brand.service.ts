@@ -16,6 +16,18 @@ export class BrandService {
     return this.http.get<any[]>(this.apiUrl + '/fetch-brands');
   }
 
+  getBrand(id: number): Observable<any> {
+    return this.http.get<any>(this.apiUrl + '/' + id);
+  }
+
+  searchBrands(query: string = '', page: number = 0, size: number = 20): Observable<any> {
+    let params: any = { page, size };
+    if (query && query.trim() !== '') {
+      params.q = query.trim();
+    }
+    return this.http.get<any>(this.apiUrl + '/search', { params });
+  }
+
   createBrand(payload: FormData): Observable<any> {
     return this.http.post<any>(this.apiUrl + '/register-brand', payload);
   }
