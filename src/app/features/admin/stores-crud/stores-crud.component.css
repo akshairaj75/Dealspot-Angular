@@ -382,6 +382,52 @@
   border: 1px solid var(--border, #e2e8f0);
 }
 
+.badge-featured-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface-hover, #f8fafc);
+  color: var(--text-muted, #94a3b8);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--border, #e2e8f0);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.badge-featured-toggle:hover {
+  transform: scale(1.04);
+  border-color: #f59e0b;
+  color: #d97706;
+  background: #fef3c7;
+}
+
+.badge-featured-toggle.is-featured {
+  background: #fef3c7;
+  color: #d97706;
+  border-color: rgba(245, 158, 11, 0.4);
+  box-shadow: 0 1px 4px rgba(245, 158, 11, 0.15);
+}
+
+.badge-featured-toggle.is-featured:hover {
+  background: #fde68a;
+  border-color: #d97706;
+}
+
+.badge-featured-toggle .material-icons-round {
+  font-size: 15px;
+}
+
+.badge-featured-toggle:disabled,
+.badge-featured-toggle.non-clickable {
+  cursor: default;
+  transform: none !important;
+  opacity: 0.85;
+}
+
 .status-chip {
   display: inline-flex;
   align-items: center;

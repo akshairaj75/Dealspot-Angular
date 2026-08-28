@@ -75,6 +75,7 @@ export class StoresCrudComponent implements OnInit {
       manager_email: ['', [Validators.email]],
       manager_password: ['Partner@123'],
       is_verified: [false],
+      is_featured: [false],
       is_active: [true]
     });
   }
@@ -151,6 +152,8 @@ export class StoresCrudComponent implements OnInit {
       list = list.filter(s => s.active === false);
     } else if (this.selectedStatusFilter === 'verified') {
       list = list.filter(s => s.verified === true);
+    } else if (this.selectedStatusFilter === 'featured') {
+      list = list.filter(s => s.featured === true || s.is_featured === true);
     }
 
     this.filteredStores.set(list);
@@ -162,6 +165,10 @@ export class StoresCrudComponent implements OnInit {
 
   get verifiedStoresCount(): number {
     return this.stores().filter(s => s.verified).length;
+  }
+
+  get featuredStoresCount(): number {
+    return this.stores().filter(s => s.featured === true || s.is_featured === true).length;
   }
 
   get activeStoresCount(): number {
@@ -209,6 +216,7 @@ export class StoresCrudComponent implements OnInit {
       manager_email: '',
       manager_password: 'Partner@123',
       is_verified: false,
+      is_featured: false,
       is_active: true
     });
 
@@ -234,10 +242,56 @@ export class StoresCrudComponent implements OnInit {
       contact_email: store.contactEmail || store.contact_email || '',
       website: store.website || '',
       is_verified: store.verified === true || store.is_verified === true,
+      is_featured: store.featured === true || store.is_featured === true,
       is_active: store.active === true || store.is_active === true
     });
 
     this.isModalOpen = true;
+  }
+
+  toggleFeatured(store: any): void {
+    if (!this.authService.isSuperAdmin()) {
+      return;
+    }
+    const originalState = store.featured === true || store.is_featured === true;
+    const newState = !originalState;
+    store.featured = newState;
+    store.is_featured = newState;
+
+    this.storeService.toggleFeatured(store.id).subscribe({
+      next: (updated: any) => {
+        const isFeat = updated.featured === true || updated.is_featured === true;
+        store.featured = isFeat;
+        store.is_featured = isFeat;
+        this.applyFilter();
+        this.cd.detectChanges();
+        const Toast = Swal.mixin({
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true
+        });
+        Toast.fire({
+          icon: 'success',
+          title: isFeat
+            ? (this.currentLang() === 'en' ? 'Marked as Featured Store!' : 'تم التعيين كمتجر مميز!')
+            : (this.currentLang() === 'en' ? 'Removed from Featured Stores' : 'تمت الإزالة من المتاجر المميزة')
+        });
+      },
+      error: (err: any) => {
+        store.featured = originalState;
+        store.is_featured = originalState;
+        this.applyFilter();
+        this.cd.detectChanges();
+        console.error('Failed to toggle featured status:', err);
+        Swal.fire({
+          icon: 'error',
+          title: this.currentLang() === 'en' ? 'Action Failed' : 'فشلت العملية',
+          text: err.error?.message || 'Failed to update store featured status.'
+        });
+      }
+    });
   }
 
   closeModal(): void {
@@ -269,6 +323,7 @@ export class StoresCrudComponent implements OnInit {
       contactEmail: val.contact_email || '',
       website: val.website || '',
       verified: !!val.is_verified,
+      featured: !!val.is_featured,
       active: !!val.is_active
     };
 

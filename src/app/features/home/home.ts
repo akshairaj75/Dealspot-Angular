@@ -6,6 +6,7 @@ import { CategoryService } from '../../core/services/category.service';
 import { OfferService } from '../../core/services/offer.service';
 import { FlyerService } from '../../core/services/flyer.service';
 import { StoreService } from '../../core/services/store.service';
+import { BrandService } from '../../core/services/brand.service';
 import { AuthService } from '../../core/services/auth.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { TranslatePipe } from '../../shared/pipes/translate-pipe';
@@ -22,12 +23,14 @@ import Swal from 'sweetalert2';
 })
 export class HomeComponent implements OnInit {
   @ViewChild('catScrollContainer') catScrollContainer?: ElementRef<HTMLDivElement>;
+  @ViewChild('brandScrollContainer') brandScrollContainer?: ElementRef<HTMLDivElement>;
 
   cityService = inject(CityService);
   categoryService = inject(CategoryService);
   offerService = inject(OfferService);
   flyerService = inject(FlyerService);
   storeService = inject(StoreService);
+  brandService = inject(BrandService);
   authService = inject(AuthService);
   router = inject(Router);
   translationService = inject(TranslationService);
@@ -38,6 +41,13 @@ export class HomeComponent implements OnInit {
   appConfig = APP_CONFIG;
 
   categories = signal<any[]>([]);
+  featuredBrands = signal<any[]>([]);
+  featuredBrandPage = signal<number>(0);
+  featuredBrandPageSize: number = 15;
+  featuredBrandHasMore = signal<boolean>(true);
+  featuredBrandLoading = signal<boolean>(false);
+  featuredBrandLoadingMore = signal<boolean>(false);
+
   allOffers = signal<any[]>([]);
   flashDeals = signal<any[]>([]);
   featuredOffers = signal<any[]>([]);
@@ -55,6 +65,122 @@ export class HomeComponent implements OnInit {
       const actualOffset = isRtl ? -offset : offset;
       this.catScrollContainer.nativeElement.scrollBy({ left: actualOffset, behavior: 'smooth' });
     }
+  }
+
+  scrollBrands(offset: number): void {
+    if (this.brandScrollContainer?.nativeElement) {
+      const isRtl = this.currentLang() === 'ar';
+      const actualOffset = isRtl ? -offset : offset;
+      this.brandScrollContainer.nativeElement.scrollBy({ left: actualOffset, behavior: 'smooth' });
+    }
+  }
+
+  onBrandScroll(event: Event): void {
+    const el = event.target as HTMLElement;
+    if (!el) return;
+    const scrollPos = Math.abs(el.scrollLeft);
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    if (scrollPos >= maxScroll - 60) {
+      if (this.featuredBrandHasMore() && !this.featuredBrandLoading() && !this.featuredBrandLoadingMore()) {
+        const nextPage = this.featuredBrandPage() + 1;
+        this.featuredBrandPage.set(nextPage);
+        this.loadFeaturedBrands(nextPage, true);
+      }
+    }
+  }
+
+  loadFeaturedBrands(page: number = 0, isAppend: boolean = false): void {
+    if (page === 0) {
+      this.featuredBrandLoading.set(true);
+    } else {
+      this.featuredBrandLoadingMore.set(true);
+    }
+
+    // 1. Fetch featured brands from BrandService
+    this.brandService.getFeaturedBrands(page, this.featuredBrandPageSize).subscribe({
+      next: (res: any) => {
+        const brandItems = res?.content || (Array.isArray(res) ? res : []);
+        const totalPages = res?.totalPages ?? 1;
+        const isLast = res?.last ?? (brandItems.length < this.featuredBrandPageSize);
+        this.featuredBrandHasMore.set(!isLast && (page + 1 < totalPages));
+
+        // 2. Also fetch stores to include any store marked as featured in the Admin panel
+        this.storeService.getStores().subscribe({
+          next: (storesRes: any[]) => {
+            const featStores = (storesRes || [])
+              .filter((s: any) => s.featured === true || s.is_featured === true || s.is_featured === 1)
+              .map((s: any) => ({
+                ...s,
+                isStore: true,
+                nameEn: s.nameEn || s.name_en,
+                nameAr: s.nameAr || s.name_ar,
+                logoUrl: s.logoUrl || s.logo_url
+              }));
+
+            if (isAppend) {
+              const current = this.featuredBrands();
+              const existingKeys = new Set(current.map(b => (b.isStore ? 's_' : 'b_') + b.id));
+              const filteredNew = brandItems.filter((b: any) => !existingKeys.has('b_' + b.id));
+              this.featuredBrands.set([...current, ...filteredNew]);
+            } else {
+              // Combine brands and featured stores
+              const allFeatured = [...brandItems, ...featStores];
+              this.featuredBrands.set(allFeatured);
+            }
+
+            this.featuredBrandLoading.set(false);
+            this.featuredBrandLoadingMore.set(false);
+            this.cd.detectChanges();
+          },
+          error: () => {
+            if (isAppend) {
+              const current = this.featuredBrands();
+              const existingKeys = new Set(current.map(b => (b.isStore ? 's_' : 'b_') + b.id));
+              const filteredNew = brandItems.filter((b: any) => !existingKeys.has('b_' + b.id));
+              this.featuredBrands.set([...current, ...filteredNew]);
+            } else {
+              this.featuredBrands.set(brandItems);
+            }
+            this.featuredBrandLoading.set(false);
+            this.featuredBrandLoadingMore.set(false);
+            this.cd.detectChanges();
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Failed to load featured brands:', err);
+        // Fallback: check featured stores
+        this.storeService.getStores().subscribe({
+          next: (storesRes: any[]) => {
+            const featStores = (storesRes || [])
+              .filter((s: any) => s.featured === true || s.is_featured === true || s.is_featured === 1)
+              .map((s: any) => ({
+                ...s,
+                isStore: true,
+                nameEn: s.nameEn || s.name_en,
+                nameAr: s.nameAr || s.name_ar,
+                logoUrl: s.logoUrl || s.logo_url
+              }));
+            this.featuredBrands.set(featStores);
+            this.featuredBrandLoading.set(false);
+            this.featuredBrandLoadingMore.set(false);
+            this.cd.detectChanges();
+          },
+          error: () => {
+            this.featuredBrandLoading.set(false);
+            this.featuredBrandLoadingMore.set(false);
+            this.cd.detectChanges();
+          }
+        });
+      }
+    });
+  }
+
+  getBrandLogoUrl(brand: any): string | null {
+    if (!brand) return null;
+    const url = brand.logoUrl || brand.logo_url;
+    if (!url || typeof url !== 'string' || url.trim() === '') return null;
+    return this.getImageUrl(url);
   }
 
   constructor() {
@@ -137,6 +263,9 @@ export class HomeComponent implements OnInit {
       },
       error: (err) => console.error('Failed to load flyers:', err)
     });
+
+    // 4. Featured Brands
+    this.loadFeaturedBrands(0, false);
   }
 
   private organizeOffers(offers: any[]): void {

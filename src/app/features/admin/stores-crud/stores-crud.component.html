@@ -46,6 +46,16 @@
     </div>
 
     <div class="stat-card">
+      <div class="stat-icon-wrapper bg-amber-light">
+        <span class="material-icons-round text-amber">star</span>
+      </div>
+      <div class="stat-details">
+        <span class="stat-value">{{ featuredStoresCount }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Featured Stores' : 'متاجر مميزة' }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
       <div class="stat-icon-wrapper bg-primary-light">
         <span class="material-icons-round text-primary-color">check_circle</span>
       </div>
@@ -94,6 +104,7 @@
           <option value="active">{{ currentLang() === 'en' ? 'Active' : 'نشط' }}</option>
           <option value="inactive">{{ currentLang() === 'en' ? 'Inactive' : 'غير نشط' }}</option>
           <option value="verified">{{ currentLang() === 'en' ? 'Verified Only' : 'معتمد فقط' }}</option>
+          <option value="featured">{{ currentLang() === 'en' ? 'Featured Only' : 'مميز فقط' }}</option>
         </select>
       </div>
     </div>
@@ -115,6 +126,7 @@
           <th>{{ currentLang() === 'en' ? 'City & Category' : 'المدينة والفئة' }}</th>
           <th>{{ currentLang() === 'en' ? 'CR & VAT' : 'السجل والرقم الضريبي' }}</th>
           <th>{{ currentLang() === 'en' ? 'Verification' : 'التوثيق' }}</th>
+          <th>{{ currentLang() === 'en' ? 'Featured' : 'مميز' }}</th>
           <th>{{ currentLang() === 'en' ? 'Status' : 'الحالة' }}</th>
           <th class="text-right">{{ currentLang() === 'en' ? 'Actions' : 'الإجراءات' }}</th>
         </tr>
@@ -186,6 +198,29 @@
           </td>
 
           <td>
+            <button
+              *ngIf="authService.isSuperAdmin()"
+              type="button"
+              class="badge-featured-toggle"
+              [class.is-featured]="s.featured === true || s.is_featured === true"
+              (click)="toggleFeatured(s)"
+              [title]="(s.featured === true || s.is_featured === true) ? (currentLang() === 'en' ? 'Featured Store (Click to toggle off)' : 'متجر مميز (انقر لإلغاء التمييز)') : (currentLang() === 'en' ? 'Regular Store (Click to mark as featured)' : 'متجر عادي (انقر لجعله مميزاً)')"
+            >
+              <span class="material-icons-round icon-xs">{{ (s.featured === true || s.is_featured === true) ? 'star' : 'star_border' }}</span>
+              <span>{{ (s.featured === true || s.is_featured === true) ? (currentLang() === 'en' ? 'Featured' : 'مميز') : (currentLang() === 'en' ? 'Regular' : 'عادي') }}</span>
+            </button>
+            <span
+              *ngIf="!authService.isSuperAdmin()"
+              class="badge-featured-toggle non-clickable"
+              [class.is-featured]="s.featured === true || s.is_featured === true"
+              [title]="currentLang() === 'en' ? 'Featured status can only be modified by Super Admin' : 'تعديل حالة التمييز متاح فقط للمشرف العام'"
+            >
+              <span class="material-icons-round icon-xs">{{ (s.featured === true || s.is_featured === true) ? 'star' : 'star_border' }}</span>
+              <span>{{ (s.featured === true || s.is_featured === true) ? (currentLang() === 'en' ? 'Featured' : 'مميز') : (currentLang() === 'en' ? 'Regular' : 'عادي') }}</span>
+            </span>
+          </td>
+
+          <td>
             <span class="status-chip" [class.active]="s.active" [class.inactive]="!s.active">
               <span class="status-dot"></span>
               {{ s.active ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'معطل') }}
@@ -223,7 +258,7 @@
         </tr>
 
         <tr *ngIf="filteredStores().length === 0">
-          <td colspan="7" class="empty-table-state">
+          <td colspan="8" class="empty-table-state">
             <span class="material-icons-round empty-icon">storefront</span>
             <h4>{{ currentLang() === 'en' ? 'No Stores Found' : 'لم يتم العثور على متاجر' }}</h4>
             <p>{{ currentLang() === 'en' ? 'Try adjusting your search criteria or register a new store.' : 'جرب تعديل خيارات البحث أو قم بإضافة متجر جديد.' }}</p>
@@ -523,6 +558,22 @@
                 </span>
                 <span class="toggle-desc">
                   {{ currentLang() === 'en' ? 'Display official blue verification checkmark across all store listings' : 'إظهار شارة التوثيق الزرقاء في كافة قوائم المتجر' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="toggle-card" *ngIf="authService.isSuperAdmin()">
+              <label class="toggle-switch">
+                <input type="checkbox" formControlName="is_featured" />
+                <span class="slider"></span>
+              </label>
+              <div class="toggle-info">
+                <span class="toggle-title">
+                  <span class="material-icons-round text-amber icon-xs">star</span>
+                  {{ currentLang() === 'en' ? 'Featured Store (Super Admin)' : 'متجر مميز (صلاحية المشرف العام)' }}
+                </span>
+                <span class="toggle-desc">
+                  {{ currentLang() === 'en' ? 'Highlight this store in featured showcases and top promotional placements' : 'إبراز هذا المتجر في الواجهة الرئيسية وأقسام المتاجر المميزة' }}
                 </span>
               </div>
             </div>

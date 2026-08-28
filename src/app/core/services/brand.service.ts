@@ -20,12 +20,19 @@ export class BrandService {
     return this.http.get<any>(this.apiUrl + '/' + id);
   }
 
-  searchBrands(query: string = '', page: number = 0, size: number = 20): Observable<any> {
+  searchBrands(query: string = '', page: number = 0, size: number = 20, featured?: boolean): Observable<any> {
     let params: any = { page, size };
     if (query && query.trim() !== '') {
       params.q = query.trim();
     }
+    if (featured !== undefined && featured !== null) {
+      params.featured = featured;
+    }
     return this.http.get<any>(this.apiUrl + '/search', { params });
+  }
+
+  getFeaturedBrands(page: number = 0, size: number = 15): Observable<any> {
+    return this.searchBrands('', page, size, true);
   }
 
   createBrand(payload: FormData): Observable<any> {

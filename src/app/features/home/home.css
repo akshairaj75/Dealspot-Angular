@@ -387,6 +387,84 @@
   color: var(--primary);
 }
 
+.section-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Featured Brands Horizontal Scroll */
+.brands-scroll {
+  scrollbar-color: rgba(37, 99, 235, 0.25) transparent;
+}
+
+.brands-scroll::-webkit-scrollbar-thumb {
+  background: rgba(37, 99, 235, 0.25);
+}
+
+.brands-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(37, 99, 235, 0.5);
+}
+
+.brand-scroll-item {
+  flex: 0 0 96px;
+  width: 96px;
+}
+
+.brand-icon-wrapper {
+  background: #ffffff;
+  padding: 6px;
+}
+
+.dark-theme .brand-icon-wrapper {
+  background: var(--surface);
+}
+
+.brand-img {
+  object-fit: contain;
+  padding: 4px;
+}
+
+.brand-scroll-item:hover .brand-icon-wrapper {
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2);
+}
+
+.brand-scroll-item:hover .brand-label {
+  color: var(--primary);
+}
+
+.brand-scroll-loading-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 72px;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1.5px dashed var(--border);
+  align-self: flex-start;
+  flex-shrink: 0;
+  margin-top: 0;
+}
+
+.loading-more-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spinner-rot 0.75s linear infinite;
+}
+
+@keyframes spinner-rot {
+  to { transform: rotate(360deg); }
+}
+
 /* Deals horizontal scroll */
 .deals-horizontal-scroll {
   display: flex;

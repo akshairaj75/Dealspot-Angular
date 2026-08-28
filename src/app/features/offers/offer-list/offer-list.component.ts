@@ -134,8 +134,8 @@ export class OfferListComponent implements OnInit, OnDestroy {
       if (params['category']) {
         this.handleCategoryParam(params['category']);
       }
-      if (params['store']) {
-        this.selectedStoreId = Number(params['store']);
+      if (params['store'] || params['storeId']) {
+        this.selectedStoreId = Number(params['store'] || params['storeId']);
       }
       if (params['brandId']) {
         const bId = Number(params['brandId']);

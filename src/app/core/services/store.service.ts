@@ -33,6 +33,10 @@ export class StoreService {
     return this.http.put(this.apiUrl + '/update-store/' + id, payload);
   }
 
+  toggleFeatured(id: number): Observable<any> {
+    return this.http.put(this.apiUrl + '/toggle-featured/' + id, {});
+  }
+
   deleteStore(id: number): Observable<any> {
     return this.http.delete(this.apiUrl + '/delete-store/' + id);
   }

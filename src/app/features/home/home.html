@@ -132,6 +132,54 @@
     </div>
   </section>
 
+  <!-- Featured Brands & Stores Horizontal Scroll (Paginated) -->
+  <section class="home-section" *ngIf="featuredBrands().length > 0">
+    <div class="section-header">
+      <div class="title-with-badge">
+        <h2 class="section-title">{{ currentLang() === 'en' ? 'Featured Stores & Brands' : 'المتاجر والماركات المميزة' }}</h2>
+        <span class="badge badge-featured">{{ currentLang() === 'en' ? 'Top Picks' : 'أفضل الشركاء' }}</span>
+      </div>
+      <div class="section-header-right">
+        <div class="scroll-nav-controls">
+          <button type="button" class="btn-scroll-arrow" (click)="scrollBrands(-240)" [attr.aria-label]="currentLang() === 'en' ? 'Previous' : 'السابق'">
+            <span class="material-icons-round">chevron_left</span>
+          </button>
+          <button type="button" class="btn-scroll-arrow" (click)="scrollBrands(240)" [attr.aria-label]="currentLang() === 'en' ? 'Next' : 'التالي'">
+            <span class="material-icons-round">chevron_right</span>
+          </button>
+        </div>
+        <a routerLink="/offers-list" class="see-all-link">{{ currentLang() === 'en' ? 'See All' : 'عرض الكل' }}</a>
+      </div>
+    </div>
+
+    <div class="categories-scroll brands-scroll" #brandScrollContainer (scroll)="onBrandScroll($event)">
+      <a 
+        *ngFor="let b of featuredBrands()" 
+        [routerLink]="['/offers-list']" 
+        [queryParams]="b.isStore ? {store: b.id} : {brandId: b.id}"
+        class="category-scroll-item brand-scroll-item interactive-hover"
+      >
+        <div class="category-icon-wrapper brand-icon-wrapper">
+          <img 
+            *ngIf="getBrandLogoUrl(b)" 
+            [src]="getBrandLogoUrl(b)" 
+            [alt]="b | translate:'name'"
+            class="category-img brand-img"
+          >
+          <span *ngIf="!getBrandLogoUrl(b)" class="material-icons-round">
+            {{ b.isStore ? 'storefront' : 'loyalty' }}
+          </span>
+        </div>
+        <span class="category-label brand-label">{{ b | translate:'name' }}</span>
+      </a>
+
+      <!-- Loading more item indicator inside horizontal scroll -->
+      <div class="brand-scroll-loading-item" *ngIf="featuredBrandLoadingMore()">
+        <div class="loading-more-spinner"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- Featured Flyers Grid -->
   <section class="home-section" *ngIf="activeFlyers().length > 0">
     <div class="section-header">
