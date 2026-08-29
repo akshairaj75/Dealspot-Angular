@@ -636,6 +636,186 @@ textarea.form-control {
   color: var(--primary);
 }
 
+/* ── Custom Multiselect / Dropdown Box ────────────────────── */
+.category-multiselect-box {
+  position: relative;
+  width: 100%;
+}
+
+.multiselect-trigger {
+  min-height: 42px;
+  padding: 0.35rem 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: border-color 0.14s;
+}
+
+.multiselect-trigger:hover {
+  border-color: var(--primary);
+}
+
+.selected-tags-container {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.placeholder-text {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 2px 8px;
+  background: var(--primary-light);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 4px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.multiselect-dropdown {
+  position: absolute;
+  top: 105%;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.18);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  max-height: 260px;
+  overflow: hidden;
+  animation: fadeIn 0.12s ease-out;
+}
+
+.dropdown-header {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-hover);
+}
+
+.dropdown-search {
+  width: 100%;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  background: var(--surface);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.dropdown-search:focus {
+  border-color: var(--primary);
+}
+
+.dropdown-list {
+  overflow-y: auto;
+  padding: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: background 0.12s;
+}
+
+.brand-item-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.brand-item-name {
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brand-dropdown-thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  object-fit: contain;
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.dropdown-item:hover {
+  background: var(--surface-hover);
+}
+
+.dropdown-item.selected-item {
+  background: var(--primary-light);
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.item-id-pill {
+  font-size: 0.68rem;
+  font-family: monospace;
+  color: var(--text-muted);
+  background: var(--surface-hover);
+  padding: 1px 5px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.dropdown-loading-item,
+.dropdown-empty-item {
+  padding: 0.75rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.dropdown-load-more {
+  padding: 0.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  cursor: pointer;
+  border-top: 1px solid var(--border);
+  background: var(--surface-hover);
+}
+
+.dropdown-load-more:hover {
+  background: var(--primary-light);
+}
+
 /* Toggle Switch */
 .toggle-card {
   display: flex;

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -7,6 +7,8 @@ import { CategoryService } from '../../../core/services/category.service';
 import { BrandService } from '../../../core/services/brand.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { environment } from '../../../environment/environment';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -16,7 +18,7 @@ import Swal from 'sweetalert2';
   templateUrl: './product-detail.component.html',
   styleUrls: ['./product-detail.component.css']
 })
-export class ProductDetailComponent implements OnInit {
+export class ProductDetailComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private fb = inject(FormBuilder);
@@ -36,6 +38,14 @@ export class ProductDetailComponent implements OnInit {
   mainCategories = signal<any[]>([]);
   availableSubcategories = signal<any[]>([]);
   brands = signal<any[]>([]);
+  isBrandDropdownOpen = false;
+  brandSearchQuery = '';
+  private brandSearchSubject = new Subject<string>();
+  private brandSearchSub?: Subscription;
+  brandsCurrentPage = 0;
+  hasMoreBrands = signal<boolean>(false);
+  loadingBrands = signal<boolean>(false);
+  loadingMoreBrands = signal<boolean>(false);
 
   loading = signal<boolean>(true);
   isEditMode = signal<boolean>(false);
@@ -53,7 +63,6 @@ export class ProductDetailComponent implements OnInit {
   ngOnInit(): void {
     this.initForm();
     this.loadCategories();
-    this.loadBrands();
 
     // Instant state hydration from router state if available
     const navState = history.state;
@@ -72,6 +81,18 @@ export class ProductDetailComponent implements OnInit {
         this.loadProductSpecs();
       }
     });
+
+    this.brandSearchSub = this.brandSearchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      this.brandSearchQuery = query;
+      this.loadBrands(query, 0, false);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.brandSearchSub?.unsubscribe();
   }
 
   initForm(): void {
@@ -140,11 +161,81 @@ export class ProductDetailComponent implements OnInit {
     });
   }
 
-  loadBrands(): void {
-    this.brandService.getBrands().subscribe({
-      next: (res: any[]) => this.brands.set(res || []),
-      error: (err) => console.error('Failed to load brands:', err)
+  loadBrands(query: string = '', page: number = 0, isAppend: boolean = false): void {
+    if (isAppend) {
+      this.loadingMoreBrands.set(true);
+    } else {
+      this.loadingBrands.set(true);
+    }
+
+    this.brandService.searchBrands(query, page, 20).subscribe({
+      next: (res: any) => {
+        const items = res?.content || (Array.isArray(res) ? res : []);
+        if (isAppend) {
+          this.brands.update(prev => [...prev, ...items]);
+        } else {
+          this.brands.set(items);
+        }
+        this.brandsCurrentPage = res?.number ?? page;
+        this.hasMoreBrands.set((res?.number + 1) < (res?.totalPages || 0));
+        this.loadingBrands.set(false);
+        this.loadingMoreBrands.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load paged brands:', err);
+        this.loadingBrands.set(false);
+        this.loadingMoreBrands.set(false);
+      }
     });
+  }
+
+  onBrandSearch(value: string): void {
+    this.brandSearchSubject.next(value);
+  }
+
+  loadMoreBrands(): void {
+    if (!this.hasMoreBrands() || this.loadingMoreBrands()) return;
+    this.loadBrands(this.brandSearchQuery, this.brandsCurrentPage + 1, true);
+  }
+
+  toggleBrandDropdown(): void {
+    this.isBrandDropdownOpen = !this.isBrandDropdownOpen;
+    if (this.isBrandDropdownOpen && this.brands().length === 0) {
+      this.loadBrands();
+    }
+  }
+
+  closeBrandDropdown(): void {
+    this.isBrandDropdownOpen = false;
+  }
+
+  selectBrand(brand: any): void {
+    this.productForm.patchValue({ brandId: brand.id });
+    this.isBrandDropdownOpen = false;
+  }
+
+  getSelectedBrandObject(): any {
+    const bId = this.productForm?.get('brandId')?.value;
+    if (!bId) return null;
+    const found = this.brands().find(b => Number(b.id) === Number(bId));
+    if (found) return found;
+
+    const p = this.product();
+    if (p && Number(p.brandId || p.brand_id) === Number(bId)) {
+      return {
+        id: bId,
+        nameEn: p.brandNameEn || p.brand,
+        nameAr: p.brandNameAr || p.brand,
+        logoUrl: p.brandImage || p.brand_image
+      };
+    }
+    return { id: bId, nameEn: `Brand #${bId}`, nameAr: `ماركة #${bId}` };
+  }
+
+  getLogoUrl(url: string | null | undefined): string {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
+    return this.filePath + url;
   }
 
   populateForm(p: any): void {
