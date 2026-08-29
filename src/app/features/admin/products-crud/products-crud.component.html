@@ -343,19 +343,13 @@
           <!-- Row 3: SKU & Barcode -->
           <div class="form-row">
             <div class="form-group flex-1">
-              <label class="form-label">{{ currentLang() === 'en' ? 'SKU (Stock Keeping Unit) *' : 'رمز المنتج (SKU) *' }}</label>
+              <label class="form-label">{{ currentLang() === 'en' ? 'SKU (Stock Keeping Unit)' : 'رمز المنتج (SKU)' }}</label>
               <input type="text" formControlName="sku" class="form-control" placeholder="e.g. MILK-ALM-2L">
-              <div class="error-msg" *ngIf="productForm.get('sku')?.touched && productForm.get('sku')?.invalid">
-                {{ currentLang() === 'en' ? 'SKU is required.' : 'رمز SKU مطلوب.' }}
-              </div>
             </div>
 
             <div class="form-group flex-1">
-              <label class="form-label">{{ currentLang() === 'en' ? 'Barcode (EAN / UPC) *' : 'الباركود (Barcode) *' }}</label>
+              <label class="form-label">{{ currentLang() === 'en' ? 'Barcode (EAN / UPC)' : 'الباركود (Barcode)' }}</label>
               <input type="text" formControlName="barcode" class="form-control" placeholder="e.g. 6281007010012">
-              <div class="error-msg" *ngIf="productForm.get('barcode')?.touched && productForm.get('barcode')?.invalid">
-                {{ currentLang() === 'en' ? 'Barcode is required.' : 'الباركود مطلوب.' }}
-              </div>
             </div>
           </div>
 
