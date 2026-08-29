@@ -47,114 +47,112 @@
     <div class="spinner"></div>
   </div>
 
-  <!-- Offers Table -->
-  <div class="card table-wrapper" *ngIf="!loading">
-    <table class="admin-table" *ngIf="filteredOffers().length > 0; else noOffers">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>{{ currentLang() === 'en' ? 'Offer Details' : 'تفاصيل العرض' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Retail Partner' : 'المتجر الشريك' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Category / Product' : 'القسم / المنتج' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Pricing (SAR)' : 'الأسعار (ر.س)' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Discount' : 'الخصم' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Validity Period' : 'فترة الصلاحية' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Badge' : 'الشارة' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Status' : 'الحالة' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Actions' : 'الإجراءات' }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let o of filteredOffers()">
-          <td class="id-cell">#{{ o.id }}</td>
-          <td>
-            <div class="offer-title-cell">
-              <div class="offer-thumb-mini" *ngIf="o.imageUrl || o.thumbnailUrl || o.image_url">
-                <img [src]="getImageUrl(o.imageUrl || o.thumbnailUrl || o.image_url)" [alt]="o.titleEn || 'Offer'">
-              </div>
-              <div class="title-details">
-                <strong class="text-ellipsis title-en">{{ o.titleEn || o.title_en }}</strong>
-                <span class="text-muted title-ar" *ngIf="o.titleAr || o.title_ar">{{ o.titleAr || o.title_ar }}</span>
-              </div>
-            </div>
-          </td>
-          <td>
-            <div class="store-cell">
-              <span class="store-name-text">{{ currentLang() === 'en' ? (o.storeNameEn || o.store?.nameEn ||
-                o.store?.name_en || 'Store #' + o.storeId) : (o.storeNameAr || o.store?.nameAr || o.store?.name_ar ||
-                o.storeNameEn || 'متجر #' + o.storeId) }}</span>
-              <span class="city-subtext" *ngIf="o.cityNameEn || o.city?.nameEn">{{ currentLang() === 'en' ?
-                (o.cityNameEn || o.city?.nameEn) : (o.cityNameAr || o.city?.nameAr || o.cityNameEn) }}</span>
-            </div>
-          </td>
-          <td>
-            <div class="cat-prod-cell">
-              <span class="badge-category">{{ currentLang() === 'en' ? (o.categoryNameEn || o.category?.nameEn ||
-                'General') : (o.categoryNameAr || o.category?.nameAr || 'عام') }}</span>
-              <span class="product-link-subtext" *ngIf="o.productNameEn || o.product?.nameEn">
-                <span class="material-icons-round" style="font-size: 13px;">link</span>
-                <span>{{ currentLang() === 'en' ? (o.productNameEn || o.product?.nameEn) : (o.productNameAr ||
-                  o.product?.nameAr || o.productNameEn) }}</span>
-              </span>
-            </div>
-          </td>
-          <td>
-            <div class="price-cell">
-              <div class="offer-p-val">{{ o.offerPrice || o.offer_price }} SAR</div>
-              <div class="orig-p-val" *ngIf="o.originalPrice || o.original_price">{{ o.originalPrice || o.original_price
-                }} SAR</div>
-            </div>
-          </td>
-          <td>
-            <span class="badge badge-discount">-{{ o.discountPct || o.discount_pct || 0 }}%</span>
-          </td>
-          <td>
-            <div class="validity-cell">
-              <span>{{ currentLang() === 'en' ? 'From:' : 'من:' }} <strong>{{ o.validFrom || o.valid_from
-                  }}</strong></span>
-              <span>{{ currentLang() === 'en' ? 'Until:' : 'إلى:' }} <strong class="text-danger">{{ o.validUntil ||
-                  o.valid_until }}</strong></span>
-            </div>
-          </td>
-          <td>
-            <span class="badge" [class.badge-featured]="o.badgeType === 'FEATURED' || o.badge_type === 'FEATURED'"
-              [class.badge-flash]="o.badgeType === 'FLASH' || o.badge_type === 'FLASH'"
-              [class.badge-bogo]="o.badgeType === 'BOGO' || o.badge_type === 'BOGO'">
-              {{ o.badgeType || o.badge_type || 'NONE' }}
-            </span>
-          </td>
-          <td>
-            <span class="badge" [class.badge-active]="o.active === true || o.is_active === 1 || o.active === 1"
-              [class.badge-inactive]="o.active === false || o.is_active === 0 || o.active === 0">
-              {{ (o.active === true || o.is_active === 1 || o.active === 1) ? (currentLang() === 'en' ? 'Active' :
-              'نشط') : (currentLang() === 'en' ? 'Inactive' : 'معطل') }}
-            </span>
-          </td>
-          <td>
-            <div class="action-buttons-cell">
-              <button class="btn-icon" (click)="openEditModal(o)"
-                [title]="currentLang() === 'en' ? 'Edit Offer' : 'تعديل العرض'">
-                <span class="material-icons-round">edit</span>
-              </button>
-              <button class="btn-icon text-danger" (click)="deleteOffer(o.id)"
-                [title]="currentLang() === 'en' ? 'Delete Offer' : 'حذف العرض'">
-                <span class="material-icons-round">delete</span>
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <ng-template #noOffers>
-      <div class="empty-state">
-        <span class="material-icons-round empty-state-icon">local_offer</span>
-        <h3 class="empty-state-title">{{ currentLang() === 'en' ? 'No offers registered' : 'لا توجد عروض مسجلة' }}</h3>
-        <p class="empty-state-desc">{{ currentLang() === 'en' ? 'Click "Create Offer" to publish your first retail
-          promotion.' : 'انقر على "إنشاء عرض جديد" لنشر أول عرض ترويجي في النظام.' }}</p>
+  <!-- Unified Responsive Card List View -->
+  <div class="offers-list-view" *ngIf="!loading && filteredOffers().length > 0; else noOffers">
+    <div
+      class="offer-list-item"
+      *ngFor="let o of filteredOffers()"
+      [class.card-inactive]="!(o.active === true || o.is_active === 1 || o.active === 1)"
+    >
+      <!-- Left: Offer Image Avatar Box -->
+      <div class="offer-avatar-box">
+        <img
+          [src]="getImageUrl(o.imageUrl || o.thumbnailUrl || o.image_url)"
+          class="offer-img"
+          [alt]="o.titleEn || 'Offer'"
+          (error)="$any($event.target).src = 'https://placehold.co/100x100?text=No+Image'"
+        />
       </div>
-    </ng-template>
+
+      <!-- Middle: Details -->
+      <div class="offer-info-wrap">
+        <!-- Title Row & ID & Badge -->
+        <div class="offer-title-row">
+          <h3 class="offer-title-en">{{ o.titleEn || o.title_en }}</h3>
+          <span class="offer-id-pill" [title]="currentLang() === 'en' ? 'Offer ID: ' + o.id : 'معرف العرض: ' + o.id">ID: #{{ o.id }}</span>
+          
+          <span
+            class="offer-badge-chip"
+            [class.badge-featured]="o.badgeType === 'FEATURED' || o.badge_type === 'FEATURED'"
+            [class.badge-flash]="o.badgeType === 'FLASH' || o.badge_type === 'FLASH'"
+            [class.badge-bogo]="o.badgeType === 'BOGO' || o.badge_type === 'BOGO'"
+          >
+            <span class="material-icons-round icon-xs">local_offer</span>
+            <span>{{ o.badgeType || o.badge_type || 'NONE' }}</span>
+          </span>
+        </div>
+
+        <span class="offer-title-ar" *ngIf="o.titleAr || o.title_ar">{{ o.titleAr || o.title_ar }}</span>
+
+        <!-- Meta Row: Store & City + Category & Product -->
+        <div class="offer-meta-row">
+          <!-- Store Partner -->
+          <span class="meta-chip store-chip">
+            <span class="material-icons-round icon-xs">storefront</span>
+            <span>{{ currentLang() === 'en' ? (o.storeNameEn || o.store?.nameEn || o.store?.name_en || 'Store #' + o.storeId) : (o.storeNameAr || o.store?.nameAr || o.store?.name_ar || o.storeNameEn || 'متجر #' + o.storeId) }}</span>
+            <span class="city-tag" *ngIf="o.cityNameEn || o.city?.nameEn">({{ currentLang() === 'en' ? (o.cityNameEn || o.city?.nameEn) : (o.cityNameAr || o.city?.nameAr || o.cityNameEn) }})</span>
+          </span>
+
+          <!-- Category -->
+          <span class="meta-chip category-chip">
+            <span class="material-icons-round icon-xs">category</span>
+            <span>{{ currentLang() === 'en' ? (o.categoryNameEn || o.category?.nameEn || 'General') : (o.categoryNameAr || o.category?.nameAr || 'عام') }}</span>
+          </span>
+
+          <!-- Linked Product -->
+          <span class="meta-chip product-chip" *ngIf="o.productNameEn || o.product?.nameEn">
+            <span class="material-icons-round icon-xs">inventory_2</span>
+            <span>{{ currentLang() === 'en' ? (o.productNameEn || o.product?.nameEn) : (o.productNameAr || o.product?.nameAr || o.productNameEn) }}</span>
+          </span>
+        </div>
+
+        <!-- Pricing & Validity Row -->
+        <div class="offer-pricing-row">
+          <div class="price-badge-wrap">
+            <span class="offer-price">{{ o.offerPrice || o.offer_price }} SAR</span>
+            <span class="original-price" *ngIf="o.originalPrice || o.original_price">{{ o.originalPrice || o.original_price }} SAR</span>
+            <span class="savings-pct-pill" *ngIf="(o.discountPct || o.discount_pct || 0) > 0">
+              -{{ o.discountPct || o.discount_pct }}% OFF
+            </span>
+          </div>
+
+          <div class="validity-chip" *ngIf="o.validFrom || o.valid_from">
+            <span class="material-icons-round icon-xs">event</span>
+            <span>{{ o.validFrom || o.valid_from }} → <strong class="text-danger">{{ o.validUntil || o.valid_until }}</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Status & Actions -->
+      <div class="item-right-group">
+        <span
+          class="status-pill"
+          [class.status-active]="o.active === true || o.is_active === 1 || o.active === 1"
+          [class.status-inactive]="o.active === false || o.is_active === 0 || o.active === 0"
+        >
+          <span class="status-dot"></span>
+          <span>{{ (o.active === true || o.is_active === 1 || o.active === 1) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}</span>
+        </span>
+
+        <div class="item-action-btns">
+          <button type="button" class="btn-item-action" (click)="openEditModal(o)" [title]="currentLang() === 'en' ? 'Edit' : 'تعديل'">
+            <span class="material-icons-round">edit</span>
+          </button>
+          <button type="button" class="btn-item-action btn-item-del" (click)="deleteOffer(o.id)" [title]="currentLang() === 'en' ? 'Delete' : 'حذف'">
+            <span class="material-icons-round">delete</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <ng-template #noOffers>
+    <div class="empty-state" *ngIf="!loading">
+      <span class="material-icons-round empty-state-icon">local_offer</span>
+      <h3 class="empty-state-title">{{ currentLang() === 'en' ? 'No offers registered' : 'لا توجد عروض مسجلة' }}</h3>
+      <p class="empty-state-desc">{{ currentLang() === 'en' ? 'Click "Create Offer" to publish your first retail promotion.' : 'انقر على "إنشاء عرض جديد" لنشر أول عرض ترويجي في النظام.' }}</p>
+    </div>
+  </ng-template>
 
   <!-- Add/Edit Modal -->
   <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
