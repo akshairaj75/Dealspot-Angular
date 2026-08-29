@@ -428,10 +428,16 @@
             <div class="spec-card" *ngFor="let s of specs()">
               <div class="spec-key">
                 <span class="spec-icon material-icons-round">check_circle_outline</span>
-                <span>{{ currentLang() === 'en' ? s.attr_key_en : (s.attr_key_ar || s.attr_key_en) }}</span>
+                <span>
+                  {{ currentLang() === 'en' 
+                    ? (s.attrKeyEn || s.attr_key_en || s.keyEn || s.specKey || 'Specification') 
+                    : (s.attrKeyAr || s.attr_key_ar || s.attrKeyEn || s.attr_key_en || s.keyAr || s.specKey || 'المواصفة') }}
+                </span>
               </div>
               <div class="spec-val font-semibold">
-                {{ currentLang() === 'en' ? s.attr_value_en : (s.attr_value_ar || s.attr_value_en) }}
+                {{ currentLang() === 'en' 
+                  ? (s.attrValueEn || s.attr_value_en || s.valueEn || s.specValue || '-') 
+                  : (s.attrValueAr || s.attr_value_ar || s.attrValueEn || s.attr_value_en || s.valueAr || s.specValue || '-') }}
               </div>
             </div>
           </div>

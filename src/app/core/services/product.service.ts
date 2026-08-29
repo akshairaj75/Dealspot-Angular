@@ -66,4 +66,11 @@ export class ProductService {
     return this.http.get<any[]>(this.apiUrl + '/get-product-details/' + id);
   }
 
+  fetchAttributeKeys(): Observable<any[]> {
+    return this.http.get<any[]>(this.apiUrl + '/fetch-attribute-keys');
+  }
+
+  addAttributeKey(body: { attrKeyEn: string; attrKeyAr: string }): Observable<any> {
+    return this.http.post<any>(this.apiUrl + '/add-key', body);
+  }
 }

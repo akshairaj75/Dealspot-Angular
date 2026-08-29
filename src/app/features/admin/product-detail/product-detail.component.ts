@@ -118,6 +118,9 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     this.productService.getProductById(this.productId).subscribe({
       next: (res) => {
         this.product.set(res);
+        if (res && (res.details || res.specs)) {
+          this.specs.set(res.details || res.specs || []);
+        }
         this.populateForm(res);
         this.loading.set(false);
         this.cd.detectChanges();

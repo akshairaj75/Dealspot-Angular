@@ -446,8 +446,16 @@
 
             <!-- Dynamic Specifications Attributes -->
             <tr *ngFor="let spec of productSpecs()">
-              <td class="spec-label">{{ currentLang() === 'en' ? (spec.attrKeyAr || spec.attributeKeyEn || spec.attributeKey) : (spec.attrKeyAr || spec.attributeKeyAr || spec.attributeKey) }}</td>
-              <td class="spec-val">{{ currentLang() === 'en' ? (spec.attrValueEn || spec.valueEn || spec.attrValueAr || spec.valueAr) : (spec.attrValueAr || spec.valueAr || spec.attrValueEn || spec.valueEn) }}</td>
+              <td class="spec-label">
+                {{ currentLang() === 'en' 
+                  ? (spec.attrKeyEn || spec.attr_key_en || spec.attributeKeyEn || spec.attributeKey?.nameEn || spec.attrKeyAr || spec.attr_key_ar) 
+                  : (spec.attrKeyAr || spec.attr_key_ar || spec.attributeKeyAr || spec.attributeKey?.nameAr || spec.attrKeyEn || spec.attr_key_en) }}
+              </td>
+              <td class="spec-val">
+                {{ currentLang() === 'en' 
+                  ? (spec.attrValueEn || spec.attr_value_en || spec.valueEn || spec.attrValueAr || spec.attr_value_ar) 
+                  : (spec.attrValueAr || spec.attr_value_ar || spec.valueAr || spec.attrValueEn || spec.attr_value_en) }}
+              </td>
             </tr>
           </tbody>
         </table>
