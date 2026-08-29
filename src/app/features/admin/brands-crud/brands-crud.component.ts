@@ -22,13 +22,13 @@ export class BrandsCrudComponent implements OnInit {
 
   currentLang = this.translationService.currentLang;
   brands = signal<any[]>([]);
-  filteredBrands = signal<any[]>([]);
   categories = signal<any[]>([]);
   
   brandForm!: FormGroup;
   isModalOpen = false;
   editingBrandId: number | null = null;
   searchQuery = '';
+  activeFilter = signal<'ALL' | 'ACTIVE' | 'INACTIVE' | 'FEATURED'>('ALL');
   categorySearch = '';
   isCategoryDropdownOpen = false;
   filePath = environment.filePath;
@@ -55,7 +55,6 @@ export class BrandsCrudComponent implements OnInit {
       next: (res: any[]) => {
         const sorted = res.sort((a, b) => (a.nameEn || '').localeCompare(b.nameEn || ''));
         this.brands.set(sorted);
-        this.applyFilter();
       },
       error: (err) => {
         console.error('Error loading brands:', err);
@@ -74,20 +73,50 @@ export class BrandsCrudComponent implements OnInit {
     });
   }
 
-  applyFilter(): void {
-    const query = this.searchQuery.toLowerCase().trim();
-    if (!query) {
-      this.filteredBrands.set(this.brands());
-      return;
+  setFilter(filter: 'ALL' | 'ACTIVE' | 'INACTIVE' | 'FEATURED'): void {
+    this.activeFilter.set(filter);
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+  }
+
+  getActiveCount(): number {
+    return this.brands().filter(b => b.active === 1 || b.active === true || b.isActive === 1 || b.isActive === true).length;
+  }
+
+  getInactiveCount(): number {
+    return this.brands().length - this.getActiveCount();
+  }
+
+  getFeaturedCount(): number {
+    return this.brands().filter(b => b.featured === true || b.isFeatured === true).length;
+  }
+
+  getFilteredBrands(): any[] {
+    let list = this.brands();
+
+    // Tab Filter
+    if (this.activeFilter() === 'ACTIVE') {
+      list = list.filter(b => b.active === 1 || b.active === true || b.isActive === 1 || b.isActive === true);
+    } else if (this.activeFilter() === 'INACTIVE') {
+      list = list.filter(b => !(b.active === 1 || b.active === true || b.isActive === 1 || b.isActive === true));
+    } else if (this.activeFilter() === 'FEATURED') {
+      list = list.filter(b => b.featured === true || b.isFeatured === true);
     }
 
-    const filtered = this.brands().filter(b => 
-      (b.nameEn && b.nameEn.toLowerCase().includes(query)) ||
-      (b.nameAr && b.nameAr.toLowerCase().includes(query)) ||
-      (b.id && b.id.toString().includes(query)) ||
-      (b.categories && b.categories.some((c: any) => c.nameEn?.toLowerCase().includes(query) || c.nameAr?.toLowerCase().includes(query)))
-    );
-    this.filteredBrands.set(filtered);
+    // Search Query Filter
+    const query = this.searchQuery.toLowerCase().trim();
+    if (query) {
+      list = list.filter(b => 
+        (b.nameEn && b.nameEn.toLowerCase().includes(query)) ||
+        (b.nameAr && b.nameAr.toLowerCase().includes(query)) ||
+        (b.id && b.id.toString().includes(query)) ||
+        (b.categories && b.categories.some((c: any) => c.nameEn?.toLowerCase().includes(query) || c.nameAr?.toLowerCase().includes(query)))
+      );
+    }
+
+    return list;
   }
 
   getLogoUrl(url: string | null | undefined): string {

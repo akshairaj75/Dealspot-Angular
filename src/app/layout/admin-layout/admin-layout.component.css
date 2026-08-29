@@ -166,8 +166,10 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  max-width: 100%;
   height: 100vh;
   width: 100%;
+  overflow: hidden;
 }
 
 .admin-topbar {
@@ -181,6 +183,7 @@
   flex-shrink: 0;
   z-index: 90;
   gap: 12px;
+  max-width: 100%;
 }
 
 .topbar-left {
@@ -324,8 +327,12 @@
 .admin-content-viewport {
   flex: 1;
   overflow-y: auto;
-  padding: 28px;
+  overflow-x: hidden;
+  padding: 24px;
   background-color: var(--background);
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* ==========================================================================

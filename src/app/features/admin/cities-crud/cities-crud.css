@@ -200,181 +200,32 @@
 }
 
 /* ============================================================
-   3. AUTOMATIC RESPONSIVE SWITCH (TABLE VS LIST)
+   3. UNIFIED RESPONSIVE LIST VIEW (ALL SCREENS)
    ============================================================ */
-.desktop-list-view {
-  display: block;
-}
-
-.mobile-list-view {
-  display: none;
-}
-
-@media (max-width: 767px) {
-  .desktop-list-view {
-    display: none !important;
-  }
-
-  .mobile-list-view {
-    display: flex !important;
-  }
-}
-
-/* ============================================================
-   4. PRIMARY TABLE VIEW (DESKTOP)
-   ============================================================ */
-.table-shell {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.table-scroll {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.cities-table {
-  width: 100%;
-  min-width: 720px;
-  border-collapse: collapse;
-}
-
-.cities-table thead tr {
-  background: var(--surface-hover);
-  border-bottom: 1px solid var(--border);
-}
-
-.cities-table th {
-  padding: 0.75rem 1rem;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-  white-space: nowrap;
-  text-align: left;
-}
-
-:host-context([dir="rtl"]) .cities-table th,
-[dir="rtl"] .cities-table th {
-  text-align: right;
-}
-
-.cities-table td {
-  padding: 0.8rem 1rem;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.84rem;
-  color: var(--text-primary);
-  vertical-align: middle;
-}
-
-.cities-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.cities-table tbody tr:hover td {
-  background: rgba(16, 185, 129, 0.025);
-}
-
-.td-id {
-  color: var(--text-muted);
-  font-size: 0.76rem;
-  font-weight: 600;
-}
-
-.table-city-name {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.table-city-name .material-icons-round {
-  font-size: 1rem;
-  color: var(--primary);
-  flex-shrink: 0;
-}
-
-.td-mono {
-  font-family: monospace;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-}
-
-.td-arabic {
-  color: var(--text-secondary);
-}
-
-.td-actions {
-  text-align: right;
-  white-space: nowrap;
-}
-
-:host-context([dir="rtl"]) .td-actions,
-[dir="rtl"] .td-actions {
-  text-align: left;
-}
-
-.tbl-actions {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-/* Borderless Action Buttons (No Square Borders) */
-.tbl-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.12s ease;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-}
-
-.tbl-btn:hover {
-  color: var(--primary);
-  background: var(--primary-light);
-}
-
-.tbl-btn.del:hover {
-  background: var(--danger-light);
-  color: var(--danger);
-}
-
-.tbl-btn .material-icons-round {
-  font-size: 1.15rem;
-}
-
-/* ============================================================
-   5. CLEAN INTEGRATED MOBILE LIST VIEW (< 768px)
-   ============================================================ */
-.cities-mobile-list {
+.cities-list-view {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
   width: 100%;
 }
 
-.mobile-city-item {
+.city-list-item {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 0.75rem 0.85rem;
+  padding: 0.75rem 0.95rem;
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.75rem;
   box-shadow: var(--shadow-sm);
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.mobile-city-item.card-inactive {
+.city-list-item:hover {
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.city-list-item.card-inactive {
   opacity: 0.68;
   background: var(--surface-hover);
 }

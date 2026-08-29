@@ -23,9 +23,14 @@
     </div>
   </div>
 
-  <!-- Summary Stats Bar -->
+  <!-- Summary Stats Bar with Clickable Filter Integration -->
   <div class="stats-grid">
-    <div class="stat-card">
+    <div 
+      class="stat-card clickable" 
+      [class.active]="selectedStatusFilter === ''"
+      (click)="setStatusFilter('')"
+      [title]="currentLang() === 'en' ? 'Show all stores' : 'عرض جميع المتاجر'"
+    >
       <div class="stat-icon-wrapper bg-blue-light">
         <span class="material-icons-round text-blue">store</span>
       </div>
@@ -35,7 +40,12 @@
       </div>
     </div>
 
-    <div class="stat-card">
+    <div 
+      class="stat-card clickable" 
+      [class.active]="selectedStatusFilter === 'verified'"
+      (click)="setStatusFilter(selectedStatusFilter === 'verified' ? '' : 'verified')"
+      [title]="currentLang() === 'en' ? 'Filter by verified partners' : 'تصفية الشركاء المعتمدين'"
+    >
       <div class="stat-icon-wrapper bg-emerald-light">
         <span class="material-icons-round text-emerald">verified</span>
       </div>
@@ -45,7 +55,12 @@
       </div>
     </div>
 
-    <div class="stat-card">
+    <div 
+      class="stat-card clickable" 
+      [class.active]="selectedStatusFilter === 'featured'"
+      (click)="setStatusFilter(selectedStatusFilter === 'featured' ? '' : 'featured')"
+      [title]="currentLang() === 'en' ? 'Filter by featured stores' : 'تصفية المتاجر المميزة'"
+    >
       <div class="stat-icon-wrapper bg-amber-light">
         <span class="material-icons-round text-amber">star</span>
       </div>
@@ -55,7 +70,12 @@
       </div>
     </div>
 
-    <div class="stat-card">
+    <div 
+      class="stat-card clickable" 
+      [class.active]="selectedStatusFilter === 'active'"
+      (click)="setStatusFilter(selectedStatusFilter === 'active' ? '' : 'active')"
+      [title]="currentLang() === 'en' ? 'Filter by active stores' : 'تصفية المتاجر النشطة'"
+    >
       <div class="stat-icon-wrapper bg-primary-light">
         <span class="material-icons-round text-primary-color">check_circle</span>
       </div>
@@ -116,156 +136,99 @@
     <p>{{ currentLang() === 'en' ? 'Loading retailers...' : 'جاري تحميل المتاجر...' }}</p>
   </div>
 
-  <!-- Table Container -->
-  <div class="card table-wrapper" *ngIf="!loading">
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>{{ currentLang() === 'en' ? 'Brand / Logo' : 'الشعار / العلامة' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Store Name' : 'اسم المتجر' }}</th>
-          <th>{{ currentLang() === 'en' ? 'City & Category' : 'المدينة والفئة' }}</th>
-          <th>{{ currentLang() === 'en' ? 'CR & VAT' : 'السجل والرقم الضريبي' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Verification' : 'التوثيق' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Featured' : 'مميز' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Status' : 'الحالة' }}</th>
-          <th class="text-right">{{ currentLang() === 'en' ? 'Actions' : 'الإجراءات' }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let s of filteredStores()">
-          <td>
-            <div class="store-brand-cell">
-              <div class="logo-avatar">
-                <img
-                  *ngIf="s.logoUrl"
-                  [src]="filePath + s.logoUrl"
-                  alt="{{ s.nameEn }} logo"
-                  (error)="$any($event.target).src = 'assets/images/placeholder-store.png'"
-                />
-                <span *ngIf="!s.logoUrl" class="material-icons-round avatar-placeholder-icon">storefront</span>
-              </div>
-              <span class="store-id-chip">#{{ s.id }}</span>
-            </div>
-          </td>
+  <!-- Unified Responsive List View (All Screens) -->
+  <div class="stores-list-view" *ngIf="!loading && filteredStores().length > 0">
+    <div
+      class="store-list-item"
+      *ngFor="let s of filteredStores()"
+      [class.card-inactive]="!s.active"
+    >
+      <!-- Left: Store Logo Avatar -->
+      <div class="store-avatar-box">
+        <img
+          *ngIf="s.logoUrl"
+          [src]="filePath + s.logoUrl"
+          alt="{{ s.nameEn }} logo"
+          (error)="$any($event.target).src = 'assets/images/placeholder-store.png'"
+        />
+        <span *ngIf="!s.logoUrl" class="material-icons-round avatar-placeholder-icon">storefront</span>
+      </div>
 
-          <td>
-            <div class="store-names-cell">
-              <span class="primary-name">{{ currentLang() === 'en' ? (s.nameEn || s.name_en) : (s.nameAr || s.name_ar || s.nameEn) }}</span>
-              <span class="secondary-name">{{ currentLang() === 'en' ? (s.nameAr || s.name_ar) : (s.nameEn || s.name_en) }}</span>
-            </div>
-          </td>
+      <!-- Middle: Store Details -->
+      <div class="store-info-wrap">
+        <div class="store-title-row">
+          <h3 class="store-name-primary">{{ currentLang() === 'en' ? (s.nameEn || s.name_en) : (s.nameAr || s.name_ar || s.nameEn) }}</h3>
+          <span class="store-id-pill">#{{ s.id }}</span>
+          <span class="store-featured-badge" *ngIf="s.featured || s.is_featured">★ Featured</span>
+          <span class="store-verified-badge" *ngIf="s.verified" [title]="currentLang() === 'en' ? 'Verified Partner' : 'شريك معتمد'">
+            <span class="material-icons-round icon-xs">verified</span>
+          </span>
+        </div>
+        <span class="store-name-secondary">{{ currentLang() === 'en' ? (s.nameAr || s.name_ar) : (s.nameEn || s.name_en) }}</span>
 
-          <td>
-            <div class="meta-cell">
-              <span class="city-badge" *ngIf="s.cityNameEn || s.cityNameAr || s.city?.nameEn || s.city?.name_en">
-                <span class="material-icons-round icon-xs">place</span>
-                {{ currentLang() === 'en' ? (s.cityNameEn || s.city?.nameEn || s.city?.name_en) : (s.cityNameAr || s.city?.nameAr || s.cityNameEn || s.city?.nameEn) }}
-              </span>
-              <span class="category-text" *ngIf="s.categoryNameEn || s.categoryNameAr || s.category?.nameEn || s.category?.name_en">
-                {{ currentLang() === 'en' ? (s.categoryNameEn || s.category?.nameEn || s.category?.name_en) : (s.categoryNameAr || s.category?.nameAr || s.categoryNameEn || s.category?.nameEn) }}
-              </span>
-              <span class="badge-category" style="margin-top: 2px; font-size: 11px; display: inline-flex; align-items: center; gap: 3px; background: rgba(16, 185, 129, 0.08); color: var(--primary, #10b981); width: fit-content; padding: 2px 8px; border-radius: 9999px; font-weight: 600;">
-                <span class="material-icons-round" style="font-size: 13px;">people</span>
-                <span>{{ s.followersCount || 0 }} {{ currentLang() === 'en' ? 'Followers' : 'متابع' }}</span>
-              </span>
-            </div>
-          </td>
+        <div class="store-meta-tags">
+          <span class="store-tag" *ngIf="s.cityNameEn || s.cityNameAr || s.city?.nameEn || s.city?.name_en">
+            <span class="material-icons-round icon-xs">place</span>
+            {{ currentLang() === 'en' ? (s.cityNameEn || s.city?.nameEn || s.city?.name_en) : (s.cityNameAr || s.city?.nameAr || s.cityNameEn || s.city?.nameEn) }}
+          </span>
+          <span class="store-tag" *ngIf="s.categoryNameEn || s.categoryNameAr || s.category?.nameEn || s.category?.name_en">
+            <span class="material-icons-round icon-xs">category</span>
+            {{ currentLang() === 'en' ? (s.categoryNameEn || s.category?.nameEn || s.category?.name_en) : (s.categoryNameAr || s.category?.nameAr || s.categoryNameEn || s.category?.nameEn) }}
+          </span>
+          <span class="store-tag" *ngIf="s.followersCount">
+            <span class="material-icons-round icon-xs">people</span>
+            {{ s.followersCount }}
+          </span>
+          <span class="store-tag code-tag" *ngIf="s.crNumber">
+            CR: {{ s.crNumber }}
+          </span>
+        </div>
+      </div>
 
+      <!-- Right: Status & Actions -->
+      <div class="item-right-group">
+        <span class="status-pill" [class.status-active]="s.active" [class.status-inactive]="!s.active">
+          <span class="status-dot"></span>
+          <span>{{ s.active ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'معطل') }}</span>
+        </span>
 
-          <td>
-            <div class="code-column-desc">
-              <div class="code-row" *ngIf="s.crNumber">
-                <span class="code-label">CR:</span>
-                <code>{{ s.crNumber }}</code>
-              </div>
-              <div class="code-row" *ngIf="s.vatNumber">
-                <span class="code-label">VAT:</span>
-                <code>{{ s.vatNumber }}</code>
-              </div>
-              <span class="text-muted" *ngIf="!s.crNumber && !s.vatNumber">—</span>
-            </div>
-          </td>
+        <div class="item-action-btns">
+          <a
+            [routerLink]="['/admin/stores', s.id, 'branches']"
+            class="btn-item-action btn-item-branches"
+            [title]="currentLang() === 'en' ? 'Manage Branches' : 'إدارة الفروع'"
+          >
+            <span class="material-icons-round">domain</span>
+          </a>
 
-          <td>
-            <span class="badge-verified" *ngIf="s.verified">
-              <span class="material-icons-round icon-xs">verified</span>
-              <span>{{ currentLang() === 'en' ? 'Verified' : 'معتمد' }}</span>
-            </span>
-            <span class="badge-unverified" *ngIf="!s.verified">
-              <span class="material-icons-round icon-xs">gpp_maybe</span>
-              <span>{{ currentLang() === 'en' ? 'Unverified' : 'غير معتمد' }}</span>
-            </span>
-          </td>
+          <button
+            type="button"
+            class="btn-item-action"
+            (click)="openEditModal(s)"
+            [title]="currentLang() === 'en' ? 'Edit Store' : 'تعديل المتجر'"
+          >
+            <span class="material-icons-round">edit</span>
+          </button>
 
-          <td>
-            <button
-              *ngIf="authService.isSuperAdmin()"
-              type="button"
-              class="badge-featured-toggle"
-              [class.is-featured]="s.featured === true || s.is_featured === true"
-              (click)="toggleFeatured(s)"
-              [title]="(s.featured === true || s.is_featured === true) ? (currentLang() === 'en' ? 'Featured Store (Click to toggle off)' : 'متجر مميز (انقر لإلغاء التمييز)') : (currentLang() === 'en' ? 'Regular Store (Click to mark as featured)' : 'متجر عادي (انقر لجعله مميزاً)')"
-            >
-              <span class="material-icons-round icon-xs">{{ (s.featured === true || s.is_featured === true) ? 'star' : 'star_border' }}</span>
-              <span>{{ (s.featured === true || s.is_featured === true) ? (currentLang() === 'en' ? 'Featured' : 'مميز') : (currentLang() === 'en' ? 'Regular' : 'عادي') }}</span>
-            </button>
-            <span
-              *ngIf="!authService.isSuperAdmin()"
-              class="badge-featured-toggle non-clickable"
-              [class.is-featured]="s.featured === true || s.is_featured === true"
-              [title]="currentLang() === 'en' ? 'Featured status can only be modified by Super Admin' : 'تعديل حالة التمييز متاح فقط للمشرف العام'"
-            >
-              <span class="material-icons-round icon-xs">{{ (s.featured === true || s.is_featured === true) ? 'star' : 'star_border' }}</span>
-              <span>{{ (s.featured === true || s.is_featured === true) ? (currentLang() === 'en' ? 'Featured' : 'مميز') : (currentLang() === 'en' ? 'Regular' : 'عادي') }}</span>
-            </span>
-          </td>
+          <button
+            *ngIf="authService.isSuperAdmin()"
+            type="button"
+            class="btn-item-action btn-item-del"
+            (click)="deleteStore(s)"
+            [title]="currentLang() === 'en' ? 'Delete Store' : 'حذف المتجر'"
+          >
+            <span class="material-icons-round">delete</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-          <td>
-            <span class="status-chip" [class.active]="s.active" [class.inactive]="!s.active">
-              <span class="status-dot"></span>
-              {{ s.active ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'معطل') }}
-            </span>
-          </td>
-
-          <td class="text-right">
-            <div class="action-buttons-cell">
-              <a
-                [routerLink]="['/admin/stores', s.id, 'branches']"
-                class="btn-icon btn-icon-branches"
-                [title]="currentLang() === 'en' ? 'Manage Branches' : 'إدارة الفروع'"
-              >
-                <span class="material-icons-round">domain</span>
-              </a>
-
-              <button
-                class="btn-icon btn-icon-edit"
-                (click)="openEditModal(s)"
-                [title]="currentLang() === 'en' ? 'Edit Store' : 'تعديل المتجر'"
-              >
-                <span class="material-icons-round">edit</span>
-              </button>
-
-              <button
-                *ngIf="authService.isSuperAdmin()"
-                class="btn-icon btn-icon-delete"
-                (click)="deleteStore(s)"
-                [title]="currentLang() === 'en' ? 'Delete Store' : 'حذف المتجر'"
-              >
-                <span class="material-icons-round">delete</span>
-              </button>
-            </div>
-          </td>
-        </tr>
-
-        <tr *ngIf="filteredStores().length === 0">
-          <td colspan="8" class="empty-table-state">
-            <span class="material-icons-round empty-icon">storefront</span>
-            <h4>{{ currentLang() === 'en' ? 'No Stores Found' : 'لم يتم العثور على متاجر' }}</h4>
-            <p>{{ currentLang() === 'en' ? 'Try adjusting your search criteria or register a new store.' : 'جرب تعديل خيارات البحث أو قم بإضافة متجر جديد.' }}</p>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <!-- Empty State -->
+  <div class="card empty-card" *ngIf="!loading && filteredStores().length === 0">
+    <span class="material-icons-round empty-icon">storefront</span>
+    <h4>{{ currentLang() === 'en' ? 'No Stores Found' : 'لم يتم العثور على متاجر' }}</h4>
+    <p>{{ currentLang() === 'en' ? 'Try adjusting your search criteria or register a new store.' : 'جرب تعديل خيارات البحث أو قم بإضافة متجر جديد.' }}</p>
   </div>
 
   <!-- Add / Edit Store Modal -->

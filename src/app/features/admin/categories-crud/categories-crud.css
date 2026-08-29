@@ -380,333 +380,41 @@
 }
 
 /* ============================================================
-   4. AUTOMATIC RESPONSIVE SWITCH (DESKTOP TABLE VS MOBILE LIST)
+   4. UNIFIED RESPONSIVE LIST VIEW (ALL SCREENS)
    ============================================================ */
-.desktop-list-view {
-  display: block;
-}
-
-.mobile-list-view {
-  display: none;
-}
-
-@media (max-width: 767px) {
-  .desktop-list-view {
-    display: none !important;
-  }
-  .mobile-list-view {
-    display: flex !important;
-  }
-}
-
-/* ============================================================
-   5. PRIMARY TABLE VIEW (DESKTOP)
-   ============================================================ */
-.table-shell {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-}
-
-.table-scroll {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.categories-table {
-  width: 100%;
-  min-width: 780px;
-  border-collapse: collapse;
-}
-
-.categories-table thead tr {
-  background: var(--surface-hover);
-  border-bottom: 1px solid var(--border);
-}
-
-.categories-table th {
-  padding: 0.8rem 1rem;
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-  white-space: nowrap;
-  text-align: left;
-}
-
-:host-context([dir="rtl"]) .categories-table th,
-[dir="rtl"] .categories-table th {
-  text-align: right;
-}
-
-.categories-table td {
-  padding: 0.8rem 1rem;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.85rem;
-  color: var(--text-primary);
-  vertical-align: middle;
-}
-
-.categories-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.categories-table tbody tr:hover td {
-  background: rgba(16, 185, 129, 0.025);
-}
-
-.drag-table tbody tr.is-dragging {
-  opacity: 0.45;
-  background: rgba(16, 185, 129, 0.08) !important;
-  outline: 2px dashed var(--primary);
-}
-
-.drag-table tbody tr.drag-over-row {
-  background: #f0fdf4 !important;
-  border-top: 2.5px solid var(--primary);
-}
-
-.drag-handle-cell {
-  padding: 0.5rem 0.4rem !important;
-  text-align: center;
-}
-
-.drag-handle-actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-}
-
-.drag-handle-icon {
-  font-size: 1.35rem;
-  color: var(--text-muted);
-  cursor: grab;
-  user-select: none;
-  padding: 2px;
-  border-radius: 4px;
-  transition: all 0.15s ease;
-}
-
-.drag-handle-icon:hover {
-  color: var(--primary);
-  background: var(--primary-light);
-}
-
-.drag-handle-icon:active {
-  cursor: grabbing;
-}
-
-.arrow-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.btn-arrow {
-  background: transparent;
-  border: none;
-  padding: 0;
-  width: 18px;
-  height: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--text-muted);
-  border-radius: 3px;
-  transition: all 0.12s ease;
-}
-
-.btn-arrow:hover:not(:disabled) {
-  background: var(--primary-light);
-  color: var(--primary);
-}
-
-.btn-arrow:disabled {
-  opacity: 0.25;
-  cursor: not-allowed;
-}
-
-.btn-arrow .material-icons-round {
-  font-size: 13px;
-}
-
-.table-media-wrap {
-  display: flex;
-  align-items: center;
-}
-
-.cat-avatar-img-sm {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  object-fit: cover;
-  border: 1px solid var(--border);
-}
-
-.cat-icon-chip {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  background: var(--primary-light);
-  color: var(--primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.cat-icon-chip .material-icons-round {
-  font-size: 18px;
-}
-
-.td-id {
-  color: var(--text-muted);
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-
-.cat-row-title {
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.td-arabic {
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.parent-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-  background: var(--surface-hover);
-  border: 1px solid var(--border);
-  font-size: 0.76rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.order-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: var(--primary);
-  background: var(--primary-light);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  padding: 1px 6px;
-  border-radius: 4px;
-}
-
-/* Status Pill */
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.28rem;
-  padding: 0.16rem 0.55rem;
-  border-radius: var(--radius-full);
-  font-size: 0.68rem;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.status-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-}
-
-.status-active {
-  background: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
-}
-.status-active .status-dot { background: #22c55e; }
-
-.status-inactive {
-  background: var(--surface-hover);
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-}
-.status-inactive .status-dot { background: var(--text-muted); }
-
-.td-actions {
-  text-align: right;
-  white-space: nowrap;
-}
-
-:host-context([dir="rtl"]) .td-actions,
-[dir="rtl"] .td-actions {
-  text-align: left;
-}
-
-.tbl-actions {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-/* Borderless Action Buttons (No Square Borders) */
-.tbl-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.12s ease;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-}
-
-.tbl-btn:hover {
-  color: var(--primary);
-  background: var(--primary-light);
-}
-
-.tbl-btn.del {
-  color: var(--text-muted);
-}
-
-.tbl-btn.del:hover {
-  background: var(--danger-light);
-  color: var(--danger);
-}
-
-.tbl-btn .material-icons-round {
-  font-size: 1.15rem;
-}
-
-/* ============================================================
-   6. CLEAN INTEGRATED MOBILE LIST VIEW (< 768px)
-   ============================================================ */
-.categories-mobile-list {
+.categories-list-view {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
   width: 100%;
 }
 
-.mobile-cat-item {
+.cat-list-item {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 0.75rem 0.85rem;
+  padding: 0.75rem 0.95rem;
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.75rem;
   box-shadow: var(--shadow-sm);
   transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.cat-list-item.is-dragging {
+  opacity: 0.45;
+  background: rgba(16, 185, 129, 0.08) !important;
+  outline: 2px dashed var(--primary);
+}
+
+.cat-list-item.drag-over-row {
+  background: #f0fdf4 !important;
+  border-top: 2.5px solid var(--primary);
+}
+
+.cat-list-item.card-inactive {
+  opacity: 0.68;
+  background: var(--surface-hover);
 }
 
 .mobile-cat-item.is-dragging {

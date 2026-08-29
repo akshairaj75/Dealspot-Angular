@@ -125,127 +125,15 @@
   </div>
 
   <!-- ============================================================ -->
-  <!-- 5. AUTOMATIC DESKTOP LIST / TABLE VIEW (>= 768px)             -->
+  <!-- UNIFIED RESPONSIVE LIST VIEW (ALL SCREENS)                    -->
   <!-- ============================================================ -->
   <div 
-    class="desktop-list-view table-shell" 
-    *ngIf="(activeTab === 'parent' ? getFilteredParentCategories().length : getFilteredSubCategories().length) > 0"
-  >
-    <div class="table-scroll">
-      <table class="categories-table drag-table">
-        <thead>
-          <tr>
-            <th style="width: 70px; text-align: center;">{{ currentLang() === 'en' ? 'Reorder' : 'الترتيب' }}</th>
-            <th style="width: 60px;">#</th>
-            <th style="width: 65px;">ID</th>
-            <th style="width: 75px;">{{ currentLang() === 'en' ? 'Media' : 'الأيقونة' }}</th>
-            <th>{{ currentLang() === 'en' ? 'Category Name (EN)' : 'الاسم (الإنجليزية)' }}</th>
-            <th>{{ currentLang() === 'en' ? 'Category Name (AR)' : 'الاسم (العربية)' }}</th>
-            <th *ngIf="activeTab === 'sub'">{{ currentLang() === 'en' ? 'Parent Category' : 'القسم الرئيسي' }}</th>
-            <th style="width: 100px;">{{ currentLang() === 'en' ? 'Status' : 'الحالة' }}</th>
-            <th class="td-actions" style="width: 100px;">{{ currentLang() === 'en' ? 'Actions' : 'الإجراءات' }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr 
-            *ngFor="let cat of (activeTab === 'parent' ? getFilteredParentCategories() : getFilteredSubCategories()); let i = index"
-            [class.is-dragging]="draggedIndex === i && dragTab === activeTab"
-            [class.drag-over-row]="dragOverIndex === i && dragTab === activeTab"
-            (dragover)="onDragOver($event, i)"
-            (drop)="onDrop($event, i, activeTab)"
-          >
-            <!-- Drag Handle Cell -->
-            <td class="drag-handle-cell">
-              <div class="drag-handle-actions">
-                <span 
-                  class="material-icons-round drag-handle-icon" 
-                  draggable="true"
-                  (dragstart)="onDragStart($event, i, activeTab)"
-                  (dragend)="onDragEnd()"
-                  [title]="currentLang() === 'en' ? 'Drag to reorder' : 'اسحب لإعادة الترتيب'"
-                >drag_indicator</span>
-                <div class="arrow-buttons">
-                  <button type="button" class="btn-arrow" (click)="moveUp(i, activeTab, $event)" [disabled]="i === 0" title="Move Up">
-                    <span class="material-icons-round">keyboard_arrow_up</span>
-                  </button>
-                  <button type="button" class="btn-arrow" (click)="moveDown(i, activeTab, $event)" [disabled]="i === (activeTab === 'parent' ? getFilteredParentCategories().length : getFilteredSubCategories().length) - 1" title="Move Down">
-                    <span class="material-icons-round">keyboard_arrow_down</span>
-                  </button>
-                </div>
-              </div>
-            </td>
-
-            <!-- Order # -->
-            <td>
-              <span class="order-badge">#{{ cat.sortOrder || (i + 1) }}</span>
-            </td>
-
-            <!-- ID -->
-            <td class="td-id">{{ cat.id }}</td>
-
-            <!-- Media / Icon -->
-            <td>
-              <div class="table-media-wrap">
-                <img *ngIf="cat.imageUrl" [src]="filePath + cat.imageUrl" class="cat-avatar-img-sm" [alt]="cat.nameEn">
-                <div *ngIf="!cat.imageUrl" class="cat-icon-chip">
-                  <span class="material-icons-round icon-md">{{ cat.iconSlug || 'folder' }}</span>
-                </div>
-              </div>
-            </td>
-
-            <!-- Name (EN) -->
-            <td><strong class="cat-row-title">{{ cat.nameEn }}</strong></td>
-
-            <!-- Name (AR) -->
-            <td class="td-arabic">{{ cat.nameAr }}</td>
-
-            <!-- Parent (Subcategories only) -->
-            <td *ngIf="activeTab === 'sub'">
-              <span class="parent-chip">
-                <span class="material-icons-round icon-xs">folder</span>
-                <span>{{ currentLang() === 'en' ? (cat.parentNameEn || 'Root') : (cat.parentNameAr || cat.parentNameEn || 'رئيسي') }}</span>
-              </span>
-            </td>
-
-            <!-- Status -->
-            <td>
-              <span 
-                class="status-pill"
-                [class.status-active]="cat.active === true || cat.active === 1 || cat.isActive === true || cat.isActive === 1 || cat.is_active === 1 || cat.is_active === true"
-                [class.status-inactive]="!(cat.active === true || cat.active === 1 || cat.isActive === true || cat.isActive === 1 || cat.is_active === 1 || cat.is_active === true)"
-              >
-                <span class="status-dot"></span>
-                <span>{{ (cat.active === true || cat.active === 1 || cat.isActive === true || cat.isActive === 1 || cat.is_active === 1 || cat.is_active === true) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}</span>
-              </span>
-            </td>
-
-            <!-- Actions -->
-            <td class="td-actions">
-              <div class="tbl-actions">
-                <button type="button" class="tbl-btn" (click)="openEditModal(cat)" [title]="currentLang() === 'en' ? 'Edit' : 'تعديل'">
-                  <span class="material-icons-round">edit</span>
-                </button>
-                <button type="button" class="tbl-btn del" (click)="deleteCategory(cat.id)" [title]="currentLang() === 'en' ? 'Delete' : 'حذف'">
-                  <span class="material-icons-round">delete</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ============================================================ -->
-  <!-- 6. AUTOMATIC MOBILE LIST VIEW (< 768px)                       -->
-  <!-- ============================================================ -->
-  <div 
-    class="mobile-list-view categories-mobile-list" 
+    class="categories-list-view" 
     *ngIf="(activeTab === 'parent' ? getFilteredParentCategories().length : getFilteredSubCategories().length) > 0"
   >
     <!-- List Item -->
     <div 
-      class="mobile-cat-item" 
+      class="cat-list-item" 
       *ngFor="let cat of (activeTab === 'parent' ? getFilteredParentCategories() : getFilteredSubCategories()); let i = index"
       [attr.data-index]="i"
       [class.card-inactive]="!(cat.active === true || cat.active === 1 || cat.isActive === true || cat.isActive === 1 || cat.is_active === 1 || cat.is_active === true)"

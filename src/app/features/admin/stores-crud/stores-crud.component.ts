@@ -159,6 +159,11 @@ export class StoresCrudComponent implements OnInit {
     this.filteredStores.set(list);
   }
 
+  setStatusFilter(filter: string): void {
+    this.selectedStatusFilter = filter;
+    this.applyFilter();
+  }
+
   get totalStoresCount(): number {
     return this.stores().length;
   }

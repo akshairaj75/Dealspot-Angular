@@ -61,75 +61,10 @@
   </div>
 
   <!-- ============================================================ -->
-  <!-- AUTOMATIC DESKTOP TABLE VIEW (>= 768px)                       -->
+  <!-- UNIFIED RESPONSIVE LIST VIEW (ALL SCREENS)                    -->
   <!-- ============================================================ -->
-  <div class="desktop-list-view table-shell" *ngIf="getFilteredCities().length > 0">
-    <div class="table-scroll">
-      <table class="cities-table">
-        <thead>
-          <tr>
-            <th style="width: 60px;">#</th>
-            <th>{{ currentLang() === 'en' ? 'City (EN)' : 'الاسم إنجليزي' }}</th>
-            <th>{{ currentLang() === 'en' ? 'City (AR)' : 'الاسم عربي' }}</th>
-            <th style="width: 90px;">{{ currentLang() === 'en' ? 'Code' : 'الرمز' }}</th>
-            <th>{{ currentLang() === 'en' ? 'Latitude' : 'خط العرض' }}</th>
-            <th>{{ currentLang() === 'en' ? 'Longitude' : 'خط الطول' }}</th>
-            <th style="width: 100px;">{{ currentLang() === 'en' ? 'Status' : 'الحالة' }}</th>
-            <th class="td-actions" style="width: 110px;">{{ currentLang() === 'en' ? 'Actions' : 'الإجراءات' }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let c of getFilteredCities()">
-            <td class="td-id">{{ c.id }}</td>
-            <td>
-              <div class="table-city-name">
-                <span class="material-icons-round">place</span>
-                <strong>{{ c.nameEn || c.name_en }}</strong>
-              </div>
-            </td>
-            <td class="td-arabic">{{ c.nameAr || c.name_ar }}</td>
-            <td><code class="region-chip">{{ c.regionCode || c.region_code || '—' }}</code></td>
-            <td class="td-mono" dir="ltr">{{ c.latitude }}</td>
-            <td class="td-mono" dir="ltr">{{ c.longitude }}</td>
-            <td>
-              <span class="status-pill"
-                [class.status-active]="c.active === true || c.active === 1 || c.isActive === true || c.isActive === 1 || c.is_active === 1 || c.is_active === true"
-                [class.status-inactive]="!(c.active === true || c.active === 1 || c.isActive === true || c.isActive === 1 || c.is_active === 1 || c.is_active === true)">
-                <span class="status-dot"></span>
-                <span>{{
-                  (c.active === true || c.active === 1 || c.isActive === true || c.isActive === 1 || c.is_active === 1
-                  || c.is_active === true)
-                  ? (currentLang() === 'en' ? 'Active' : 'نشط')
-                  : (currentLang() === 'en' ? 'Inactive' : 'غير نشط')
-                  }}</span>
-              </span>
-            </td>
-            <td class="td-actions">
-              <div class="tbl-actions">
-                <button class="tbl-btn" (click)="openInMap(c.latitude, c.longitude, $event)"
-                  [title]="currentLang() === 'en' ? 'Open in Maps' : 'فتح الخريطة'">
-                  <span class="material-icons-round">open_in_new</span>
-                </button>
-                <button class="tbl-btn" (click)="openEditModal(c)" [title]="currentLang() === 'en' ? 'Edit' : 'تعديل'">
-                  <span class="material-icons-round">edit</span>
-                </button>
-                <button class="tbl-btn del" (click)="deleteCity(c.id)"
-                  [title]="currentLang() === 'en' ? 'Delete' : 'حذف'">
-                  <span class="material-icons-round">delete</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ============================================================ -->
-  <!-- AUTOMATIC MOBILE LIST VIEW (< 768px)                          -->
-  <!-- ============================================================ -->
-  <div class="mobile-list-view cities-mobile-list" *ngIf="getFilteredCities().length > 0">
-    <div class="mobile-city-item" *ngFor="let c of getFilteredCities()"
+  <div class="cities-list-view" *ngIf="getFilteredCities().length > 0">
+    <div class="city-list-item" *ngFor="let c of getFilteredCities()"
       [class.card-inactive]="!(c.active === true || c.active === 1 || c.isActive === true || c.isActive === 1 || c.is_active === 1 || c.is_active === true)">
       <!-- Left: Avatar -->
       <div class="city-avatar">
