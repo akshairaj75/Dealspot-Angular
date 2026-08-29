@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { AdminUserService, AdminUser } from '../../../core/services/admin-user.service';
 import { TranslationService } from '../../../core/services/translation.service';
+import { CustomSelectComponent } from '../../../shared/components/custom-select/custom-select.component';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-users-crud',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, CustomSelectComponent],
   templateUrl: './users-crud.html',
   styleUrls: ['./users-crud.css']
 })
@@ -19,6 +20,18 @@ export class UsersCrudComponent implements OnInit {
   translationService = inject(TranslationService);
 
   currentLang = this.translationService.currentLang;
+
+  roleOptions = [
+    { id: 'ROLE_ADMIN', nameEn: 'Super Administrator', nameAr: 'مسؤول رئيسي (Super Admin)' },
+    { id: 'ROLE_MANAGER', nameEn: 'Store Manager', nameAr: 'مدير متجر' },
+    { id: 'ROLE_SUPPORT', nameEn: 'Customer Support', nameAr: 'دعم العملاء' }
+  ];
+
+  roleFilterOptions = [
+    { id: 'ROLE_ADMIN', nameEn: 'Super Admin', nameAr: 'مسؤول رئيسي' },
+    { id: 'ROLE_MANAGER', nameEn: 'Manager', nameAr: 'مدير' },
+    { id: 'ROLE_SUPPORT', nameEn: 'Support', nameAr: 'دعم' }
+  ];
 
   admins = signal<AdminUser[]>([]);
   loading = signal(false);

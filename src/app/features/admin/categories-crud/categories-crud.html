@@ -73,14 +73,17 @@
       </div>
 
       <!-- Parent Filter Dropdown (Subcategories Tab Only) -->
-      <div class="parent-filter-wrap" *ngIf="activeTab === 'sub'">
-        <span class="filter-prefix-icon material-icons-round">filter_list</span>
-        <select [(ngModel)]="selectedParentFilter" class="parent-select-control">
-          <option value="">{{ currentLang() === 'en' ? 'All Parent Categories' : 'جميع الأقسام الرئيسية' }}</option>
-          <option *ngFor="let parent of parentCategories" [value]="parent.id">
-            {{ currentLang() === 'en' ? parent.nameEn : (parent.nameAr || parent.nameEn) }}
-          </option>
-        </select>
+      <div class="parent-filter-wrap" *ngIf="activeTab === 'sub'" style="min-width: 180px;">
+        <app-custom-select
+          [options]="parentCategories"
+          [(ngModel)]="selectedParentFilter"
+          valueKey="id"
+          labelEnKey="nameEn"
+          labelArKey="nameAr"
+          [placeholder]="currentLang() === 'en' ? 'All Parent Categories' : 'جميع الأقسام الرئيسية'"
+          [allowUnset]="true"
+          [unsetLabel]="currentLang() === 'en' ? 'All Parent Categories' : 'جميع الأقسام الرئيسية'"
+        ></app-custom-select>
       </div>
     </div>
   </div>
@@ -264,15 +267,18 @@
           <div class="form-section-label">{{ currentLang() === 'en' ? 'Hierarchy & Sorting' : 'التسلسل الهرمي والترتيب' }}</div>
 
           <div class="form-row-2">
-            <!-- Parent Category Dropdown -->
             <div class="f-group">
               <label class="f-label">{{ currentLang() === 'en' ? 'Parent Category' : 'القسم الرئيسي' }}</label>
-              <select formControlName="parentId" class="f-input">
-                <option [ngValue]="null">{{ currentLang() === 'en' ? 'None (Root Category)' : 'بدون (قسم رئيسي)' }}</option>
-                <option *ngFor="let c of parentCategories" [ngValue]="c.id" [disabled]="c.id === editingCategoryId">
-                  {{ currentLang() === 'en' ? c.nameEn : (c.nameAr || c.nameEn) }}
-                </option>
-              </select>
+              <app-custom-select
+                formControlName="parentId"
+                [options]="parentCategories"
+                valueKey="id"
+                labelEnKey="nameEn"
+                labelArKey="nameAr"
+                [placeholder]="currentLang() === 'en' ? 'None (Root Category)' : 'بدون (قسم رئيسي)'"
+                [allowUnset]="true"
+                [unsetLabel]="currentLang() === 'en' ? 'None (Root Category)' : 'بدون (قسم رئيسي)'"
+              ></app-custom-select>
             </div>
 
             <!-- Sort Order -->

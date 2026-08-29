@@ -3,13 +3,14 @@ import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } 
 import { CommonModule } from '@angular/common';
 import { CategoryService } from '../../../core/services/category.service';
 import { TranslationService } from '../../../core/services/translation.service';
+import { CustomSelectComponent } from '../../../shared/components/custom-select/custom-select.component';
 import Swal from 'sweetalert2';
 import { environment } from '../../../environment/environment';
 
 @Component({
   selector: 'app-categories-crud',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, CustomSelectComponent],
   templateUrl: './categories-crud.html',
   styleUrl: './categories-crud.css',
 })

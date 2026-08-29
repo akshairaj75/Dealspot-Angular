@@ -169,6 +169,9 @@
   border-radius: var(--radius-md);
   padding: 0.85rem 1rem;
   box-shadow: var(--shadow-sm);
+  overflow: visible !important;
+  position: relative;
+  z-index: 20;
 }
 
 .filter-row {

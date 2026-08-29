@@ -35,24 +35,33 @@
       </div>
 
       <div class="filters-group">
-        <div class="filter-select-wrap">
-          <span class="material-icons-round select-prefix-icon">category</span>
-          <select [ngModel]="filterCategoryId()" (ngModelChange)="onFilterCategoryChange($event)" class="filter-select">
-            <option [ngValue]="null">{{ currentLang() === 'en' ? 'All Categories' : 'جميع الأقسام' }}</option>
-            <option *ngFor="let cat of allCategories()" [value]="cat.id">
-              {{ currentLang() === 'en' ? (cat.nameEn || cat.name_en) : (cat.nameAr || cat.name_ar || cat.nameEn) }}
-            </option>
-          </select>
+        <div class="filter-select-wrap" style="min-width: 180px;">
+          <app-custom-select
+            [options]="allCategories()"
+            [ngModel]="filterCategoryId()"
+            (ngModelChange)="onFilterCategoryChange($event)"
+            valueKey="id"
+            labelEnKey="nameEn"
+            labelArKey="nameAr"
+            [placeholder]="currentLang() === 'en' ? 'All Categories' : 'جميع الأقسام'"
+            [allowUnset]="true"
+            [unsetLabel]="currentLang() === 'en' ? 'All Categories' : 'جميع الأقسام'"
+          ></app-custom-select>
         </div>
 
-        <div class="filter-select-wrap">
-          <span class="material-icons-round select-prefix-icon">storefront</span>
-          <select [ngModel]="filterBrandId()" (ngModelChange)="onFilterBrandChange($event)" class="filter-select">
-            <option [ngValue]="null">{{ currentLang() === 'en' ? 'All Brands' : 'جميع الماركات' }}</option>
-            <option *ngFor="let b of brands()" [value]="b.id">
-              {{ currentLang() === 'en' ? (b.nameEn || b.name_en) : (b.nameAr || b.name_ar || b.nameEn) }}
-            </option>
-          </select>
+        <div class="filter-select-wrap" style="min-width: 180px;">
+          <app-custom-select
+            [options]="brands()"
+            [ngModel]="filterBrandId()"
+            (ngModelChange)="onFilterBrandChange($event)"
+            valueKey="id"
+            labelEnKey="nameEn"
+            labelArKey="nameAr"
+            [placeholder]="currentLang() === 'en' ? 'All Brands' : 'جميع الماركات'"
+            [allowUnset]="true"
+            [unsetLabel]="currentLang() === 'en' ? 'All Brands' : 'جميع الماركات'"
+            [filePath]="filePath"
+          ></app-custom-select>
         </div>
 
         <div class="filter-stats-group">
@@ -241,12 +250,15 @@
             </h4>
             <div class="form-group">
               <label class="form-label required">{{ currentLang() === 'en' ? 'Brand *' : 'الماركة *' }}</label>
-              <select formControlName="brandId" class="form-control">
-                <option [ngValue]="null" disabled>{{ currentLang() === 'en' ? '-- Select Brand --' : '-- اختر الماركة --' }}</option>
-                <option *ngFor="let brand of brands()" [ngValue]="brand.id">
-                  {{ currentLang() === 'en' ? brand.nameEn : (brand.nameAr || brand.nameEn) }}
-                </option>
-              </select>
+              <app-custom-select
+                formControlName="brandId"
+                [options]="brands()"
+                valueKey="id"
+                labelEnKey="nameEn"
+                labelArKey="nameAr"
+                [placeholder]="currentLang() === 'en' ? '-- Select Brand --' : '-- اختر الماركة --'"
+                [filePath]="filePath"
+              ></app-custom-select>
               <div class="error-msg" *ngIf="productForm.get('brandId')?.touched && productForm.get('brandId')?.invalid">
                 {{ currentLang() === 'en' ? 'Brand is required.' : 'الماركة مطلوبة.' }}
               </div>
@@ -289,17 +301,16 @@
                   <span class="step-badge">1</span>
                   {{ currentLang() === 'en' ? 'Main Category *' : 'القسم الرئيسي *' }}
                 </label>
-                <select
+                <app-custom-select
+                  [options]="mainCategories()"
                   [ngModel]="selectedMainCategoryId"
                   [ngModelOptions]="{standalone: true}"
                   (ngModelChange)="onMainCategoryChange($event)"
-                  class="form-control"
-                >
-                  <option [ngValue]="null" disabled>{{ currentLang() === 'en' ? '-- Select Main Category --' : '-- اختر القسم الرئيسي --' }}</option>
-                  <option *ngFor="let mainCat of mainCategories()" [ngValue]="mainCat.id">
-                    {{ currentLang() === 'en' ? mainCat.nameEn : (mainCat.nameAr || mainCat.nameEn) }}
-                  </option>
-                </select>
+                  valueKey="id"
+                  labelEnKey="nameEn"
+                  labelArKey="nameAr"
+                  [placeholder]="currentLang() === 'en' ? '-- Select Main Category --' : '-- اختر القسم الرئيسي --'"
+                ></app-custom-select>
               </div>
               <div class="form-group">
                 <label class="form-label">
@@ -307,18 +318,17 @@
                   {{ currentLang() === 'en' ? 'Subcategory' : 'القسم الفرعي' }}
                   <span class="count-pill" *ngIf="selectedMainCategoryId">{{ availableSubcategories().length }}</span>
                 </label>
-                <select
+                <app-custom-select
+                  [options]="availableSubcategories()"
                   [ngModel]="selectedSubCategoryId"
                   [ngModelOptions]="{standalone: true}"
                   (ngModelChange)="onSubCategoryChange($event)"
-                  class="form-control"
+                  valueKey="id"
+                  labelEnKey="nameEn"
+                  labelArKey="nameAr"
+                  [placeholder]="availableSubcategories().length === 0 ? (currentLang() === 'en' ? '-- No Subcategories --' : '-- لا توجد أقسام فرعية --') : (currentLang() === 'en' ? '-- Optional Subcategory --' : '-- قسم فرعي اختياري --')"
                   [disabled]="!selectedMainCategoryId || availableSubcategories().length === 0"
-                >
-                  <option [ngValue]="null">{{ availableSubcategories().length === 0 ? (currentLang() === 'en' ? '-- No Subcategories --' : '-- لا توجد أقسام فرعية --') : (currentLang() === 'en' ? '-- Optional --' : '-- اختياري --') }}</option>
-                  <option *ngFor="let subCat of availableSubcategories()" [ngValue]="subCat.id">
-                    {{ currentLang() === 'en' ? subCat.nameEn : (subCat.nameAr || subCat.nameEn) }}
-                  </option>
-                </select>
+                ></app-custom-select>
               </div>
             </div>
 
@@ -349,17 +359,14 @@
               </div>
               <div class="form-group">
                 <label class="form-label">{{ currentLang() === 'en' ? 'Measurement Unit' : 'وحدة القياس' }}</label>
-                <select formControlName="unit" class="form-control">
-                  <option value="EACH">{{ currentLang() === 'en' ? 'Pieces (pcs / each)' : 'حبة / قطعة' }}</option>
-                  <option value="KG">{{ currentLang() === 'en' ? 'Kilograms (kg)' : 'كيلوجرام (كجم)' }}</option>
-                  <option value="GRAM">{{ currentLang() === 'en' ? 'Grams (g)' : 'جرام (جم)' }}</option>
-                  <option value="LITRE">{{ currentLang() === 'en' ? 'Liters (L)' : 'لتر' }}</option>
-                  <option value="ML">{{ currentLang() === 'en' ? 'Milliliters (ml)' : 'مليلتر' }}</option>
-                  <option value="PACK">{{ currentLang() === 'en' ? 'Pack' : 'عبوة / باقة' }}</option>
-                  <option value="BOX">{{ currentLang() === 'en' ? 'Box' : 'صندوق / كرتون' }}</option>
-                  <option value="PAIR">{{ currentLang() === 'en' ? 'Pair' : 'زوج' }}</option>
-                  <option value="SET">{{ currentLang() === 'en' ? 'Set' : 'طقم / مجموعة' }}</option>
-                </select>
+                <app-custom-select
+                  formControlName="unit"
+                  [options]="unitOptions"
+                  valueKey="id"
+                  labelEnKey="nameEn"
+                  labelArKey="nameAr"
+                  [placeholder]="currentLang() === 'en' ? '-- Select Unit --' : '-- اختر الوحدة --'"
+                ></app-custom-select>
               </div>
               <div class="form-group">
                 <label class="form-label">{{ currentLang() === 'en' ? 'Unit Size / Capacity' : 'حجم / سعة الوحدة' }}</label>

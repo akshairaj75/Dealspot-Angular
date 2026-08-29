@@ -456,3 +456,31 @@ button, input, select, textarea {
   to { transform: translateY(0); opacity: 1; }
 }
 
+/* Custom Select Dropdown & Overflow Fixes */
+app-custom-select {
+  display: block;
+  width: 100%;
+  position: relative;
+}
+
+app-custom-select.open,
+app-custom-select:has(.custom-select-wrapper.open) {
+  z-index: 99999 !important;
+}
+
+.card.filter-card,
+.card.filters-toolbar,
+.card.store-filters,
+.filter-card,
+.filters-toolbar,
+.filters-group,
+.filter-row,
+.filter-select-wrap,
+.filter-dropdowns,
+.parent-filter-wrap,
+.form-grid-2,
+.form-grid-3,
+.form-row-3 {
+  overflow: visible !important;
+}
+

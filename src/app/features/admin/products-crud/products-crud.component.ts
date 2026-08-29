@@ -8,13 +8,14 @@ import { CategoryService } from '../../../core/services/category.service';
 import { ProductService } from '../../../core/services/product.service';
 import { BrandService } from '../../../core/services/brand.service';
 import { TranslationService } from '../../../core/services/translation.service';
+import { CustomSelectComponent } from '../../../shared/components/custom-select/custom-select.component';
 import Swal from 'sweetalert2';
 import { environment } from '../../../environment/environment';
 
 @Component({
   selector: 'app-products-crud',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, CustomSelectComponent],
   templateUrl: './products-crud.component.html',
   styleUrls: ['./products-crud.component.css']
 })
@@ -53,6 +54,18 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
   mainCategories = signal<any[]>([]);
   availableSubcategories = signal<any[]>([]);
   brands = signal<any[]>([]);
+
+  unitOptions = [
+    { id: 'EACH', nameEn: 'Pieces (pcs / each)', nameAr: 'حبة / قطعة' },
+    { id: 'KG', nameEn: 'Kilograms (kg)', nameAr: 'كيلوجرام (كجم)' },
+    { id: 'GRAM', nameEn: 'Grams (g)', nameAr: 'جرام (جم)' },
+    { id: 'LITRE', nameEn: 'Liters (L)', nameAr: 'لتر' },
+    { id: 'ML', nameEn: 'Milliliters (ml)', nameAr: 'مليلتر' },
+    { id: 'PACK', nameEn: 'Pack', nameAr: 'عبوة / باقة' },
+    { id: 'BOX', nameEn: 'Box', nameAr: 'صندوق / كرتون' },
+    { id: 'PAIR', nameEn: 'Pair', nameAr: 'زوج' },
+    { id: 'SET', nameEn: 'Set', nameAr: 'طقم / مجموعة' }
+  ];
 
   // Category selection in modal
   selectedMainCategoryId: number | null = null;

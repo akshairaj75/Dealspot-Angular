@@ -7,13 +7,14 @@ import { CityService } from '../../../core/services/city.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { TranslationService } from '../../../core/services/translation.service';
+import { CustomSelectComponent } from '../../../shared/components/custom-select/custom-select.component';
 import { environment } from '../../../environment/environment';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-stores-crud',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, CustomSelectComponent],
   templateUrl: './stores-crud.component.html',
   styleUrls: ['./stores-crud.component.css']
 })
@@ -414,5 +415,22 @@ export class StoresCrudComponent implements OnInit {
         });
       }
     });
+  }
+
+  getLogoUrl(store: any): string {
+    if (!store) return '';
+    const url = typeof store === 'string' ? store : (store.logoUrl || store.logo_url || store.logo);
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:') || url.startsWith('assets/')) {
+      return url;
+    }
+    const base = this.filePath || environment.filePath || '';
+    if (base.endsWith('/') && url.startsWith('/')) {
+      return base + url.substring(1);
+    }
+    if (!base.endsWith('/') && !url.startsWith('/')) {
+      return base + '/' + url;
+    }
+    return base + url;
   }
 }

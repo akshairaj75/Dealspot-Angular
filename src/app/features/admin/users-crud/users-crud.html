@@ -71,12 +71,18 @@
         <span class="material-icons-round">filter_list</span>
         {{ currentLang() === 'en' ? 'Role Filter:' : 'تصفية بالدور:' }}
       </label>
-      <select [(ngModel)]="roleFilter" class="form-control role-select">
-        <option value="ALL">{{ currentLang() === 'en' ? 'All Roles' : 'جميع الأدوار' }}</option>
-        <option *ngFor="let r of rolesList" [value]="r.value">
-          {{ currentLang() === 'en' ? r.labelEn : r.labelAr }}
-        </option>
-      </select>
+      <div style="min-width: 170px;">
+        <app-custom-select
+          [options]="rolesList"
+          [(ngModel)]="roleFilter"
+          valueKey="value"
+          labelEnKey="labelEn"
+          labelArKey="labelAr"
+          [placeholder]="currentLang() === 'en' ? 'All Roles' : 'جميع الأدوار'"
+          [allowUnset]="true"
+          [unsetLabel]="currentLang() === 'en' ? 'All Roles' : 'جميع الأدوار'"
+        ></app-custom-select>
+      </div>
     </div>
   </div>
 
@@ -238,14 +244,14 @@
             {{ currentLang() === 'en' ? 'Assigned Role' : 'الدور والصلاحية' }}
             <span class="required">*</span>
           </label>
-          <div class="input-wrap">
-            <span class="material-icons-round input-icon">admin_panel_settings</span>
-            <select formControlName="role" class="form-control with-icon">
-              <option *ngFor="let r of rolesList" [value]="r.value">
-                {{ currentLang() === 'en' ? r.labelEn : r.labelAr }}
-              </option>
-            </select>
-          </div>
+            <app-custom-select
+              formControlName="role"
+              [options]="rolesList"
+              valueKey="value"
+              labelEnKey="labelEn"
+              labelArKey="labelAr"
+              [placeholder]="currentLang() === 'en' ? 'Select Role' : 'اختر الدور'"
+            ></app-custom-select>
         </div>
 
         <div class="form-group">

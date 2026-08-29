@@ -6,12 +6,13 @@ import { StoreService } from '../../../core/services/store.service';
 import { StoreBranchService } from '../../../core/services/store-branch.service';
 import { CityService } from '../../../core/services/city.service';
 import { TranslationService } from '../../../core/services/translation.service';
+import { CustomSelectComponent } from '../../../shared/components/custom-select/custom-select.component';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-branches-crud',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, CustomSelectComponent],
   templateUrl: './branches-crud.component.html',
   styleUrl: './branches-crud.component.css'
 })

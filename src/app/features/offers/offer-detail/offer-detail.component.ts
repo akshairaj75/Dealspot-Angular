@@ -267,7 +267,7 @@ export class OfferDetailComponent implements OnInit {
     if (typeof itemOrUrl === 'string') {
       url = itemOrUrl;
     } else if (itemOrUrl && typeof itemOrUrl === 'object') {
-      url = itemOrUrl.storeLogoUrl || itemOrUrl.store_logo_url || itemOrUrl.store?.logoUrl || itemOrUrl.store?.logo_url || itemOrUrl.logoUrl || itemOrUrl.logo_url;
+      url = itemOrUrl.storeLogoUrl || itemOrUrl.store_logo_url || itemOrUrl.logoUrl || itemOrUrl.logo_url || itemOrUrl.logo || itemOrUrl.storeLogo || (itemOrUrl.store && (itemOrUrl.store.logoUrl || itemOrUrl.store.logo_url || itemOrUrl.store.logo));
     }
 
     if (!url || typeof url !== 'string' || url.trim() === '') {
@@ -276,23 +276,17 @@ export class OfferDetailComponent implements OnInit {
 
     url = url.trim();
 
-    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:') || url.startsWith('assets/')) {
       return url;
     }
 
-    while (url.startsWith('/')) {
-      url = url.substring(1);
+    const base = this.filePath || environment.filePath || '';
+    if (base.endsWith('/') && url.startsWith('/')) {
+      return base + url.substring(1);
     }
-
-    let base = this.filePath || environment.filePath;
-    if (!base.endsWith('/')) {
-      base += '/';
+    if (!base.endsWith('/') && !url.startsWith('/')) {
+      return base + '/' + url;
     }
-
-    if (!url.startsWith('uploads/')) {
-      url = 'uploads/' + url;
-    }
-
     return base + url;
   }
 

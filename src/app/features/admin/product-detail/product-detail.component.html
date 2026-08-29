@@ -128,78 +128,15 @@
           <!-- Searchable & Paginated Brand Selector -->
           <div class="form-group full-width">
             <label class="form-label required">{{ currentLang() === 'en' ? 'Brand Partner *' : 'الماركة التجارية *' }}</label>
-            <div class="category-multiselect-box">
-              <div class="multiselect-trigger" (click)="toggleBrandDropdown()">
-                <div class="selected-tags-container" *ngIf="getSelectedBrandObject() as selectedB">
-                  <span class="category-chip">
-                    <img
-                      *ngIf="selectedB.logoUrl || selectedB.logo_url || selectedB.brandImage"
-                      [src]="getLogoUrl(selectedB.logoUrl || selectedB.logo_url || selectedB.brandImage)"
-                      class="brand-dropdown-thumb"
-                      alt="logo"
-                      (error)="$any($event.target).style.display = 'none'"
-                    />
-                    <span *ngIf="!(selectedB.logoUrl || selectedB.logo_url || selectedB.brandImage)" class="material-icons-round icon-xs">storefront</span>
-                    <span>{{ currentLang() === 'en' ? (selectedB.nameEn || selectedB.name_en) : (selectedB.nameAr || selectedB.name_ar || selectedB.nameEn) }}</span>
-                  </span>
-                </div>
-                <span *ngIf="!getSelectedBrandObject()" class="placeholder-text">
-                  {{ currentLang() === 'en' ? '-- Select Brand --' : '-- اختر الماركة --' }}
-                </span>
-                <span class="material-icons-round arrow-icon">arrow_drop_down</span>
-              </div>
-
-              <div class="multiselect-dropdown" *ngIf="isBrandDropdownOpen">
-                <div class="dropdown-header">
-                  <input
-                    type="text"
-                    [ngModel]="brandSearchQuery"
-                    [ngModelOptions]="{standalone: true}"
-                    (ngModelChange)="onBrandSearch($event)"
-                    [placeholder]="currentLang() === 'en' ? 'Search brands by name...' : 'ابحث باسم الماركة...'"
-                    class="dropdown-search"
-                    (click)="$event.stopPropagation()"
-                  />
-                </div>
-
-                <div class="dropdown-list">
-                  <div *ngIf="loadingBrands()" class="dropdown-loading-item">
-                    <div class="spinner-tiny"></div>
-                    <span>{{ currentLang() === 'en' ? 'Searching brands...' : 'جاري البحث...' }}</span>
-                  </div>
-
-                  <div
-                    *ngFor="let brand of brands()"
-                    class="dropdown-item"
-                    [class.selected-item]="productForm.get('brandId')?.value === brand.id"
-                    (click)="selectBrand(brand)"
-                  >
-                    <div class="brand-item-left">
-                      <img
-                        *ngIf="brand.logoUrl || brand.logo_url || brand.logo"
-                        [src]="getLogoUrl(brand.logoUrl || brand.logo_url || brand.logo)"
-                        class="brand-dropdown-thumb"
-                        alt="logo"
-                        (error)="$any($event.target).style.display = 'none'"
-                      />
-                      <span *ngIf="!(brand.logoUrl || brand.logo_url || brand.logo)" class="material-icons-round icon-xs text-primary">storefront</span>
-                      <span class="brand-item-name">{{ currentLang() === 'en' ? (brand.nameEn || brand.name_en) : (brand.nameAr || brand.name_ar || brand.nameEn) }}</span>
-                    </div>
-                    <span class="item-id-pill">#{{ brand.id }}</span>
-                  </div>
-
-                  <div *ngIf="!loadingBrands() && brands().length === 0" class="dropdown-empty-item">
-                    {{ currentLang() === 'en' ? 'No brands match your search.' : 'لا توجد ماركات مطابقة.' }}
-                  </div>
-
-                  <!-- Pagination Load More -->
-                  <div *ngIf="hasMoreBrands()" class="dropdown-load-more" (click)="$event.stopPropagation(); loadMoreBrands()">
-                    <span *ngIf="!loadingMoreBrands()">{{ currentLang() === 'en' ? 'Load More Brands...' : 'تحميل المزيد من الماركات...' }}</span>
-                    <div *ngIf="loadingMoreBrands()" class="spinner-tiny"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <app-custom-select
+              formControlName="brandId"
+              [options]="brands()"
+              valueKey="id"
+              labelEnKey="nameEn"
+              labelArKey="nameAr"
+              [placeholder]="currentLang() === 'en' ? '-- Select Brand --' : '-- اختر الماركة --'"
+              [filePath]="filePath"
+            ></app-custom-select>
             <div class="error-msg" *ngIf="productForm.get('brandId')?.touched && productForm.get('brandId')?.invalid">
               {{ currentLang() === 'en' ? 'Brand is required.' : 'الماركة مطلوبة.' }}
             </div>
@@ -228,17 +165,16 @@
               <span class="step-badge">1</span>
               {{ currentLang() === 'en' ? 'Main Category *' : 'القسم الرئيسي *' }}
             </label>
-            <select
+            <app-custom-select
+              [options]="mainCategories()"
               [ngModel]="selectedMainCategoryId"
               [ngModelOptions]="{standalone: true}"
               (ngModelChange)="onMainCategoryChange($event)"
-              class="form-control"
-            >
-              <option [ngValue]="null" disabled>{{ currentLang() === 'en' ? '-- Select Main Category --' : '-- اختر القسم الرئيسي --' }}</option>
-              <option *ngFor="let mainCat of mainCategories()" [ngValue]="mainCat.id">
-                {{ currentLang() === 'en' ? mainCat.nameEn : (mainCat.nameAr || mainCat.nameEn) }}
-              </option>
-            </select>
+              valueKey="id"
+              labelEnKey="nameEn"
+              labelArKey="nameAr"
+              [placeholder]="currentLang() === 'en' ? '-- Select Main Category --' : '-- اختر القسم الرئيسي --'"
+            ></app-custom-select>
           </div>
 
           <div class="form-group">
@@ -247,18 +183,17 @@
               {{ currentLang() === 'en' ? 'Subcategory' : 'القسم الفرعي' }}
               <span class="count-pill" *ngIf="selectedMainCategoryId">{{ availableSubcategories().length }}</span>
             </label>
-            <select
+            <app-custom-select
+              [options]="availableSubcategories()"
               [ngModel]="selectedSubCategoryId"
               [ngModelOptions]="{standalone: true}"
               (ngModelChange)="onSubCategoryChange($event)"
-              class="form-control"
+              valueKey="id"
+              labelEnKey="nameEn"
+              labelArKey="nameAr"
+              [placeholder]="availableSubcategories().length === 0 ? (currentLang() === 'en' ? '-- No Subcategories --' : '-- لا توجد أقسام فرعية --') : (currentLang() === 'en' ? '-- Optional Subcategory --' : '-- قسم فرعي اختياري --')"
               [disabled]="!selectedMainCategoryId || availableSubcategories().length === 0"
-            >
-              <option [ngValue]="null">{{ availableSubcategories().length === 0 ? (currentLang() === 'en' ? '-- No Subcategories --' : '-- لا توجد أقسام فرعية --') : (currentLang() === 'en' ? '-- Optional --' : '-- اختياري --') }}</option>
-              <option *ngFor="let subCat of availableSubcategories()" [ngValue]="subCat.id">
-                {{ currentLang() === 'en' ? subCat.nameEn : (subCat.nameAr || subCat.nameEn) }}
-              </option>
-            </select>
+            ></app-custom-select>
           </div>
 
           <!-- SKU & Barcode -->
@@ -275,17 +210,14 @@
           <!-- Unit & Unit Size -->
           <div class="form-group">
             <label class="form-label">{{ currentLang() === 'en' ? 'Measurement Unit' : 'وحدة القياس' }}</label>
-            <select formControlName="unit" class="form-control">
-              <option value="EACH">{{ currentLang() === 'en' ? 'Pieces (pcs / each)' : 'حبة / قطعة' }}</option>
-              <option value="KG">{{ currentLang() === 'en' ? 'Kilograms (kg)' : 'كيلوجرام (كجم)' }}</option>
-              <option value="GRAM">{{ currentLang() === 'en' ? 'Grams (g)' : 'جرام (جم)' }}</option>
-              <option value="LITRE">{{ currentLang() === 'en' ? 'Liters (L)' : 'لتر' }}</option>
-              <option value="ML">{{ currentLang() === 'en' ? 'Milliliters (ml)' : 'مليلتر' }}</option>
-              <option value="PACK">{{ currentLang() === 'en' ? 'Pack' : 'عبوة / باقة' }}</option>
-              <option value="BOX">{{ currentLang() === 'en' ? 'Box' : 'صندوق / كرتون' }}</option>
-              <option value="PAIR">{{ currentLang() === 'en' ? 'Pair' : 'زوج' }}</option>
-              <option value="SET">{{ currentLang() === 'en' ? 'Set' : 'طقم / مجموعة' }}</option>
-            </select>
+            <app-custom-select
+              formControlName="unit"
+              [options]="unitOptions"
+              valueKey="id"
+              labelEnKey="nameEn"
+              labelArKey="nameAr"
+              [placeholder]="currentLang() === 'en' ? '-- Select Unit --' : '-- اختر الوحدة --'"
+            ></app-custom-select>
           </div>
 
           <div class="form-group">

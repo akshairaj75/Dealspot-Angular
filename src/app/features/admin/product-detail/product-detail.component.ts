@@ -6,6 +6,7 @@ import { ProductService } from '../../../core/services/product.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { BrandService } from '../../../core/services/brand.service';
 import { TranslationService } from '../../../core/services/translation.service';
+import { CustomSelectComponent } from '../../../shared/components/custom-select/custom-select.component';
 import { environment } from '../../../environment/environment';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -14,12 +15,24 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, CustomSelectComponent],
   templateUrl: './product-detail.component.html',
   styleUrls: ['./product-detail.component.css']
 })
 export class ProductDetailComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
+
+  unitOptions = [
+    { id: 'EACH', nameEn: 'Pieces (pcs / each)', nameAr: 'حبة / قطعة' },
+    { id: 'KG', nameEn: 'Kilograms (kg)', nameAr: 'كيلوجرام (كجم)' },
+    { id: 'GRAM', nameEn: 'Grams (g)', nameAr: 'جرام (جم)' },
+    { id: 'LITRE', nameEn: 'Liters (L)', nameAr: 'لتر' },
+    { id: 'ML', nameEn: 'Milliliters (ml)', nameAr: 'مليلتر' },
+    { id: 'PACK', nameEn: 'Pack', nameAr: 'عبوة / باقة' },
+    { id: 'BOX', nameEn: 'Box', nameAr: 'صندوق / كرتون' },
+    { id: 'PAIR', nameEn: 'Pair', nameAr: 'زوج' },
+    { id: 'SET', nameEn: 'Set', nameAr: 'طقم / مجموعة' }
+  ];
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private productService = inject(ProductService);

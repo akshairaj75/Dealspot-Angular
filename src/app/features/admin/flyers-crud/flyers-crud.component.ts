@@ -7,13 +7,14 @@ import { StoreService } from '../../../core/services/store.service';
 import { CityService } from '../../../core/services/city.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { TranslationService } from '../../../core/services/translation.service';
+import { CustomSelectComponent } from '../../../shared/components/custom-select/custom-select.component';
 import { environment } from '../../../environment/environment';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-flyers-crud',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, CustomSelectComponent],
   templateUrl: './flyers-crud.component.html',
   styleUrl: './flyers-crud.component.css'
 })

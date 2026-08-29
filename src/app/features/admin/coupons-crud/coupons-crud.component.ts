@@ -9,18 +9,34 @@ import { OfferService } from '../../../core/services/offer.service';
 import { ProductService } from '../../../core/services/product.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { TranslationService } from '../../../core/services/translation.service';
+import { CustomSelectComponent } from '../../../shared/components/custom-select/custom-select.component';
 import { environment } from '../../../environment/environment';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-coupons-crud',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, CustomSelectComponent],
   templateUrl: './coupons-crud.component.html',
   styleUrl: './coupons-crud.component.css'
 })
 export class CouponsCrudComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
+
+  discountTypeOptions = [
+    { id: 'PERCENT', nameEn: 'PERCENT (%)', nameAr: 'نسبة مئوية (%)' },
+    { id: 'FIXED_SAR', nameEn: 'FIXED VALUE (SAR)', nameAr: 'مبلغ ثابت (ر.س)' }
+  ];
+
+  discountTypeFilterOptions = [
+    { id: 'PERCENT', nameEn: 'Percentage (%)', nameAr: 'نسبة مئوية (%)' },
+    { id: 'FIXED_SAR', nameEn: 'Fixed Amount (SAR)', nameAr: 'مبلغ ثابت (ر.س)' }
+  ];
+
+  statusFilterOptions = [
+    { id: 'active', nameEn: 'Active', nameAr: 'نشط' },
+    { id: 'inactive', nameEn: 'Inactive', nameAr: 'معطل' }
+  ];
   private couponService = inject(CouponService);
   private storeService = inject(StoreService);
   private offerService = inject(OfferService);

@@ -10,18 +10,39 @@ import { CategoryService } from '../../../core/services/category.service';
 import { CityService } from '../../../core/services/city.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { TranslationService } from '../../../core/services/translation.service';
+import { CustomSelectComponent } from '../../../shared/components/custom-select/custom-select.component';
 import { environment } from '../../../environment/environment';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-offers-crud',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, CustomSelectComponent],
   templateUrl: './offers-crud.component.html',
   styleUrl: './offers-crud.component.css'
 })
 export class OffersCrudComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
+
+  badgeTypeOptions = [
+    { id: 'NONE', nameEn: 'Standard (NONE)', nameAr: 'عادي (بدون شارة)' },
+    { id: 'PERCENT_OFF', nameEn: 'Percentage Off (PERCENT_OFF)', nameAr: 'نسبة خصم (PERCENT_OFF)' },
+    { id: 'FLASH', nameEn: 'Flash Deal (FLASH)', nameAr: 'صفقة خاطفة (FLASH)' },
+    { id: 'NEW', nameEn: 'New Arrival (NEW)', nameAr: 'جديد (NEW)' },
+    { id: 'BOGO', nameEn: 'Buy 1 Get 1 (BOGO)', nameAr: 'اشتر 1 واحصل على 1 (BOGO)' },
+    { id: 'CLEARANCE', nameEn: 'Clearance (CLEARANCE)', nameAr: 'تصفية (CLEARANCE)' },
+    { id: 'COUPON', nameEn: 'Coupon Deal (COUPON)', nameAr: 'عرض كوبون (COUPON)' },
+    { id: 'FEATURED', nameEn: 'Featured Deal (FEATURED)', nameAr: 'عرض مميز (FEATURED)' },
+    { id: 'PROMO', nameEn: 'Special Promo (PROMO)', nameAr: 'عرض ترويجي (PROMO)' }
+  ];
+
+  badgeFilterOptions = [
+    { id: 'NONE', nameEn: 'NONE', nameAr: 'بدون' },
+    { id: 'FEATURED', nameEn: 'FEATURED', nameAr: 'مميز' },
+    { id: 'FLASH', nameEn: 'FLASH', nameAr: 'خاطف' },
+    { id: 'BOGO', nameEn: 'BOGO', nameAr: 'BOGO' },
+    { id: 'PROMO', nameEn: 'PROMO', nameAr: 'ترويجي' }
+  ];
   private offerService = inject(OfferService);
   private storeService = inject(StoreService);
   private productService = inject(ProductService);

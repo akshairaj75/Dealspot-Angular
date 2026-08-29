@@ -26,10 +26,17 @@
       <!-- City Selector -->
       <div class="filter-group">
         <label class="form-label">{{ currentLang() === 'en' ? 'Filter by City' : 'المدينة' }}</label>
-        <select [(ngModel)]="selectedCityId" (ngModelChange)="applyFilters()" class="form-control">
-          <option [ngValue]="null">{{ currentLang() === 'en' ? 'All Cities' : 'جميع المدن' }}</option>
-          <option *ngFor="let c of cities()" [value]="c.id">{{ c | translate:'name' }}</option>
-        </select>
+        <app-custom-select
+          [options]="cities()"
+          [(ngModel)]="selectedCityId"
+          (ngModelChange)="applyFilters()"
+          valueKey="id"
+          labelEnKey="nameEn"
+          labelArKey="nameAr"
+          [placeholder]="currentLang() === 'en' ? 'All Cities' : 'جميع المدن'"
+          [allowUnset]="true"
+          [unsetLabel]="currentLang() === 'en' ? 'All Cities' : 'جميع المدن'"
+        ></app-custom-select>
       </div>
 
       <!-- Main Category Filter -->
@@ -38,10 +45,17 @@
           <label class="form-label">{{ currentLang() === 'en' ? 'Main Category' : 'القسم الرئيسي' }}</label>
           <span class="subcat-count-badge" *ngIf="mainCategories().length > 0">{{ mainCategories().length }}</span>
         </div>
-        <select [ngModel]="selectedMainCategoryId" (ngModelChange)="onMainCategoryChange($event)" class="form-control">
-          <option [ngValue]="null">{{ currentLang() === 'en' ? 'All Main Categories' : 'جميع الأقسام الرئيسية' }}</option>
-          <option *ngFor="let cat of mainCategories()" [value]="cat.id">{{ cat | translate:'name' }}</option>
-        </select>
+        <app-custom-select
+          [options]="mainCategories()"
+          [ngModel]="selectedMainCategoryId"
+          (ngModelChange)="onMainCategoryChange($event)"
+          valueKey="id"
+          labelEnKey="nameEn"
+          labelArKey="nameAr"
+          [placeholder]="currentLang() === 'en' ? 'All Main Categories' : 'جميع الأقسام الرئيسية'"
+          [allowUnset]="true"
+          [unsetLabel]="currentLang() === 'en' ? 'All Main Categories' : 'جميع الأقسام الرئيسية'"
+        ></app-custom-select>
       </div>
 
       <!-- Subcategory Filter (Cascades when Main Category is chosen) -->
@@ -50,10 +64,17 @@
           <label class="form-label">{{ currentLang() === 'en' ? 'Subcategory' : 'القسم الفرعي' }}</label>
           <span class="subcat-count-badge">{{ availableSubcategories().length }}</span>
         </div>
-        <select [ngModel]="selectedSubCategoryId" (ngModelChange)="onSubCategoryChange($event)" class="form-control">
-          <option [ngValue]="null">{{ currentLang() === 'en' ? 'All Subcategories' : 'جميع الأقسام الفرعية' }}</option>
-          <option *ngFor="let sub of availableSubcategories()" [value]="sub.id">{{ sub | translate:'name' }}</option>
-        </select>
+        <app-custom-select
+          [options]="availableSubcategories()"
+          [ngModel]="selectedSubCategoryId"
+          (ngModelChange)="onSubCategoryChange($event)"
+          valueKey="id"
+          labelEnKey="nameEn"
+          labelArKey="nameAr"
+          [placeholder]="currentLang() === 'en' ? 'All Subcategories' : 'جميع الأقسام الفرعية'"
+          [allowUnset]="true"
+          [unsetLabel]="currentLang() === 'en' ? 'All Subcategories' : 'جميع الأقسام الفرعية'"
+        ></app-custom-select>
 
         <!-- Interactive Quick Subcategory Chips -->
         <div class="subcat-chips-list">
@@ -80,10 +101,17 @@
       <!-- Store Filter -->
       <div class="filter-group">
         <label class="form-label">{{ currentLang() === 'en' ? 'Retail Store' : 'المتجر الشريك' }}</label>
-        <select [(ngModel)]="selectedStoreId" (ngModelChange)="applyFilters()" class="form-control">
-          <option [ngValue]="null">{{ currentLang() === 'en' ? 'All Stores' : 'جميع المتاجر' }}</option>
-          <option *ngFor="let s of stores()" [value]="s.id">{{ s | translate:'name' }}</option>
-        </select>
+        <app-custom-select
+          [options]="stores()"
+          [(ngModel)]="selectedStoreId"
+          (ngModelChange)="applyFilters()"
+          valueKey="id"
+          labelEnKey="nameEn"
+          labelArKey="nameAr"
+          [placeholder]="currentLang() === 'en' ? 'All Stores' : 'جميع المتاجر'"
+          [allowUnset]="true"
+          [unsetLabel]="currentLang() === 'en' ? 'All Stores' : 'جميع المتاجر'"
+        ></app-custom-select>
       </div>
 
       <!-- Brand Filter (Searchable + Infinite Scroll) -->

@@ -14,12 +14,13 @@ import { environment } from '../../../environment/environment';
 
 import { BrandService } from '../../../core/services/brand.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { CustomSelectComponent } from '../../../shared/components/custom-select/custom-select.component';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-offer-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, TranslatePipe],
+  imports: [CommonModule, RouterLink, FormsModule, TranslatePipe, CustomSelectComponent],
   templateUrl: './offer-list.component.html',
   styleUrls: ['./offer-list.component.css']
 })
@@ -609,14 +610,14 @@ export class OfferListComponent implements OnInit, OnDestroy {
     if (typeof itemOrUrl === 'string') {
       url = itemOrUrl;
     } else if (itemOrUrl && typeof itemOrUrl === 'object') {
-      url = itemOrUrl.storeLogoUrl || itemOrUrl.store_logo_url || itemOrUrl.store?.logoUrl || itemOrUrl.store?.logo_url || itemOrUrl.logoUrl || itemOrUrl.logo_url;
+      url = itemOrUrl.storeLogoUrl || itemOrUrl.store_logo_url || itemOrUrl.logoUrl || itemOrUrl.logo_url || itemOrUrl.logo || itemOrUrl.storeLogo || (itemOrUrl.store && (itemOrUrl.store.logoUrl || itemOrUrl.store.logo_url || itemOrUrl.store.logo));
       storeId = storeId || itemOrUrl.storeId || itemOrUrl.store_id || itemOrUrl.store?.id || itemOrUrl.id;
     }
 
     // Fallback to storeMap lookup if url is empty
     if ((!url || url.trim() === '') && storeId && this.storeMap()[storeId]) {
       const st = this.storeMap()[storeId];
-      url = st.logoUrl || st.logo_url;
+      url = st.logoUrl || st.logo_url || st.logo;
     }
 
     if (!url || typeof url !== 'string' || url.trim() === '') {
@@ -625,23 +626,17 @@ export class OfferListComponent implements OnInit, OnDestroy {
 
     url = url.trim();
 
-    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:') || url.startsWith('assets/')) {
       return url;
     }
 
-    while (url.startsWith('/')) {
-      url = url.substring(1);
+    const base = this.filePath || environment.filePath || '';
+    if (base.endsWith('/') && url.startsWith('/')) {
+      return base + url.substring(1);
     }
-
-    let base = this.filePath || environment.filePath;
-    if (!base.endsWith('/')) {
-      base += '/';
+    if (!base.endsWith('/') && !url.startsWith('/')) {
+      return base + '/' + url;
     }
-
-    if (!url.startsWith('uploads/')) {
-      url = 'uploads/' + url;
-    }
-
     return base + url;
   }
 

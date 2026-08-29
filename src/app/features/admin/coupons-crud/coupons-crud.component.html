@@ -27,23 +27,48 @@
       </button>
     </div>
 
-    <div class="filter-dropdowns">
-      <select [(ngModel)]="selectedStoreFilter" (ngModelChange)="applyFilter()" class="form-control select-filter">
-        <option value="">{{ currentLang() === 'en' ? 'All Partner Stores' : 'جميع المتاجر' }}</option>
-        <option *ngFor="let s of stores()" [value]="s.id">{{ currentLang() === 'en' ? (s.nameEn || s.name_en) : (s.nameAr || s.name_ar || s.nameEn) }}</option>
-      </select>
+    <div class="filter-dropdowns" style="display: flex; gap: 0.5rem;">
+      <div style="min-width: 170px;">
+        <app-custom-select
+          [options]="stores()"
+          [(ngModel)]="selectedStoreFilter"
+          (ngModelChange)="applyFilter()"
+          valueKey="id"
+          labelEnKey="nameEn"
+          labelArKey="nameAr"
+          [placeholder]="currentLang() === 'en' ? 'All Partner Stores' : 'جميع المتاجر'"
+          [allowUnset]="true"
+          [unsetLabel]="currentLang() === 'en' ? 'All Partner Stores' : 'جميع المتاجر'"
+        ></app-custom-select>
+      </div>
 
-      <select [(ngModel)]="selectedDiscountTypeFilter" (ngModelChange)="applyFilter()" class="form-control select-filter">
-        <option value="">{{ currentLang() === 'en' ? 'All Discount Types' : 'جميع أنواع الخصم' }}</option>
-        <option value="PERCENT">{{ currentLang() === 'en' ? 'Percentage (%)' : 'نسبة مئوية (%)' }}</option>
-        <option value="FIXED_SAR">{{ currentLang() === 'en' ? 'Fixed Amount (SAR)' : 'مبلغ ثابت (ر.س)' }}</option>
-      </select>
+      <div style="min-width: 160px;">
+        <app-custom-select
+          [options]="discountTypeFilterOptions"
+          [(ngModel)]="selectedDiscountTypeFilter"
+          (ngModelChange)="applyFilter()"
+          valueKey="id"
+          labelEnKey="nameEn"
+          labelArKey="nameAr"
+          [placeholder]="currentLang() === 'en' ? 'All Discount Types' : 'جميع أنواع الخصم'"
+          [allowUnset]="true"
+          [unsetLabel]="currentLang() === 'en' ? 'All Discount Types' : 'جميع أنواع الخصم'"
+        ></app-custom-select>
+      </div>
 
-      <select [(ngModel)]="selectedStatusFilter" (ngModelChange)="applyFilter()" class="form-control select-filter">
-        <option value="">{{ currentLang() === 'en' ? 'All Statuses' : 'جميع الحالات' }}</option>
-        <option value="active">{{ currentLang() === 'en' ? 'Active' : 'نشط' }}</option>
-        <option value="inactive">{{ currentLang() === 'en' ? 'Inactive' : 'معطل' }}</option>
-      </select>
+      <div style="min-width: 140px;">
+        <app-custom-select
+          [options]="statusFilterOptions"
+          [(ngModel)]="selectedStatusFilter"
+          (ngModelChange)="applyFilter()"
+          valueKey="id"
+          labelEnKey="nameEn"
+          labelArKey="nameAr"
+          [placeholder]="currentLang() === 'en' ? 'All Statuses' : 'جميع الحالات'"
+          [allowUnset]="true"
+          [unsetLabel]="currentLang() === 'en' ? 'All Statuses' : 'جميع الحالات'"
+        ></app-custom-select>
+      </div>
     </div>
   </div>
 
@@ -192,10 +217,14 @@
 
             <div class="form-group">
               <label class="form-label">{{ currentLang() === 'en' ? 'Retail Partner Store *' : 'المتجر الشريك *' }}</label>
-              <select formControlName="store_id" class="form-control">
-                <option value="" disabled>{{ currentLang() === 'en' ? 'Select Store' : 'اختر المتجر' }}</option>
-                <option *ngFor="let s of stores()" [value]="s.id">{{ currentLang() === 'en' ? (s.nameEn || s.name_en) : (s.nameAr || s.name_ar || s.nameEn) }}</option>
-              </select>
+              <app-custom-select
+                formControlName="store_id"
+                [options]="stores()"
+                valueKey="id"
+                labelEnKey="nameEn"
+                labelArKey="nameAr"
+                [placeholder]="currentLang() === 'en' ? 'Select Store' : 'اختر المتجر'"
+              ></app-custom-select>
               <span class="field-error" *ngIf="couponForm.get('store_id')?.touched && couponForm.get('store_id')?.invalid">
                 {{ currentLang() === 'en' ? 'Store is required' : 'المتجر مطلوب' }}
               </span>
@@ -206,10 +235,16 @@
           <div class="form-row-2">
             <div class="form-group">
               <label class="form-label">{{ currentLang() === 'en' ? 'Linked Offer / Promotion (Optional)' : 'ربط بعرض ترويجي (اختياري)' }}</label>
-              <select formControlName="offer_id" class="form-control">
-                <option [ngValue]="null">{{ currentLang() === 'en' ? 'Store-wide (No specific offer link)' : 'شامل للمتجر (بدون ربط بعرض محدد)' }}</option>
-                <option *ngFor="let o of offers()" [value]="o.id">{{ currentLang() === 'en' ? (o.titleEn || o.title_en) : (o.titleAr || o.title_ar || o.titleEn) }} (#{{ o.id }})</option>
-              </select>
+              <app-custom-select
+                formControlName="offer_id"
+                [options]="offers()"
+                valueKey="id"
+                labelEnKey="titleEn"
+                labelArKey="titleAr"
+                [placeholder]="currentLang() === 'en' ? 'Store-wide (No specific offer link)' : 'شامل للمتجر (بدون ربط بعرض محدد)'"
+                [allowUnset]="true"
+                [unsetLabel]="currentLang() === 'en' ? 'Store-wide (No specific offer link)' : 'شامل للمتجر (بدون ربط بعرض محدد)'"
+              ></app-custom-select>
             </div>
 
             <div class="form-group product-link-section">
@@ -351,10 +386,14 @@
             <div class="form-row-3">
               <div class="form-group">
                 <label class="form-label">{{ currentLang() === 'en' ? 'Discount Type *' : 'نوع الخصم *' }}</label>
-                <select formControlName="discount_type" class="form-control">
-                  <option value="PERCENT">{{ currentLang() === 'en' ? 'PERCENT (%)' : 'نسبة مئوية (%)' }}</option>
-                  <option value="FIXED_SAR">{{ currentLang() === 'en' ? 'FIXED VALUE (SAR)' : 'مبلغ ثابت (ر.س)' }}</option>
-                </select>
+                <app-custom-select
+                  formControlName="discount_type"
+                  [options]="discountTypeOptions"
+                  valueKey="id"
+                  labelEnKey="nameEn"
+                  labelArKey="nameAr"
+                  [placeholder]="currentLang() === 'en' ? 'Select Discount Type' : 'اختر نوع الخصم'"
+                ></app-custom-select>
               </div>
 
               <div class="form-group">

@@ -104,25 +104,33 @@
         </button>
       </div>
 
-      <div class="filters-group">
-        <div class="filter-select-wrap">
-          <span class="material-icons-round select-prefix-icon">place</span>
-          <select class="form-control filter-select" [(ngModel)]="selectedCityFilter" (change)="applyFilter()">
-            <option value="">{{ currentLang() === 'en' ? 'All Cities' : 'جميع المدن' }}</option>
-            <option *ngFor="let c of cities()" [value]="c.id">
-              {{ currentLang() === 'en' ? (c.nameEn || c.name_en) : (c.nameAr || c.name_ar || c.nameEn) }}
-            </option>
-          </select>
+      <div class="filters-group" style="display: flex; gap: 0.5rem;">
+        <div style="min-width: 170px;">
+          <app-custom-select
+            [options]="cities()"
+            [(ngModel)]="selectedCityFilter"
+            (ngModelChange)="applyFilter()"
+            valueKey="id"
+            labelEnKey="nameEn"
+            labelArKey="nameAr"
+            [placeholder]="currentLang() === 'en' ? 'All Cities' : 'جميع المدن'"
+            [allowUnset]="true"
+            [unsetLabel]="currentLang() === 'en' ? 'All Cities' : 'جميع المدن'"
+          ></app-custom-select>
         </div>
 
-        <div class="filter-select-wrap">
-          <span class="material-icons-round select-prefix-icon">category</span>
-          <select class="form-control filter-select" [(ngModel)]="selectedCategoryFilter" (change)="applyFilter()">
-            <option value="">{{ currentLang() === 'en' ? 'All Categories' : 'جميع الفئات' }}</option>
-            <option *ngFor="let cat of categories()" [value]="cat.id">
-              {{ currentLang() === 'en' ? (cat.nameEn || cat.name_en || cat.name) : (cat.nameAr || cat.name_ar || cat.nameEn || cat.name) }}
-            </option>
-          </select>
+        <div style="min-width: 170px;">
+          <app-custom-select
+            [options]="categories()"
+            [(ngModel)]="selectedCategoryFilter"
+            (ngModelChange)="applyFilter()"
+            valueKey="id"
+            labelEnKey="nameEn"
+            labelArKey="nameAr"
+            [placeholder]="currentLang() === 'en' ? 'All Categories' : 'جميع الفئات'"
+            [allowUnset]="true"
+            [unsetLabel]="currentLang() === 'en' ? 'All Categories' : 'جميع الفئات'"
+          ></app-custom-select>
         </div>
       </div>
     </div>
@@ -146,12 +154,12 @@
         <!-- Store Logo Avatar -->
         <div class="store-avatar-box">
           <img
-            *ngIf="s.logoUrl"
-            [src]="filePath + s.logoUrl"
+            *ngIf="getLogoUrl(s)"
+            [src]="getLogoUrl(s)"
             alt="{{ s.nameEn }} logo"
-            (error)="$any($event.target).src = 'assets/images/placeholder-store.png'"
+            (error)="$any($event.target).style.display = 'none'"
           />
-          <span *ngIf="!s.logoUrl" class="material-icons-round avatar-placeholder-icon">storefront</span>
+          <span *ngIf="!getLogoUrl(s)" class="material-icons-round avatar-placeholder-icon">storefront</span>
         </div>
 
         <!-- Store Names & Badges -->
@@ -343,12 +351,14 @@
 
               <div class="form-group">
                 <label class="form-label required">{{ currentLang() === 'en' ? 'Headquarters City' : 'المدينة الرئيسية' }}</label>
-                <select formControlName="city_id" class="form-control">
-                  <option value="" disabled>{{ currentLang() === 'en' ? 'Select City' : 'اختر المدينة' }}</option>
-                  <option *ngFor="let c of cities()" [value]="c.id">
-                    {{ currentLang() === 'en' ? (c.nameEn || c.name_en) : (c.nameAr || c.name_ar || c.nameEn) }}
-                  </option>
-                </select>
+                <app-custom-select
+                  formControlName="city_id"
+                  [options]="cities()"
+                  valueKey="id"
+                  labelEnKey="nameEn"
+                  labelArKey="nameAr"
+                  [placeholder]="currentLang() === 'en' ? 'Select City' : 'اختر المدينة'"
+                ></app-custom-select>
                 <span class="error-text" *ngIf="storeForm.get('city_id')?.touched && storeForm.get('city_id')?.invalid">
                   {{ currentLang() === 'en' ? 'City is required' : 'المدينة مطلوبة' }}
                 </span>
@@ -356,12 +366,14 @@
 
               <div class="form-group">
                 <label class="form-label required">{{ currentLang() === 'en' ? 'Primary Category' : 'الفئة الرئيسية' }}</label>
-                <select formControlName="category_id" class="form-control">
-                  <option value="" disabled>{{ currentLang() === 'en' ? 'Select Category' : 'اختر الفئة' }}</option>
-                  <option *ngFor="let cat of categories()" [value]="cat.id">
-                    {{ currentLang() === 'en' ? (cat.nameEn || cat.name_en || cat.name) : (cat.nameAr || cat.name_ar || cat.nameEn || cat.name) }}
-                  </option>
-                </select>
+                <app-custom-select
+                  formControlName="category_id"
+                  [options]="categories()"
+                  valueKey="id"
+                  labelEnKey="nameEn"
+                  labelArKey="nameAr"
+                  [placeholder]="currentLang() === 'en' ? 'Select Category' : 'اختر الفئة'"
+                ></app-custom-select>
                 <span class="error-text" *ngIf="storeForm.get('category_id')?.touched && storeForm.get('category_id')?.invalid">
                   {{ currentLang() === 'en' ? 'Category is required' : 'الفئة مطلوبة' }}
                 </span>

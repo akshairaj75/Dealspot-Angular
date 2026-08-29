@@ -14,6 +14,7 @@ import { TranslationService } from '../../../core/services/translation.service';
 import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
 import { AuthService } from '../../../core/services/auth.service';
 import { CityService } from '../../../core/services/city.service';
+import { CustomSelectComponent } from '../../../shared/components/custom-select/custom-select.component';
 import { APP_CONFIG } from '../../../core/config/app-config';
 
 export type AuthMode = 'login' | 'register' | 'admin';
@@ -34,7 +35,8 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
     CommonModule,
     ReactiveFormsModule,
     RouterLink,
-    TranslatePipe
+    TranslatePipe,
+    CustomSelectComponent
   ],
   templateUrl: './login.html',
   styleUrls: ['./login.css']

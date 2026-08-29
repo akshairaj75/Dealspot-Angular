@@ -94,6 +94,23 @@ export class StoreListComponent implements OnInit {
     });
   }
 
+  getLogoUrl(store: any): string {
+    if (!store) return 'assets/images/placeholder-store.png';
+    const url = typeof store === 'string' ? store : (store.logoUrl || store.logo_url || store.logo);
+    if (!url) return 'assets/images/placeholder-store.png';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:') || url.startsWith('assets/')) {
+      return url;
+    }
+    const base = this.filePath || environment.filePath || '';
+    if (base.endsWith('/') && url.startsWith('/')) {
+      return base + url.substring(1);
+    }
+    if (!base.endsWith('/') && !url.startsWith('/')) {
+      return base + '/' + url;
+    }
+    return base + url;
+  }
+
   toggleFollowedOnly(): void {
     if (!this.authService.isAuthenticated()) {
       Swal.fire({

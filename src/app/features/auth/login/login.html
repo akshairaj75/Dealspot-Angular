@@ -194,15 +194,14 @@
 
         <div class="form-group">
           <label class="form-label">{{ currentLang() === 'en' ? 'Primary City' : 'المدينة الرئيسية' }}</label>
-          <div class="input-icon-wrap">
-            <span class="material-icons-round input-icon">location_city</span>
-            <select formControlName="cityId" class="form-control with-icon">
-              <option value="" disabled selected>{{ currentLang() === 'en' ? 'Select your city' : 'اختر مدينتك' }}</option>
-              <option *ngFor="let c of cities" [value]="c.id">
-                {{ c | translate:'name' }}
-              </option>
-            </select>
-          </div>
+            <app-custom-select
+              formControlName="cityId"
+              [options]="cities"
+              valueKey="id"
+              labelEnKey="nameEn"
+              labelArKey="nameAr"
+              [placeholder]="currentLang() === 'en' ? 'Select your city' : 'اختر مدينتك'"
+            ></app-custom-select>
           <span class="field-error" *ngIf="registerForm.get('cityId')?.touched && registerForm.get('cityId')?.invalid">
             {{ currentLang() === 'en' ? 'Please select your city.' : 'يرجى اختيار مدينتك.' }}
           </span>

@@ -104,10 +104,14 @@
           <div class="form-grid-2">
             <div class="form-group">
               <label class="form-label">{{ currentLang() === 'en' ? 'Primary City / Region' : 'المدينة الرئيسية' }} <span class="required">*</span></label>
-              <select formControlName="cityId" class="form-control">
-                <option value="" disabled selected>{{ currentLang() === 'en' ? 'Select City' : 'اختر المدينة' }}</option>
-                <option *ngFor="let c of cities()" [value]="c.id">{{ c | translate:'name' }}</option>
-              </select>
+              <app-custom-select
+                formControlName="cityId"
+                [options]="cities()"
+                valueKey="id"
+                labelEnKey="nameEn"
+                labelArKey="nameAr"
+                [placeholder]="currentLang() === 'en' ? 'Select City' : 'اختر المدينة'"
+              ></app-custom-select>
               <span class="field-error" *ngIf="applyForm.get('cityId')?.touched && applyForm.get('cityId')?.invalid">
                 {{ currentLang() === 'en' ? 'City is required.' : 'المدينة مطلوبة.' }}
               </span>
@@ -115,10 +119,14 @@
 
             <div class="form-group">
               <label class="form-label">{{ currentLang() === 'en' ? 'Business Category' : 'نشاط المتجر' }} <span class="required">*</span></label>
-              <select formControlName="categoryId" class="form-control">
-                <option value="" disabled selected>{{ currentLang() === 'en' ? 'Select Category' : 'اختر القسم' }}</option>
-                <option *ngFor="let cat of categories()" [value]="cat.id">{{ cat | translate:'name' }}</option>
-              </select>
+              <app-custom-select
+                formControlName="categoryId"
+                [options]="categories()"
+                valueKey="id"
+                labelEnKey="nameEn"
+                labelArKey="nameAr"
+                [placeholder]="currentLang() === 'en' ? 'Select Category' : 'اختر القسم'"
+              ></app-custom-select>
               <span class="field-error" *ngIf="applyForm.get('categoryId')?.touched && applyForm.get('categoryId')?.invalid">
                 {{ currentLang() === 'en' ? 'Category is required.' : 'القسم مطلوب.' }}
               </span>

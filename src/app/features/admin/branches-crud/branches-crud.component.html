@@ -135,12 +135,14 @@
 
             <div class="form-group flex-1">
               <label class="form-label">{{ currentLang() === 'en' ? 'City *' : 'المدينة *' }}</label>
-              <select formControlName="cityId" class="form-control">
-                <option value="" disabled>{{ currentLang() === 'en' ? 'Select City' : 'اختر المدينة' }}</option>
-                <option *ngFor="let c of cities()" [value]="c.id">
-                  {{ currentLang() === 'en' ? c.nameEn : (c.nameAr || c.nameEn) }}
-                </option>
-              </select>
+              <app-custom-select
+                formControlName="cityId"
+                [options]="cities()"
+                valueKey="id"
+                labelEnKey="nameEn"
+                labelArKey="nameAr"
+                [placeholder]="currentLang() === 'en' ? 'Select City' : 'اختر المدينة'"
+              ></app-custom-select>
               <div class="error-msg" *ngIf="branchForm.get('cityId')?.touched && branchForm.get('cityId')?.invalid">
                 {{ currentLang() === 'en' ? 'City is required.' : 'المدينة مطلوبة.' }}
               </div>

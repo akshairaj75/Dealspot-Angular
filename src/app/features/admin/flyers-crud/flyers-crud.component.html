@@ -162,12 +162,14 @@
           <div class="form-row">
             <div class="form-group flex-1">
               <label class="form-label">{{ currentLang() === 'en' ? 'Retailer Store *' : 'المتجر المعلن *' }}</label>
-              <select formControlName="store_id" class="form-control">
-                <option value="" disabled>{{ currentLang() === 'en' ? '-- Select Retailer --' : '-- اختر المتجر --' }}</option>
-                <option *ngFor="let s of stores()" [value]="s.id">
-                  {{ currentLang() === 'en' ? s.nameEn : (s.nameAr || s.nameEn) }}
-                </option>
-              </select>
+              <app-custom-select
+                formControlName="store_id"
+                [options]="stores()"
+                valueKey="id"
+                labelEnKey="nameEn"
+                labelArKey="nameAr"
+                [placeholder]="currentLang() === 'en' ? '-- Select Retailer --' : '-- اختر المتجر --'"
+              ></app-custom-select>
               <div class="error-msg" *ngIf="flyerForm.get('store_id')?.touched && flyerForm.get('store_id')?.invalid">
                 {{ currentLang() === 'en' ? 'Store is required.' : 'المتجر مطلوب.' }}
               </div>
@@ -175,12 +177,14 @@
 
             <div class="form-group flex-1">
               <label class="form-label">{{ currentLang() === 'en' ? 'Target City *' : 'المدينة المستهدفة *' }}</label>
-              <select formControlName="city_id" class="form-control">
-                <option value="" disabled>{{ currentLang() === 'en' ? '-- Select City --' : '-- اختر المدينة --' }}</option>
-                <option *ngFor="let c of cities()" [value]="c.id">
-                  {{ currentLang() === 'en' ? c.nameEn : (c.nameAr || c.nameEn) }}
-                </option>
-              </select>
+              <app-custom-select
+                formControlName="city_id"
+                [options]="cities()"
+                valueKey="id"
+                labelEnKey="nameEn"
+                labelArKey="nameAr"
+                [placeholder]="currentLang() === 'en' ? '-- Select City --' : '-- اختر المدينة --'"
+              ></app-custom-select>
               <div class="error-msg" *ngIf="flyerForm.get('city_id')?.touched && flyerForm.get('city_id')?.invalid">
                 {{ currentLang() === 'en' ? 'City is required.' : 'المدينة مطلوبة.' }}
               </div>
