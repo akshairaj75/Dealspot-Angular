@@ -125,11 +125,14 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   box-shadow: var(--shadow-sm);
+  width: 100%;
 }
 
 .admin-table {
   width: 100%;
+  min-width: 1050px;
   border-collapse: collapse;
   text-align: left;
   font-size: 13px;
@@ -313,9 +316,15 @@
 }
 
 .action-buttons-cell {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
+}
+
+.action-buttons-cell button,
+.action-buttons-cell a {
+  flex-shrink: 0;
 }
 
 /* Modal */

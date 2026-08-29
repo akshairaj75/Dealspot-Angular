@@ -351,6 +351,45 @@ button, input, select, textarea {
 }
 
 /* ==========================================================================
+   GLOBAL ADMIN TABLE & ACTIONS RESPONSIVE SYSTEM
+   ========================================================================== */
+.table-wrapper,
+.table-responsive {
+  width: 100%;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+  scrollbar-width: thin;
+}
+
+.table-wrapper::-webkit-scrollbar,
+.table-responsive::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb,
+.table-responsive::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: var(--radius-full);
+}
+
+.action-buttons-cell,
+.actions-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.action-buttons-cell button,
+.action-buttons-cell a,
+.actions-group button,
+.actions-group a {
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
    GLOBAL ADMIN MODAL STYLES
    ========================================================================== */
 .modal-backdrop {

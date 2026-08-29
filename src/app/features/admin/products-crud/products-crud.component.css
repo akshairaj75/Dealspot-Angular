@@ -182,8 +182,18 @@
   text-align: left;
 }
 
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  width: 100%;
+}
+
 .admin-table {
   width: 100%;
+  min-width: 1050px;
   border-collapse: collapse;
   text-align: left;
   font-size: 13px;
@@ -200,6 +210,7 @@
   font-weight: 700;
   color: var(--text-secondary);
   background: var(--surface-hover);
+  white-space: nowrap;
 }
 
 .admin-table td {
@@ -292,14 +303,18 @@
 }
 
 .action-buttons-cell {
-  display: flex;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
   gap: 8px;
+  white-space: nowrap;
 }
 
 .action-buttons-cell button,
 .action-buttons-cell a {
   width: 32px;
   height: 32px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;

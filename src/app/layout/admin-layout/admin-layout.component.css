@@ -1,14 +1,18 @@
-/* Admin Layout Stylesheet */
+/* Admin Layout Stylesheet - Modern Responsive & Offcanvas Drawer */
 
 .admin-layout {
   display: flex;
   min-height: 100vh;
   background-color: var(--background);
+  position: relative;
+  width: 100%;
 }
 
-/* Sidebar Styling */
+/* ==========================================================================
+   1. SIDEBAR (DESKTOP FIXED & MOBILE OFFCANVAS DRAWER)
+   ========================================================================== */
 .admin-sidebar {
-  width: var(--sidebar-width);
+  width: var(--sidebar-width, 260px);
   background-color: #0f172a; /* Sleek Dark Slate */
   color: #f8fafc;
   display: flex;
@@ -19,19 +23,28 @@
   top: 0;
   height: 100vh;
   z-index: 100;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.rtl .admin-sidebar {
+:host-context([dir="rtl"]) .admin-sidebar,
+[dir="rtl"] .admin-sidebar {
   border-right: none;
   border-left: 1px solid #1e293b;
 }
 
 .sidebar-header {
-  padding: 24px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #1e293b;
+  flex-shrink: 0;
+}
+
+.sidebar-brand-group {
   display: flex;
   align-items: center;
   gap: 12px;
-  border-bottom: 1px solid #1e293b;
 }
 
 .admin-logo-img {
@@ -50,6 +63,7 @@
   font-size: 16px;
   font-weight: 800;
   letter-spacing: -0.01em;
+  color: #ffffff;
 }
 
 .admin-logo-subtitle {
@@ -58,6 +72,26 @@
   color: #64748b;
   text-transform: uppercase;
   font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* Close drawer button (mobile only) */
+.btn-close-sidebar {
+  display: none;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+}
+
+.btn-close-sidebar:hover {
+  background: #1e293b;
+  color: #ffffff;
 }
 
 .sidebar-nav {
@@ -78,6 +112,7 @@
   color: #94a3b8;
   font-size: 14px;
   font-weight: 500;
+  text-decoration: none;
   transition: var(--transition-fast);
 }
 
@@ -89,15 +124,18 @@
 .nav-menu-item.active {
   background-color: var(--primary);
   color: #ffffff;
+  font-weight: 700;
 }
 
 .nav-icon {
   font-size: 20px;
+  flex-shrink: 0;
 }
 
 .sidebar-footer {
   padding: 16px;
   border-top: 1px solid #1e293b;
+  flex-shrink: 0;
 }
 
 .btn-sidebar-view-site {
@@ -112,6 +150,7 @@
   border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 600;
+  text-decoration: none;
   transition: var(--transition-fast);
 }
 
@@ -119,13 +158,16 @@
   background-color: #334155;
 }
 
-/* Main Container Area */
+/* ==========================================================================
+   2. MAIN CONTENT AREA & TOPBAR
+   ========================================================================== */
 .admin-main-container {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
   height: 100vh;
+  width: 100%;
 }
 
 .admin-topbar {
@@ -135,21 +177,78 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 32px;
+  padding: 0 28px;
   flex-shrink: 0;
   z-index: 90;
+  gap: 12px;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.btn-hamburger {
+  display: none;
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.btn-hamburger:hover {
+  background: var(--border);
+  color: var(--primary);
+}
+
+.btn-hamburger .material-icons-round {
+  font-size: 24px;
 }
 
 .admin-page-title {
   font-size: 18px;
   font-weight: 800;
   color: var(--text-primary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.lang-toggle {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--text-primary);
+  transition: var(--transition-fast);
+}
+
+.lang-toggle:hover {
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .admin-user-profile {
@@ -157,14 +256,15 @@
   align-items: center;
   gap: 10px;
   border-left: 1px solid var(--border);
-  padding-left: 20px;
+  padding-left: 16px;
 }
 
-.rtl .admin-user-profile {
+:host-context([dir="rtl"]) .admin-user-profile,
+[dir="rtl"] .admin-user-profile {
   border-left: none;
   border-right: 1px solid var(--border);
   padding-left: 0;
-  padding-right: 20px;
+  padding-right: 16px;
 }
 
 .admin-user-avatar {
@@ -176,6 +276,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+}
+
+.admin-user-info {
+  display: flex;
+  flex-direction: column;
 }
 
 .admin-name {
@@ -183,53 +289,151 @@
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.2;
+  margin: 0;
+  white-space: nowrap;
 }
 
 .admin-role {
   font-size: 11px;
   color: var(--text-muted);
   text-transform: capitalize;
+  margin: 0;
+  white-space: nowrap;
 }
 
 .btn-logout {
-  border: 1px solid transparent;
-}
-.btn-logout:hover {
-  border-color: var(--danger);
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--danger);
+  transition: var(--transition-fast);
 }
 
-/* Main content viewing area */
+.btn-logout:hover {
+  background: var(--danger-light);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+/* Main content viewport */
 .admin-content-viewport {
   flex: 1;
   overflow-y: auto;
-  padding: 32px;
+  padding: 28px;
   background-color: var(--background);
 }
 
-/* Responsive adjustment */
+/* ==========================================================================
+   3. MOBILE & TABLET OFFCANVAS DRAWER BREAKPOINTS
+   ========================================================================== */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 1100;
+  animation: backdropFade 0.2s ease-out;
+}
+
+@keyframes backdropFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @media (max-width: 991px) {
+  /* Show Hamburger Button */
+  .btn-hamburger {
+    display: flex;
+  }
+
+  /* Show close button inside drawer */
+  .btn-close-sidebar {
+    display: flex;
+  }
+
+  /* Off-canvas sidebar drawer on mobile/tablet */
   .admin-sidebar {
-    width: 68px;
-    padding: 10px 0;
-  }
-  
-  .admin-sidebar .sidebar-header-text,
-  .admin-sidebar .nav-menu-item span:not(.nav-icon),
-  .admin-sidebar .sidebar-footer span {
-    display: none;
-  }
-
-  .sidebar-header {
-    justify-content: center;
-    padding: 12px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    height: 100vh;
+    z-index: 1200;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+    transform: translateX(-100%);
   }
 
-  .nav-menu-item {
-    justify-content: center;
-    padding: 12px;
+  :host-context([dir="rtl"]) .admin-sidebar,
+  [dir="rtl"] .admin-sidebar {
+    left: auto;
+    right: 0;
+    transform: translateX(100%);
   }
 
-  .btn-sidebar-view-site {
-    padding: 10px;
+  /* When drawer is toggled open */
+  .admin-sidebar.sidebar-open {
+    transform: translateX(0) !important;
+  }
+
+  /* Main Container takes full width on mobile/tablet */
+  .admin-main-container {
+    width: 100%;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .admin-topbar {
+    padding: 0 16px;
+    height: 64px;
+  }
+
+  .admin-content-viewport {
+    padding: 16px 14px;
+  }
+}
+
+@media (max-width: 576px) {
+  .admin-topbar {
+    padding: 0 12px;
+    height: 58px;
+    gap: 8px;
+  }
+
+  .btn-hamburger {
+    width: 36px;
+    height: 36px;
+  }
+
+  .admin-page-title {
+    font-size: 14px;
+  }
+
+  .topbar-right {
+    gap: 8px;
+  }
+
+  .admin-user-info {
+    display: none; /* Hide text name on small phone screens for space */
+  }
+
+  .admin-user-profile {
+    padding-left: 8px;
+    border-left: 1px solid var(--border);
+  }
+
+  :host-context([dir="rtl"]) .admin-user-profile,
+  [dir="rtl"] .admin-user-profile {
+    padding-left: 0;
+    padding-right: 8px;
+  }
+
+  .admin-content-viewport {
+    padding: 14px 10px;
   }
 }

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, HostListener, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PartnerRequestService, PartnerRequestItem } from '../../../core/services/partner-request.service';
@@ -19,16 +19,56 @@ export class PartnerRequestsComponent implements OnInit {
 
   currentLang = this.translationService.currentLang;
 
+  allRequests = signal<PartnerRequestItem[]>([]);
   requests = signal<PartnerRequestItem[]>([]);
   loading = signal(false);
   activeTab = signal<'PENDING' | 'APPROVED' | 'REJECTED' | 'ALL'>('PENDING');
+  viewMode = signal<'GRID' | 'TABLE'>('GRID'); // Default is modern mobile-friendly Grid Cards
   searchQuery = '';
+  copiedCrId = signal<number | null>(null);
+  openMenuId = signal<number | null>(null); // Hamburger / 3-dots Quick Action Menu
 
   selectedRequest: PartnerRequestItem | null = null;
   isDetailModalOpen = signal(false);
 
+  // Summary Metrics
+  pendingCount = computed(() => this.allRequests().filter(r => r.status === 'PENDING').length);
+  approvedCount = computed(() => this.allRequests().filter(r => r.status === 'APPROVED').length);
+  rejectedCount = computed(() => this.allRequests().filter(r => r.status === 'REJECTED').length);
+  totalCount = computed(() => this.allRequests().length);
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    if (this.openMenuId() !== null) {
+      this.openMenuId.set(null);
+    }
+  }
+
+  toggleCardMenu(id: number, event: Event): void {
+    event.stopPropagation();
+    if (this.openMenuId() === id) {
+      this.openMenuId.set(null);
+    } else {
+      this.openMenuId.set(id);
+    }
+  }
+
+  closeCardMenu(): void {
+    this.openMenuId.set(null);
+  }
+
   ngOnInit(): void {
+    this.loadAllRequestsForStats();
     this.loadRequests();
+  }
+
+  loadAllRequestsForStats(): void {
+    this.partnerService.getAllRequests().subscribe({
+      next: (data) => {
+        this.allRequests.set(data || []);
+      },
+      error: (err) => console.error('Error loading summary stats:', err)
+    });
   }
 
   loadRequests(): void {
@@ -54,25 +94,44 @@ export class PartnerRequestsComponent implements OnInit {
     this.loadRequests();
   }
 
+  setViewMode(mode: 'GRID' | 'TABLE'): void {
+    this.viewMode.set(mode);
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+  }
+
+  copyCr(cr: string, id: number, event?: Event): void {
+    if (event) event.stopPropagation();
+    if (!cr) return;
+    navigator.clipboard.writeText(cr).then(() => {
+      this.copiedCrId.set(id);
+      setTimeout(() => this.copiedCrId.set(null), 2000);
+    });
+  }
+
   getFilteredRequests(): PartnerRequestItem[] {
     let list = this.requests();
 
     if (this.searchQuery.trim()) {
       const q = this.searchQuery.toLowerCase().trim();
       list = list.filter(r =>
-        r.storeNameEn.toLowerCase().includes(q) ||
-        r.storeNameAr.toLowerCase().includes(q) ||
-        r.applicantName.toLowerCase().includes(q) ||
-        r.applicantEmail.toLowerCase().includes(q) ||
-        (r.crNumber && r.crNumber.toLowerCase().includes(q))
+        (r.storeNameEn && r.storeNameEn.toLowerCase().includes(q)) ||
+        (r.storeNameAr && r.storeNameAr.toLowerCase().includes(q)) ||
+        (r.applicantName && r.applicantName.toLowerCase().includes(q)) ||
+        (r.applicantEmail && r.applicantEmail.toLowerCase().includes(q)) ||
+        (r.applicantPhone && r.applicantPhone.toLowerCase().includes(q)) ||
+        (r.cityNameEn && r.cityNameEn.toLowerCase().includes(q)) ||
+        (r.cityNameAr && r.cityNameAr.toLowerCase().includes(q)) ||
+        (r.categoryNameEn && r.categoryNameEn.toLowerCase().includes(q)) ||
+        (r.categoryNameAr && r.categoryNameAr.toLowerCase().includes(q)) ||
+        (r.crNumber && r.crNumber.toLowerCase().includes(q)) ||
+        (r.vatNumber && r.vatNumber.toLowerCase().includes(q))
       );
     }
 
     return list;
-  }
-
-  get pendingCount(): number {
-    return this.requests().filter(r => r.status === 'PENDING').length;
   }
 
   viewDetails(req: PartnerRequestItem): void {
@@ -88,7 +147,7 @@ export class PartnerRequestsComponent implements OnInit {
   onApprove(req: PartnerRequestItem): void {
     Swal.fire({
       title: this.currentLang() === 'en' ? 'Approve Store Partner?' : 'اعتماد شريك المتجر؟',
-      html: `<p>${this.currentLang() === 'en' 
+      html: `<p>${this.currentLang() === 'en'
         ? `Are you sure you want to approve <b>${req.storeNameEn}</b>? This will automatically create the verified store and grant Store Manager access to <b>${req.applicantEmail}</b>.`
         : `هل أنت متأكد من اعتماد متجر <b>${req.storeNameAr}</b>؟ سيتم إنشاء المتجر وتفعيل صلاحية مدير المتجر للبريد <b>${req.applicantEmail}</b>.`}</p>`,
       icon: 'question',

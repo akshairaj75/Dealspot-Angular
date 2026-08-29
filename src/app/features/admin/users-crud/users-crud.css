@@ -174,11 +174,18 @@
 
 /* Table Card */
 .table-card {
-  overflow: hidden;
+  width: 100%;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .data-table {
   width: 100%;
+  min-width: 850px;
   border-collapse: collapse;
   text-align: left;
 }
@@ -197,6 +204,7 @@
   letter-spacing: 0.03em;
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--border);
+  white-space: nowrap;
 }
 
 .data-table td {
@@ -348,6 +356,7 @@
   justify-content: center;
   cursor: pointer;
   transition: var(--transition-fast);
+  flex-shrink: 0;
 }
 
 .btn-icon-action:hover {
@@ -363,6 +372,7 @@
 
 .text-end {
   text-align: right;
+  white-space: nowrap;
 }
 
 :host-context([dir="rtl"]) .text-end,

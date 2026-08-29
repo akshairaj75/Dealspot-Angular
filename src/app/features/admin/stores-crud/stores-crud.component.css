@@ -208,12 +208,15 @@
   background: var(--surface, #ffffff);
   border: 1px solid var(--border, #e2e8f0);
   border-radius: 16px;
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
   box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
 }
 
 .admin-table {
   width: 100%;
+  min-width: 1050px;
   border-collapse: collapse;
   text-align: left;
   font-size: 0.875rem;
@@ -232,6 +235,7 @@
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .admin-table tbody td {
@@ -457,10 +461,11 @@
 
 /* Action Buttons */
 .action-buttons-cell {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: flex-end;
   gap: 0.35rem;
+  white-space: nowrap;
 }
 
 .btn-icon {
@@ -470,11 +475,12 @@
   border: 1px solid var(--border, #e2e8f0);
   background: var(--surface, #ffffff);
   color: var(--text-secondary, #64748b);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
   text-decoration: none;
 }
 

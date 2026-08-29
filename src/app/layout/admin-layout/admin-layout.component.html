@@ -1,13 +1,23 @@
 <div class="admin-layout">
-  <!-- Sidebar -->
-  <aside class="admin-sidebar">
+  <!-- Mobile Backdrop Overlay -->
+  <div class="sidebar-backdrop" *ngIf="isSidebarOpen()" (click)="closeSidebar()"></div>
+
+  <!-- Sidebar (Desktop Fixed / Mobile Offcanvas Drawer) -->
+  <aside class="admin-sidebar" [class.sidebar-open]="isSidebarOpen()">
     <div class="sidebar-header">
-      <img *ngIf="appConfig.logoUrl" [src]="appConfig.logoUrl" [alt]="appConfig.adminAppNameEn" class="admin-logo-img">
-      <span *ngIf="!appConfig.logoUrl" class="material-icons-round admin-logo-icon">{{ appConfig.adminLogoIcon }}</span>
-      <div class="sidebar-header-text">
-        <span class="admin-logo-title">{{ currentLang() === 'en' ? appConfig.adminAppNameEn : appConfig.adminAppNameAr }}</span>
-        <span class="admin-logo-subtitle">{{ currentLang() === 'en' ? 'Control Panel' : 'لوحة التحكم' }}</span>
+      <div class="sidebar-brand-group">
+        <img *ngIf="appConfig.logoUrl" [src]="appConfig.logoUrl" [alt]="appConfig.adminAppNameEn" class="admin-logo-img">
+        <span *ngIf="!appConfig.logoUrl" class="material-icons-round admin-logo-icon">{{ appConfig.adminLogoIcon }}</span>
+        <div class="sidebar-header-text">
+          <span class="admin-logo-title">{{ currentLang() === 'en' ? appConfig.adminAppNameEn : appConfig.adminAppNameAr }}</span>
+          <span class="admin-logo-subtitle">{{ currentLang() === 'en' ? 'Control Panel' : 'لوحة التحكم' }}</span>
+        </div>
       </div>
+
+      <!-- Mobile Close Drawer Button -->
+      <button type="button" class="btn-close-sidebar" (click)="closeSidebar()" title="Close Navigation">
+        <span class="material-icons-round">close</span>
+      </button>
     </div>
 
     <nav class="sidebar-nav">
@@ -17,6 +27,7 @@
         routerLinkActive="active"
         [routerLinkActiveOptions]="{exact: item.route === '/admin'}"
         class="nav-menu-item"
+        (click)="closeSidebar()"
       >
         <span class="material-icons-round nav-icon">{{ item.icon }}</span>
         <span>{{ currentLang() === 'en' ? item.label_en : item.label_ar }}</span>
@@ -24,7 +35,7 @@
     </nav>
 
     <div class="sidebar-footer">
-      <a routerLink="/" class="btn-sidebar-view-site">
+      <a routerLink="/" class="btn-sidebar-view-site" (click)="closeSidebar()">
         <span class="material-icons-round">visibility</span>
         <span>{{ currentLang() === 'en' ? 'View Website' : 'عرض الموقع' }}</span>
       </a>
@@ -36,6 +47,11 @@
     <!-- Topbar -->
     <header class="admin-topbar">
       <div class="topbar-left">
+        <!-- Hamburger Menu Button on Mobile/Tablet -->
+        <button type="button" class="btn-hamburger" (click)="toggleSidebar()" [title]="currentLang() === 'en' ? 'Toggle Navigation Menu' : 'القائمة الرئيسية'">
+          <span class="material-icons-round">menu</span>
+        </button>
+
         <h2 class="admin-page-title">
           {{ currentLang() === 'en' ? 'Dashboard Control' : 'لوحة الإدارة' }}
         </h2>
@@ -62,7 +78,6 @@
         <button (click)="logout()" class="btn-logout btn-icon text-danger" [title]="currentLang() === 'en' ? 'Logout' : 'تسجيل الخروج'">
           <span class="material-icons-round">logout</span>
         </button>
-
       </div>
     </header>
 
@@ -72,3 +87,4 @@
     </main>
   </div>
 </div>
+

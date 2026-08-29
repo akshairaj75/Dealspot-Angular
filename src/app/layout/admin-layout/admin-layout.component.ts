@@ -1,9 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { APP_CONFIG } from '../../core/config/app-config';
+import { filter, Subscription } from 'rxjs';
 
 interface AdminMenuItem {
   label_en: string;
@@ -19,7 +20,7 @@ interface AdminMenuItem {
   templateUrl: './admin-layout.component.html',
   styleUrls: ['./admin-layout.component.css']
 })
-export class AdminLayoutComponent {
+export class AdminLayoutComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
   translationService = inject(TranslationService);
   router = inject(Router);
@@ -27,6 +28,10 @@ export class AdminLayoutComponent {
   currentLang = this.translationService.currentLang;
   appConfig = APP_CONFIG;
   adminUser = this.authService.currentUser;
+
+  // Offcanvas Hamburger Drawer state on mobile
+  isSidebarOpen = signal(false);
+  private routerSub?: Subscription;
 
   allMenuItems: AdminMenuItem[] = [
     { label_en: 'Dashboard', label_ar: 'الرئيسية', icon: 'dashboard', route: '/admin' },
@@ -43,6 +48,19 @@ export class AdminLayoutComponent {
     { label_en: 'Notifications', label_ar: 'الإشعارات', icon: 'notifications', route: '/admin/notifications' },
     { label_en: 'Audit Logs', label_ar: 'سجل العمليات', icon: 'history_edu', route: '/admin/audit-logs' }
   ];
+
+  ngOnInit(): void {
+    // Auto-close mobile drawer whenever route changes
+    this.routerSub = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        this.closeSidebar();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.routerSub?.unsubscribe();
+  }
 
   get menuItems(): AdminMenuItem[] {
     const user = this.adminUser();
@@ -61,6 +79,14 @@ export class AdminLayoutComponent {
     }
 
     return this.allMenuItems;
+  }
+
+  toggleSidebar(): void {
+    this.isSidebarOpen.update(v => !v);
+  }
+
+  closeSidebar(): void {
+    this.isSidebarOpen.set(false);
   }
 
   toggleLanguage(): void {

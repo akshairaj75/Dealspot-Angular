@@ -75,6 +75,8 @@
 
 .table-wrapper {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -82,6 +84,7 @@
 
 .admin-table {
   width: 100%;
+  min-width: 850px;
   border-collapse: collapse;
   text-align: left;
   font-size: 13px;
@@ -101,6 +104,7 @@
   text-transform: uppercase;
   font-size: 11px;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .admin-table td {
@@ -128,15 +132,22 @@
 }
 
 .action-buttons-cell {
-  display: flex;
+  display: inline-flex;
+  align-items: center;
   gap: 8px;
+  white-space: nowrap;
 }
 
-.action-buttons-cell button {
+.action-buttons-cell button,
+.action-buttons-cell a {
   width: 32px;
   height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border-radius: var(--radius-sm);
   transition: all 0.15s ease-in-out;
+  flex-shrink: 0;
 }
 
 .w-full {

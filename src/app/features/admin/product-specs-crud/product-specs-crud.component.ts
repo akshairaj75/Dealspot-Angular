@@ -3,15 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ProductService } from '../../../core/services/product.service';
-import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
-// import { AdminService } from '../../../core/services/admin.service';
-// import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
-// import { Product, ProductDetail } from '../../../core/models';
 
 @Component({
   selector: 'app-product-specs-crud',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslatePipe],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
     <div class="crud-container">
       <div class="crud-header">
@@ -100,13 +96,13 @@ import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
   styles: [`
     .crud-container { display: flex; flex-direction: column; gap: 20px; }
     .crud-header { display: flex; justify-content: space-between; align-items: center; }
-    .table-wrapper { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
-    .admin-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+    .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
+    .admin-table { width: 100%; min-width: 800px; border-collapse: collapse; text-align: left; font-size: 13px; }
     .admin-table th, .admin-table td { padding: 14px 20px; border-bottom: 1px solid var(--border); }
-    .admin-table th { font-weight: 700; color: var(--text-secondary); background: var(--surface-hover); }
+    .admin-table th { font-weight: 700; color: var(--text-secondary); background: var(--surface-hover); white-space: nowrap; }
     .admin-table td { color: var(--text-primary); }
-    .action-buttons-cell { display: flex; gap: 8px; }
-    .action-buttons-cell button { width: 30px; height: 30px; }
+    .action-buttons-cell { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .action-buttons-cell button, .action-buttons-cell a { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .w-full { width: 100%; }
     .border-none { border: none; }
   `]
