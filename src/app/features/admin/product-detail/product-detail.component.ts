@@ -52,6 +52,8 @@ export class ProductDetailComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForm();
+    this.loadCategories();
+    this.loadBrands();
 
     // Instant state hydration from router state if available
     const navState = history.state;
@@ -213,8 +215,17 @@ export class ProductDetailComponent implements OnInit {
   }
 
   getSelectedCategoryPath(): string {
-    const finalId = this.productForm.get('category_id')?.value;
-    if (!finalId) return '';
+    const p = this.product();
+    const finalId = this.productForm?.get('category_id')?.value || (p ? (p.categoryId || p.category_id) : null);
+    if (!finalId) {
+      if (p) {
+        const isEn = this.currentLang() === 'en';
+        if (p.categoryNameEn || p.categoryNameAr || p.category_name) {
+          return isEn ? (p.categoryNameEn || p.category_name || p.categoryNameAr) : (p.categoryNameAr || p.category_name || p.categoryNameEn);
+        }
+      }
+      return '';
+    }
     const catInfo = this.getCategoryInfo(finalId);
     if (!catInfo) return '';
     return catInfo.subName ? `${catInfo.mainName} › ${catInfo.subName}` : catInfo.mainName;

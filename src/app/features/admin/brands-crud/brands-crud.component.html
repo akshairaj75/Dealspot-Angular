@@ -74,7 +74,12 @@
 
       <div class="items-total-pill">
         <span class="material-icons-round">storefront</span>
-        <span>{{ getFilteredBrands().length }} {{ currentLang() === 'en' ? 'Brands Listed' : 'ماركة معروضة' }}</span>
+        <span>
+          {{ currentLang() === 'en' ? 'Showing' : 'عرض' }}
+          <strong>{{ brands().length }}</strong>
+          {{ currentLang() === 'en' ? 'of' : 'من' }}
+          <strong>{{ totalElements() }}</strong>
+        </span>
       </div>
     </div>
 
@@ -85,6 +90,7 @@
         <input 
           type="text" 
           [(ngModel)]="searchQuery" 
+          (ngModelChange)="onSearchChange($event)"
           [placeholder]="currentLang() === 'en' ? 'Search brands by name, Arabic name, category or ID...' : 'ابحث باسم الماركة، الاسم بالعربي، التصنيف أو المعرف...'" 
         />
         <button type="button" class="btn-clear" *ngIf="searchQuery" (click)="clearSearch()">
@@ -103,7 +109,7 @@
   <!-- ============================================================ -->
   <!-- 3. EMPTY STATE                                                -->
   <!-- ============================================================ -->
-  <div class="brands-empty" *ngIf="!loading() && getFilteredBrands().length === 0">
+  <div class="brands-empty" *ngIf="!loading() && brands().length === 0">
     <div class="empty-circle">
       <span class="material-icons-round">loyalty</span>
     </div>
@@ -120,10 +126,10 @@
   <!-- ============================================================ -->
   <!-- 4. UNIFIED RESPONSIVE LIST VIEW (ALL SCREENS)                 -->
   <!-- ============================================================ -->
-  <div class="brands-list-view" *ngIf="!loading() && getFilteredBrands().length > 0">
+  <div class="brands-list-view" *ngIf="!loading() && brands().length > 0">
     <div
       class="brand-list-item"
-      *ngFor="let b of getFilteredBrands()"
+      *ngFor="let b of brands()"
       [class.card-inactive]="!(b.active === 1 || b.active === true || b.isActive === 1 || b.isActive === true)"
     >
       <!-- Left: Brand Logo Avatar -->
@@ -185,7 +191,24 @@
         </div>
       </div>
     </div>
+
+    <!-- Infinite Scroll Sentinel & Bottom Loading Feedback -->
+    <div #scrollSentinel class="scroll-sentinel-container">
+      <div class="loading-more-pill" *ngIf="loadingMore()">
+        <div class="spinner-tiny"></div>
+        <span>{{ currentLang() === 'en' ? 'Loading more brands...' : 'جاري تحميل المزيد من العلامات التجارية...' }}</span>
+      </div>
+      <div class="end-of-catalog-pill" *ngIf="!loading() && !hasMore() && brands().length > 0">
+        <span class="material-icons-round tiny-check">check_circle</span>
+        <span>{{ currentLang() === 'en' ? 'All ' + totalElements() + ' brands loaded' : 'تم عرض كافة العلامات التجارية (' + totalElements() + ')' }}</span>
+      </div>
+    </div>
   </div>
+
+  <!-- Floating Scroll To Top -->
+  <button type="button" class="btn-floating-scroll-top" *ngIf="showScrollTop()" (click)="scrollToTop()" [title]="currentLang() === 'en' ? 'Scroll to top' : 'العودة للأعلى'">
+    <span class="material-icons-round">arrow_upward</span>
+  </button>
 
   <!-- ============================================================ -->
   <!-- 5. ADD / EDIT BRAND MODAL                                     -->
