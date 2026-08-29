@@ -1,0 +1,386 @@
+<div class="product-detail-container" [dir]="currentLang() === 'ar' ? 'rtl' : 'ltr'">
+
+  <!-- Top Action Bar -->
+  <div class="top-action-bar">
+    <a [routerLink]="['/admin/products']" class="btn-back">
+      <span class="material-icons-round">arrow_back</span>
+      <span>{{ currentLang() === 'en' ? 'Back to Products' : 'العودة للمنتجات' }}</span>
+    </a>
+
+    <div class="header-breadcrumbs" *ngIf="product()">
+      <span class="crumb">{{ currentLang() === 'en' ? 'Catalogue' : 'الدليل' }}</span>
+      <span class="crumb-separator">/</span>
+      <span class="crumb active">{{ currentLang() === 'en' ? product()?.nameEn : (product()?.nameAr || product()?.nameEn) }}</span>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="toggleEditMode()" *ngIf="!isEditMode()">
+        <span class="material-icons-round">edit</span>
+        <span>{{ currentLang() === 'en' ? 'Edit Product' : 'تعديل المنتج' }}</span>
+      </button>
+
+      <button class="btn btn-secondary" (click)="toggleEditMode()" *ngIf="isEditMode()">
+        <span class="material-icons-round">close</span>
+        <span>{{ currentLang() === 'en' ? 'Cancel Edit' : 'إلغاء التعديل' }}</span>
+      </button>
+
+      <a [routerLink]="['/admin/product-specs', productId, 'details']" class="btn btn-specs">
+        <span class="material-icons-round">list_alt</span>
+        <span>{{ currentLang() === 'en' ? 'Specs' : 'المواصفات' }}</span>
+      </a>
+
+      <button class="btn btn-danger-outline" (click)="deleteProduct()">
+        <span class="material-icons-round">delete</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading()">
+    <div class="spinner"></div>
+    <p>{{ currentLang() === 'en' ? 'Loading product details...' : 'جاري تحميل تفاصيل المنتج...' }}</p>
+  </div>
+
+  <ng-container *ngIf="!loading() && product()">
+    <!-- Hero / Main Header Card -->
+    <div class="hero-card">
+      <div class="hero-image-wrap">
+        <img
+          *ngIf="previewUrl"
+          [src]="previewUrl"
+          class="hero-img"
+          alt="Product Image"
+          (error)="$any($event.target).src = 'assets/images/placeholder-product.png'"
+        />
+        <div *ngIf="!previewUrl" class="hero-img-placeholder">
+          <span class="material-icons-round">inventory_2</span>
+        </div>
+
+        <label class="hero-img-upload-btn" *ngIf="isEditMode()">
+          <input type="file" (change)="onFileSelected($event)" accept="image/*" class="file-hidden" />
+          <span class="material-icons-round">photo_camera</span>
+          <span>{{ currentLang() === 'en' ? 'Change Photo' : 'تغيير الصورة' }}</span>
+        </label>
+      </div>
+
+      <div class="hero-content">
+        <div class="hero-top-badges">
+          <span class="status-pill"
+            [class.status-active]="product().is_active === 1 || product().active === true || product().isActive === true"
+            [class.status-inactive]="product().is_active === 0 || product().active === false || product().isActive === false"
+            (click)="quickToggleActive()"
+            [title]="currentLang() === 'en' ? 'Click to toggle status' : 'انقر لتغيير الحالة'"
+          >
+            <span class="status-dot"></span>
+            <span>{{ (product().is_active === 1 || product().active === true || product().isActive === true) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}</span>
+          </span>
+
+          <span class="id-pill">#{{ product().id }}</span>
+
+          <span class="tag-pill brand-pill" *ngIf="getBrandName() !== '-'">
+            <span class="material-icons-round icon-xs">storefront</span>
+            <span>{{ getBrandName() }}</span>
+          </span>
+
+          <span class="tag-pill cat-pill" *ngIf="getSelectedCategoryPath()">
+            <span class="material-icons-round icon-xs">category</span>
+            <span>{{ getSelectedCategoryPath() }}</span>
+          </span>
+        </div>
+
+        <h1 class="hero-title-en">{{ product().nameEn || product().name_en }}</h1>
+        <h2 class="hero-title-ar" *ngIf="product().nameAr || product().name_ar">{{ product().nameAr || product().name_ar }}</h2>
+
+        <div class="hero-meta-chips">
+          <div class="chip-item" *ngIf="product().sku">
+            <span class="chip-label">SKU:</span>
+            <span class="chip-value font-mono">{{ product().sku }}</span>
+          </div>
+          <div class="chip-item" *ngIf="product().barcode">
+            <span class="chip-label">UPC / Barcode:</span>
+            <span class="chip-value font-mono">{{ product().barcode }}</span>
+          </div>
+          <div class="chip-item">
+            <span class="chip-label">{{ currentLang() === 'en' ? 'Unit Size:' : 'الحجم / الوحدة:' }}</span>
+            <span class="chip-value">{{ product().unitSize || product().unit_size || 1 }} {{ product().unit }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN BODY: EDIT FORM OR VIEW MODE -->
+
+    <!-- EDIT MODE FORM -->
+    <form [formGroup]="productForm" (submit)="onSaveProduct()" *ngIf="isEditMode()" class="edit-mode-container">
+      <div class="section-card">
+        <div class="card-header-bar">
+          <div class="card-header-title">
+            <span class="material-icons-round header-icon">edit_note</span>
+            <h3>{{ currentLang() === 'en' ? 'Edit Product Catalogue Entry' : 'تعديل بيانات المنتج' }}</h3>
+          </div>
+          <button type="submit" [disabled]="productForm.invalid || isSaving()" class="btn btn-primary">
+            <span class="material-icons-round">save</span>
+            <span>{{ isSaving() ? (currentLang() === 'en' ? 'Saving...' : 'جاري الحفظ...') : (currentLang() === 'en' ? 'Save Changes' : 'حفظ التغييرات') }}</span>
+          </button>
+        </div>
+
+        <div class="form-body-grid">
+          <!-- Brand -->
+          <div class="form-group">
+            <label class="form-label required">{{ currentLang() === 'en' ? 'Brand *' : 'الماركة *' }}</label>
+            <select formControlName="brandId" class="form-control">
+              <option [ngValue]="null" disabled>{{ currentLang() === 'en' ? '-- Select Brand --' : '-- اختر الماركة --' }}</option>
+              <option *ngFor="let brand of brands()" [ngValue]="brand.id">
+                {{ currentLang() === 'en' ? brand.nameEn : (brand.nameAr || brand.nameEn) }}
+              </option>
+            </select>
+            <div class="error-msg" *ngIf="productForm.get('brandId')?.touched && productForm.get('brandId')?.invalid">
+              {{ currentLang() === 'en' ? 'Brand is required.' : 'الماركة مطلوبة.' }}
+            </div>
+          </div>
+
+          <!-- Product Names -->
+          <div class="form-group">
+            <label class="form-label required">{{ currentLang() === 'en' ? 'Name (English) *' : 'الاسم بالإنجليزية *' }}</label>
+            <input type="text" formControlName="name_en" class="form-control" placeholder="e.g. Almarai Fresh Milk 2L">
+            <div class="error-msg" *ngIf="productForm.get('name_en')?.touched && productForm.get('name_en')?.invalid">
+              {{ currentLang() === 'en' ? 'English name is required.' : 'الاسم بالإنجليزية مطلوب.' }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required">{{ currentLang() === 'en' ? 'Name (Arabic) *' : 'الاسم بالعربية *' }}</label>
+            <input type="text" formControlName="name_ar" class="form-control" placeholder="مثال: حليب المراعي طازج 2 لتر">
+            <div class="error-msg" *ngIf="productForm.get('name_ar')?.touched && productForm.get('name_ar')?.invalid">
+              {{ currentLang() === 'en' ? 'Arabic name is required.' : 'الاسم بالعربية مطلوب.' }}
+            </div>
+          </div>
+
+          <!-- Category Selection -->
+          <div class="form-group">
+            <label class="form-label">
+              <span class="step-badge">1</span>
+              {{ currentLang() === 'en' ? 'Main Category *' : 'القسم الرئيسي *' }}
+            </label>
+            <select
+              [ngModel]="selectedMainCategoryId"
+              [ngModelOptions]="{standalone: true}"
+              (ngModelChange)="onMainCategoryChange($event)"
+              class="form-control"
+            >
+              <option [ngValue]="null" disabled>{{ currentLang() === 'en' ? '-- Select Main Category --' : '-- اختر القسم الرئيسي --' }}</option>
+              <option *ngFor="let mainCat of mainCategories()" [ngValue]="mainCat.id">
+                {{ currentLang() === 'en' ? mainCat.nameEn : (mainCat.nameAr || mainCat.nameEn) }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span class="step-badge">2</span>
+              {{ currentLang() === 'en' ? 'Subcategory' : 'القسم الفرعي' }}
+              <span class="count-pill" *ngIf="selectedMainCategoryId">{{ availableSubcategories().length }}</span>
+            </label>
+            <select
+              [ngModel]="selectedSubCategoryId"
+              [ngModelOptions]="{standalone: true}"
+              (ngModelChange)="onSubCategoryChange($event)"
+              class="form-control"
+              [disabled]="!selectedMainCategoryId || availableSubcategories().length === 0"
+            >
+              <option [ngValue]="null">{{ availableSubcategories().length === 0 ? (currentLang() === 'en' ? '-- No Subcategories --' : '-- لا توجد أقسام فرعية --') : (currentLang() === 'en' ? '-- Optional --' : '-- اختياري --') }}</option>
+              <option *ngFor="let subCat of availableSubcategories()" [ngValue]="subCat.id">
+                {{ currentLang() === 'en' ? subCat.nameEn : (subCat.nameAr || subCat.nameEn) }}
+              </option>
+            </select>
+          </div>
+
+          <!-- SKU & Barcode -->
+          <div class="form-group">
+            <label class="form-label">{{ currentLang() === 'en' ? 'SKU Code' : 'رمز المنتج (SKU)' }}</label>
+            <input type="text" formControlName="sku" class="form-control font-mono" placeholder="MILK-ALM-2L">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Barcode (EAN/UPC)' : 'الباركود (Barcode)' }}</label>
+            <input type="text" formControlName="barcode" class="form-control font-mono" placeholder="6281007010012">
+          </div>
+
+          <!-- Unit & Unit Size -->
+          <div class="form-group">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Measurement Unit' : 'وحدة القياس' }}</label>
+            <select formControlName="unit" class="form-control">
+              <option value="EACH">{{ currentLang() === 'en' ? 'Pieces (pcs / each)' : 'حبة / قطعة' }}</option>
+              <option value="KG">{{ currentLang() === 'en' ? 'Kilograms (kg)' : 'كيلوجرام (كجم)' }}</option>
+              <option value="GRAM">{{ currentLang() === 'en' ? 'Grams (g)' : 'جرام (جم)' }}</option>
+              <option value="LITRE">{{ currentLang() === 'en' ? 'Liters (L)' : 'لتر' }}</option>
+              <option value="ML">{{ currentLang() === 'en' ? 'Milliliters (ml)' : 'مليلتر' }}</option>
+              <option value="PACK">{{ currentLang() === 'en' ? 'Pack' : 'عبوة / باقة' }}</option>
+              <option value="BOX">{{ currentLang() === 'en' ? 'Box' : 'صندوق / كرتون' }}</option>
+              <option value="PAIR">{{ currentLang() === 'en' ? 'Pair' : 'زوج' }}</option>
+              <option value="SET">{{ currentLang() === 'en' ? 'Set' : 'طقم / مجموعة' }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Unit Size / Capacity' : 'حجم / سعة الوحدة' }}</label>
+            <input type="number" step="0.01" formControlName="unit_size" class="form-control" placeholder="1">
+          </div>
+
+          <!-- Active Status Toggle -->
+          <div class="form-group full-width">
+            <div class="toggle-card">
+              <label class="toggle-switch">
+                <input type="checkbox" formControlName="is_active" />
+                <span class="slider"></span>
+              </label>
+              <div class="toggle-info">
+                <span class="toggle-title">{{ currentLang() === 'en' ? 'Active Product Status' : 'حالة تفعيل المنتج' }}</span>
+                <span class="toggle-desc">{{ currentLang() === 'en' ? 'Make product visible across public app & deal catalogues' : 'إظهار المنتج في دليل العروض والمنتجات العامة' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Descriptions -->
+          <div class="form-group full-width">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Description (English)' : 'الوصف بالإنجليزية' }}</label>
+            <textarea formControlName="description_en" class="form-control" rows="3" placeholder="Enter product description in English..."></textarea>
+          </div>
+
+          <div class="form-group full-width">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Description (Arabic)' : 'الوصف بالعربية' }}</label>
+            <textarea formControlName="description_ar" class="form-control" rows="3" placeholder="أدخل وصف ومميزات المنتج بالعربية..."></textarea>
+          </div>
+
+        </div>
+
+        <div class="card-footer-actions">
+          <button type="button" class="btn btn-secondary" (click)="toggleEditMode()">
+            {{ currentLang() === 'en' ? 'Cancel' : 'إلغاء' }}
+          </button>
+          <button type="submit" [disabled]="productForm.invalid || isSaving()" class="btn btn-primary">
+            <span class="material-icons-round">save</span>
+            <span>{{ isSaving() ? (currentLang() === 'en' ? 'Saving...' : 'جاري الحفظ...') : (currentLang() === 'en' ? 'Save Product Details' : 'حفظ بيانات المنتج') }}</span>
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <!-- VIEW MODE DETAILS GRID -->
+    <div class="details-grid-container" *ngIf="!isEditMode()">
+      <!-- Card 1: Catalogue Information -->
+      <div class="section-card">
+        <div class="card-header-bar">
+          <div class="card-header-title">
+            <span class="material-icons-round header-icon">info</span>
+            <h3>{{ currentLang() === 'en' ? 'General Product Information' : 'المعلومات العامة للمنتج' }}</h3>
+          </div>
+          <button class="btn btn-icon-sm" (click)="toggleEditMode()" [title]="currentLang() === 'en' ? 'Edit Details' : 'تعديل التفاصيل'">
+            <span class="material-icons-round">edit</span>
+          </button>
+        </div>
+
+        <div class="info-rows-list">
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'English Name' : 'الاسم بالإنجليزية' }}</span>
+            <span class="info-value font-semibold">{{ product().nameEn || product().name_en || '-' }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'Arabic Name' : 'الاسم بالعربية' }}</span>
+            <span class="info-value font-semibold">{{ product().nameAr || product().name_ar || '-' }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'Brand Name' : 'الماركة التجارية' }}</span>
+            <span class="info-value">
+              <span class="tag-pill brand-pill">{{ getBrandName() }}</span>
+            </span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'Category Path' : 'تصنيف القسم' }}</span>
+            <span class="info-value">
+              <span class="tag-pill cat-pill">{{ getSelectedCategoryPath() || '-' }}</span>
+            </span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'SKU Code' : 'رمز SKU' }}</span>
+            <span class="info-value font-mono">{{ product().sku || '-' }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'Barcode (UPC/EAN)' : 'الباركود' }}</span>
+            <span class="info-value font-mono">{{ product().barcode || '-' }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'Unit & Capacity' : 'وحدة القياس والسعة' }}</span>
+            <span class="info-value">{{ product().unitSize || product().unit_size || 1 }} {{ product().unit }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Descriptions -->
+      <div class="section-card">
+        <div class="card-header-bar">
+          <div class="card-header-title">
+            <span class="material-icons-round header-icon">description</span>
+            <h3>{{ currentLang() === 'en' ? 'Product Descriptions' : 'وصف ومميزات المنتج' }}</h3>
+          </div>
+        </div>
+
+        <div class="desc-box-container">
+          <div class="desc-block">
+            <span class="desc-lang-tag">English Description</span>
+            <p class="desc-text">{{ product().descriptionEn || product().description_en || (currentLang() === 'en' ? 'No description provided in English.' : 'لا يوجد وصف بالإنجليزية.') }}</p>
+          </div>
+
+          <div class="desc-block">
+            <span class="desc-lang-tag">الوصف بالعربية</span>
+            <p class="desc-text">{{ product().descriptionAr || product().description_ar || (currentLang() === 'en' ? 'No description provided in Arabic.' : 'لا يوجد وصف بالعربية.') }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Technical Specifications -->
+      <div class="section-card full-width">
+        <div class="card-header-bar">
+          <div class="card-header-title">
+            <span class="material-icons-round header-icon">list_alt</span>
+            <h3>{{ currentLang() === 'en' ? 'Technical Specifications' : 'المواصفات الفنية' }}</h3>
+          </div>
+          <a [routerLink]="['/admin/product-specs', productId, 'details']" class="btn btn-secondary btn-sm">
+            <span class="material-icons-round">tune</span>
+            <span>{{ currentLang() === 'en' ? 'Manage Specs' : 'إدارة المواصفات' }}</span>
+          </a>
+        </div>
+
+        <div class="specs-list-wrapper">
+          <div class="specs-grid" *ngIf="specs().length > 0">
+            <div class="spec-card" *ngFor="let s of specs()">
+              <div class="spec-key">
+                <span class="spec-icon material-icons-round">check_circle_outline</span>
+                <span>{{ currentLang() === 'en' ? s.attr_key_en : (s.attr_key_ar || s.attr_key_en) }}</span>
+              </div>
+              <div class="spec-val font-semibold">
+                {{ currentLang() === 'en' ? s.attr_value_en : (s.attr_value_ar || s.attr_value_en) }}
+              </div>
+            </div>
+          </div>
+
+          <div class="specs-empty" *ngIf="specs().length === 0">
+            <span class="material-icons-round empty-specs-icon">tune</span>
+            <p>{{ currentLang() === 'en' ? 'No technical specifications added for this product yet.' : 'لم يتم إضافة مواصفات فنية لهذا المنتج بعد.' }}</p>
+            <a [routerLink]="['/admin/product-specs', productId, 'details']" class="btn btn-secondary btn-sm">
+              <span class="material-icons-round">add</span>
+              <span>{{ currentLang() === 'en' ? 'Add Specs' : 'إضافة مواصفات' }}</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+</div>

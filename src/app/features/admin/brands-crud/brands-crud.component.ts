@@ -4,13 +4,14 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } 
 import { BrandService } from '../../../core/services/brand.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { TranslationService } from '../../../core/services/translation.service';
+import { RouterLink } from '@angular/router';
 import Swal from 'sweetalert2';
 import { environment } from '../../../environment/environment';
 
 @Component({
   selector: 'app-brands-crud',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
   templateUrl: './brands-crud.component.html',
   styleUrl: './brands-crud.component.css'
 })
@@ -23,6 +24,7 @@ export class BrandsCrudComponent implements OnInit {
   currentLang = this.translationService.currentLang;
   brands = signal<any[]>([]);
   categories = signal<any[]>([]);
+  loading = signal<boolean>(true);
   
   brandForm!: FormGroup;
   isModalOpen = false;
@@ -51,13 +53,16 @@ export class BrandsCrudComponent implements OnInit {
   }
 
   loadBrands(): void {
+    this.loading.set(true);
     this.brandService.getBrands().subscribe({
       next: (res: any[]) => {
         const sorted = res.sort((a, b) => (a.nameEn || '').localeCompare(b.nameEn || ''));
         this.brands.set(sorted);
+        this.loading.set(false);
       },
       error: (err) => {
         console.error('Error loading brands:', err);
+        this.loading.set(false);
       }
     });
   }

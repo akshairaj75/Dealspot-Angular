@@ -10,7 +10,9 @@ import { CitiesCrudComponent } from './features/admin/cities-crud/cities-crud';
 import { CategoriesCrud } from './features/admin/categories-crud/categories-crud';
 import { StoresCrudComponent } from './features/admin/stores-crud/stores-crud.component';
 import { ProductsCrudComponent } from './features/admin/products-crud/products-crud.component';
+import { ProductDetailComponent } from './features/admin/product-detail/product-detail.component';
 import { BrandsCrudComponent } from './features/admin/brands-crud/brands-crud.component';
+import { BrandDetailComponent } from './features/admin/brand-detail/brand-detail.component';
 import { ProductSpecsCrudComponent } from './features/admin/product-specs-crud/product-specs-crud.component';
 import { BranchesCrudComponent } from './features/admin/branches-crud/branches-crud.component';
 import { FlyersCrudComponent } from './features/admin/flyers-crud/flyers-crud.component';
@@ -85,7 +87,11 @@ export const routes: Routes = [
             { path: 'stores', component: StoresCrudComponent },
             { path: 'stores/:id/branches', component: BranchesCrudComponent },
             { path: 'products', component: ProductsCrudComponent },
+            { path: 'products/:id/details', component: ProductDetailComponent },
+            { path: 'products/:id', component: ProductDetailComponent },
             { path: 'brands', component: BrandsCrudComponent },
+            { path: 'brands/:id/details', component: BrandDetailComponent },
+            { path: 'brands/:id', component: BrandDetailComponent },
             { path: 'offers', component: OffersCrudComponent },
             { path: 'coupons', component: CouponsCrudComponent },
             { path: 'flyers', component: FlyersCrudComponent },

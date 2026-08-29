@@ -1,0 +1,343 @@
+<div class="brand-detail-container" [dir]="currentLang() === 'ar' ? 'rtl' : 'ltr'">
+
+  <!-- Top Action Bar -->
+  <div class="top-action-bar">
+    <a [routerLink]="['/admin/brands']" class="btn-back">
+      <span class="material-icons-round">arrow_back</span>
+      <span>{{ currentLang() === 'en' ? 'Back to Brands' : 'العودة للعلامات التجارية' }}</span>
+    </a>
+
+    <div class="header-breadcrumbs" *ngIf="brand()">
+      <span class="crumb">{{ currentLang() === 'en' ? 'Brands' : 'العلامات التجارية' }}</span>
+      <span class="crumb-separator">/</span>
+      <span class="crumb active">{{ currentLang() === 'en' ? (brand()?.nameEn || brand()?.name_en) : (brand()?.nameAr || brand()?.name_ar || brand()?.nameEn) }}</span>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="toggleEditMode()" *ngIf="!isEditMode()">
+        <span class="material-icons-round">edit</span>
+        <span>{{ currentLang() === 'en' ? 'Edit Brand' : 'تعديل العلامة' }}</span>
+      </button>
+
+      <button class="btn btn-secondary" (click)="toggleEditMode()" *ngIf="isEditMode()">
+        <span class="material-icons-round">close</span>
+        <span>{{ currentLang() === 'en' ? 'Cancel Edit' : 'إلغاء التعديل' }}</span>
+      </button>
+
+      <button class="btn btn-danger-outline" (click)="deleteBrand()">
+        <span class="material-icons-round">delete</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading()">
+    <div class="spinner"></div>
+    <p>{{ currentLang() === 'en' ? 'Loading brand details...' : 'جاري تحميل تفاصيل العلامة التجارية...' }}</p>
+  </div>
+
+  <ng-container *ngIf="!loading() && brand()">
+    <!-- Hero / Main Header Card -->
+    <div class="hero-card">
+      <div class="hero-logo-wrap">
+        <img
+          *ngIf="logoPreviewUrl"
+          [src]="logoPreviewUrl"
+          class="hero-logo"
+          alt="Brand Logo"
+          (error)="$any($event.target).src = 'assets/images/placeholder-brand.png'"
+        />
+        <div *ngIf="!logoPreviewUrl" class="hero-logo-placeholder">
+          <span class="material-icons-round">storefront</span>
+        </div>
+
+        <label class="hero-logo-upload-btn" *ngIf="isEditMode()">
+          <input type="file" (change)="onFileSelected($event)" accept="image/*" class="file-hidden" />
+          <span class="material-icons-round">photo_camera</span>
+          <span>{{ currentLang() === 'en' ? 'Change Logo' : 'تغيير الشعار' }}</span>
+        </label>
+      </div>
+
+      <div class="hero-content">
+        <div class="hero-top-badges">
+          <!-- Active Status -->
+          <span class="status-pill"
+            [class.status-active]="brand().active === 1 || brand().active === true || brand().isActive === 1 || brand().isActive === true"
+            [class.status-inactive]="brand().active === 0 || brand().active === false || brand().isActive === 0 || brand().isActive === false"
+            (click)="quickToggleActive()"
+            [title]="currentLang() === 'en' ? 'Click to toggle status' : 'انقر لتغيير الحالة'"
+          >
+            <span class="status-dot"></span>
+            <span>{{ (brand().active === 1 || brand().active === true || brand().isActive === 1 || brand().isActive === true) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}</span>
+          </span>
+
+          <!-- Featured Badge -->
+          <span class="badge-featured-pill"
+            [class.is-featured]="brand().featured === true || brand().isFeatured === true"
+            (click)="quickToggleFeatured()"
+            [title]="currentLang() === 'en' ? 'Click to toggle featured status' : 'انقر لتغيير التمييز'"
+          >
+            <span class="material-icons-round icon-xs">star</span>
+            <span>{{ (brand().featured === true || brand().isFeatured === true) ? (currentLang() === 'en' ? 'Featured' : 'مميز') : (currentLang() === 'en' ? 'Standard' : 'عادي') }}</span>
+          </span>
+
+          <!-- ID Chip -->
+          <span class="id-pill">ID: #{{ brand().id }}</span>
+        </div>
+
+        <h1 class="hero-title-en">{{ brand().nameEn || brand().name_en }}</h1>
+        <h2 class="hero-title-ar" *ngIf="brand().nameAr || brand().name_ar">{{ brand().nameAr || brand().name_ar }}</h2>
+
+        <div class="hero-meta-chips">
+          <a *ngIf="brand().websiteUrl || brand().website_url" [href]="brand().websiteUrl || brand().website_url" target="_blank" class="chip-link">
+            <span class="material-icons-round icon-xs">language</span>
+            <span>{{ brand().websiteUrl || brand().website_url }}</span>
+          </a>
+
+          <div class="chip-item">
+            <span class="chip-label">{{ currentLang() === 'en' ? 'Associated Categories:' : 'الأقسام المربوطة:' }}</span>
+            <span class="chip-value">{{ (brand().categories || []).length }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN BODY: EDIT FORM OR VIEW MODE -->
+
+    <!-- EDIT MODE FORM -->
+    <form [formGroup]="brandForm" (submit)="onSaveBrand()" *ngIf="isEditMode()" class="edit-mode-container">
+      <div class="section-card">
+        <div class="card-header-bar">
+          <div class="card-header-title">
+            <span class="material-icons-round header-icon">edit_note</span>
+            <h3>{{ currentLang() === 'en' ? 'Edit Brand Details' : 'تعديل بيانات العلامة التجارية' }}</h3>
+          </div>
+          <button type="submit" [disabled]="brandForm.invalid || isSaving()" class="btn btn-primary">
+            <span class="material-icons-round">save</span>
+            <span>{{ isSaving() ? (currentLang() === 'en' ? 'Saving...' : 'جاري الحفظ...') : (currentLang() === 'en' ? 'Save Changes' : 'حفظ التغييرات') }}</span>
+          </button>
+        </div>
+
+        <div class="form-body-grid">
+          <!-- Name EN -->
+          <div class="form-group">
+            <label class="form-label required">{{ currentLang() === 'en' ? 'Brand Name (English) *' : 'اسم العلامة (الإنجليزية) *' }}</label>
+            <input type="text" formControlName="nameEn" class="form-control" placeholder="e.g. Samsung">
+            <div class="error-msg" *ngIf="brandForm.get('nameEn')?.touched && brandForm.get('nameEn')?.invalid">
+              {{ currentLang() === 'en' ? 'English name is required.' : 'الاسم بالإنجليزية مطلوب.' }}
+            </div>
+          </div>
+
+          <!-- Name AR -->
+          <div class="form-group">
+            <label class="form-label required">{{ currentLang() === 'en' ? 'Brand Name (Arabic) *' : 'اسم العلامة (العربية) *' }}</label>
+            <input type="text" formControlName="nameAr" class="form-control" placeholder="مثال: سامسونج">
+            <div class="error-msg" *ngIf="brandForm.get('nameAr')?.touched && brandForm.get('nameAr')?.invalid">
+              {{ currentLang() === 'en' ? 'Arabic name is required.' : 'الاسم بالعربية مطلوب.' }}
+            </div>
+          </div>
+
+          <!-- Website -->
+          <div class="form-group full-width">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Website URL' : 'رابط الموقع الإلكتروني' }}</label>
+            <input type="url" formControlName="websiteUrl" class="form-control" placeholder="https://www.brand.com">
+          </div>
+
+          <!-- Categories Multi-Select -->
+          <div class="form-group full-width">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Linked Categories' : 'الأقسام المرتبطة' }}</label>
+            
+            <div class="category-multiselect-box">
+              <div class="multiselect-trigger" (click)="toggleCategoryDropdown()">
+                <div class="selected-tags-container">
+                  <span *ngIf="getSelectedCategoryObjects().length === 0" class="placeholder-text">
+                    {{ currentLang() === 'en' ? 'Select associated categories...' : 'اختر الأقسام المرتبطة...' }}
+                  </span>
+                  <span *ngFor="let cat of getSelectedCategoryObjects()" class="category-chip">
+                    {{ currentLang() === 'en' ? cat.nameEn : (cat.nameAr || cat.nameEn) }}
+                    <span class="material-icons-round remove-icon" (click)="$event.stopPropagation(); toggleCategory(cat.id)">close</span>
+                  </span>
+                </div>
+                <span class="material-icons-round arrow-icon">arrow_drop_down</span>
+              </div>
+
+              <div class="multiselect-dropdown" *ngIf="isCategoryDropdownOpen">
+                <div class="dropdown-header">
+                  <input
+                    type="text"
+                    [(ngModel)]="categorySearch"
+                    [ngModelOptions]="{standalone: true}"
+                    [placeholder]="currentLang() === 'en' ? 'Search categories...' : 'ابحث عن قسم...'"
+                    class="dropdown-search"
+                  />
+                  <div class="dropdown-actions">
+                    <button type="button" class="btn-text-sm" (click)="selectAllCategories()">{{ currentLang() === 'en' ? 'Select All' : 'تحديد الكل' }}</button>
+                    <button type="button" class="btn-text-sm" (click)="clearAllCategories()">{{ currentLang() === 'en' ? 'Clear' : 'إلغاء' }}</button>
+                  </div>
+                </div>
+
+                <div class="dropdown-list">
+                  <label *ngFor="let cat of getFilteredCategories()" class="dropdown-item">
+                    <input
+                      type="checkbox"
+                      [checked]="isCategorySelected(cat.id)"
+                      (change)="toggleCategory(cat.id)"
+                    />
+                    <span>{{ currentLang() === 'en' ? cat.nameEn : (cat.nameAr || cat.nameEn) }}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Toggles: Active & Featured -->
+          <div class="form-group">
+            <div class="toggle-card">
+              <label class="toggle-switch">
+                <input type="checkbox" formControlName="isActive" />
+                <span class="slider"></span>
+              </label>
+              <div class="toggle-info">
+                <span class="toggle-title">{{ currentLang() === 'en' ? 'Active Status' : 'حالة التفعيل' }}</span>
+                <span class="toggle-desc">{{ currentLang() === 'en' ? 'Visible in brand lists' : 'ظاهرة في قوائم العلامات' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="toggle-card">
+              <label class="toggle-switch">
+                <input type="checkbox" formControlName="isFeatured" />
+                <span class="slider"></span>
+              </label>
+              <div class="toggle-info">
+                <span class="toggle-title">{{ currentLang() === 'en' ? 'Featured Brand' : 'علامة مميزة' }}</span>
+                <span class="toggle-desc">{{ currentLang() === 'en' ? 'Highlighted on home page' : 'ظاهرة في الصفحة الرئيسية' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Descriptions -->
+          <div class="form-group full-width">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Description (English)' : 'الوصف بالإنجليزية' }}</label>
+            <textarea formControlName="descriptionEn" class="form-control" rows="3" placeholder="Enter brand background & description..."></textarea>
+          </div>
+
+          <div class="form-group full-width">
+            <label class="form-label">{{ currentLang() === 'en' ? 'Description (Arabic)' : 'الوصف بالعربية' }}</label>
+            <textarea formControlName="descriptionAr" class="form-control" rows="3" placeholder="أدخل نبذة عن العلامة التجارية بالعربية..."></textarea>
+          </div>
+        </div>
+
+        <div class="card-footer-actions">
+          <button type="button" class="btn btn-secondary" (click)="toggleEditMode()">
+            {{ currentLang() === 'en' ? 'Cancel' : 'إلغاء' }}
+          </button>
+          <button type="submit" [disabled]="brandForm.invalid || isSaving()" class="btn btn-primary">
+            <span class="material-icons-round">save</span>
+            <span>{{ isSaving() ? (currentLang() === 'en' ? 'Saving...' : 'جاري الحفظ...') : (currentLang() === 'en' ? 'Save Brand Details' : 'حفظ بيانات العلامة') }}</span>
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <!-- VIEW MODE DETAILS GRID -->
+    <div class="details-grid-container" *ngIf="!isEditMode()">
+      <!-- Card 1: Overview Info -->
+      <div class="section-card">
+        <div class="card-header-bar">
+          <div class="card-header-title">
+            <span class="material-icons-round header-icon">info</span>
+            <h3>{{ currentLang() === 'en' ? 'Brand Overview' : 'نظرة عامة على العلامة' }}</h3>
+          </div>
+          <button class="btn btn-icon-sm" (click)="toggleEditMode()" [title]="currentLang() === 'en' ? 'Edit Details' : 'تعديل التفاصيل'">
+            <span class="material-icons-round">edit</span>
+          </button>
+        </div>
+
+        <div class="info-rows-list">
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'English Name' : 'الاسم بالإنجليزية' }}</span>
+            <span class="info-value font-semibold">{{ brand().nameEn || brand().name_en || '-' }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'Arabic Name' : 'الاسم بالعربية' }}</span>
+            <span class="info-value font-semibold">{{ brand().nameAr || brand().name_ar || '-' }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'Website' : 'الموقع الإلكتروني' }}</span>
+            <span class="info-value">
+              <a *ngIf="brand().websiteUrl || brand().website_url" [href]="brand().websiteUrl || brand().website_url" target="_blank" class="text-link">
+                {{ brand().websiteUrl || brand().website_url }}
+              </a>
+              <span *ngIf="!brand().websiteUrl && !brand().website_url">-</span>
+            </span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'Status' : 'الحالة' }}</span>
+            <span class="info-value font-semibold">
+              {{ (brand().active === 1 || brand().active === true || brand().isActive === 1 || brand().isActive === true) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}
+            </span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">{{ currentLang() === 'en' ? 'Featured Status' : 'التمييز' }}</span>
+            <span class="info-value font-semibold">
+              {{ (brand().featured === true || brand().isFeatured === true) ? (currentLang() === 'en' ? 'Featured' : 'مميز') : (currentLang() === 'en' ? 'Standard' : 'عادي') }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Descriptions -->
+      <div class="section-card">
+        <div class="card-header-bar">
+          <div class="card-header-title">
+            <span class="material-icons-round header-icon">description</span>
+            <h3>{{ currentLang() === 'en' ? 'Brand Descriptions' : 'الوصف والنبذة التعريفية' }}</h3>
+          </div>
+        </div>
+
+        <div class="desc-box-container">
+          <div class="desc-block">
+            <span class="desc-lang-tag">English Description</span>
+            <p class="desc-text">{{ brand().descriptionEn || brand().description_en || (currentLang() === 'en' ? 'No description available in English.' : 'لا يوجد وصف بالإنجليزية.') }}</p>
+          </div>
+
+          <div class="desc-block">
+            <span class="desc-lang-tag">الوصف بالعربية</span>
+            <p class="desc-text">{{ brand().descriptionAr || brand().description_ar || (currentLang() === 'en' ? 'No description available in Arabic.' : 'لا يوجد وصف بالعربية.') }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Linked Categories -->
+      <div class="section-card full-width">
+        <div class="card-header-bar">
+          <div class="card-header-title">
+            <span class="material-icons-round header-icon">category</span>
+            <h3>{{ currentLang() === 'en' ? 'Associated Categories' : 'الأقسام المرتبطة بهذه العلامة' }}</h3>
+          </div>
+        </div>
+
+        <div class="categories-chips-wrapper">
+          <div class="cats-flex" *ngIf="(brand().categories || []).length > 0">
+            <div class="cat-card-item" *ngFor="let c of brand().categories">
+              <span class="material-icons-round cat-icon">label</span>
+              <span class="cat-name">{{ currentLang() === 'en' ? (c.nameEn || c.name_en) : (c.nameAr || c.name_ar || c.nameEn) }}</span>
+            </div>
+          </div>
+
+          <div class="cats-empty" *ngIf="!(brand().categories && brand().categories.length > 0)">
+            <span class="material-icons-round empty-cats-icon">category</span>
+            <p>{{ currentLang() === 'en' ? 'No categories currently linked to this brand.' : 'لا توجد أقسام مرتبطة بهذه العلامة حالياً.' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+</div>

@@ -94,10 +94,16 @@
     </div>
   </div>
 
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading()">
+    <div class="spinner"></div>
+    <p>{{ currentLang() === 'en' ? 'Loading brand catalogue...' : 'جاري تحميل العلامات التجارية...' }}</p>
+  </div>
+
   <!-- ============================================================ -->
   <!-- 3. EMPTY STATE                                                -->
   <!-- ============================================================ -->
-  <div class="brands-empty" *ngIf="getFilteredBrands().length === 0">
+  <div class="brands-empty" *ngIf="!loading() && getFilteredBrands().length === 0">
     <div class="empty-circle">
       <span class="material-icons-round">loyalty</span>
     </div>
@@ -114,19 +120,19 @@
   <!-- ============================================================ -->
   <!-- 4. UNIFIED RESPONSIVE LIST VIEW (ALL SCREENS)                 -->
   <!-- ============================================================ -->
-  <div class="brands-list-view" *ngIf="getFilteredBrands().length > 0">
+  <div class="brands-list-view" *ngIf="!loading() && getFilteredBrands().length > 0">
     <div
       class="brand-list-item"
       *ngFor="let b of getFilteredBrands()"
       [class.card-inactive]="!(b.active === 1 || b.active === true || b.isActive === 1 || b.isActive === true)"
     >
       <!-- Left: Brand Logo Avatar -->
-      <div class="brand-avatar-box">
+      <div class="brand-avatar-box" [routerLink]="['/admin/brands', b.id, 'details']" [state]="{ brand: b }" style="cursor: pointer;">
         <img [src]="getLogoUrl(b.logoUrl)" class="brand-logo-img" [alt]="b.nameEn" (error)="$any($event.target).src = 'https://placehold.co/100x100?text=No+Logo'">
       </div>
 
       <!-- Middle: Details -->
-      <div class="brand-info-wrap">
+      <div class="brand-info-wrap" [routerLink]="['/admin/brands', b.id, 'details']" [state]="{ brand: b }" style="cursor: pointer;">
         <div class="brand-title-row">
           <h3 class="brand-name-en">{{ b.nameEn }}</h3>
           <span class="brand-id-pill" [title]="currentLang() === 'en' ? 'Brand ID: ' + b.id : 'معرف العلامة: ' + b.id">ID: #{{ b.id }}</span>
@@ -146,7 +152,7 @@
             <span class="cat-chip-sm more" *ngIf="b.categories.length > 3">+{{ b.categories.length - 3 }}</span>
           </div>
 
-          <a *ngIf="b.websiteUrl" [href]="b.websiteUrl.startsWith('http') ? b.websiteUrl : 'https://' + b.websiteUrl" target="_blank" class="brand-site-link" [title]="b.websiteUrl">
+          <a *ngIf="b.websiteUrl" [href]="b.websiteUrl.startsWith('http') ? b.websiteUrl : 'https://' + b.websiteUrl" (click)="$event.stopPropagation()" target="_blank" class="brand-site-link" [title]="b.websiteUrl">
             <span class="material-icons-round icon-xs">language</span>
             <span>{{ b.websiteUrl.replace('https://', '').replace('http://', '').replace('www.', '').split('/')[0] }}</span>
           </a>
@@ -167,6 +173,9 @@
         </span>
 
         <div class="item-action-btns">
+          <a [routerLink]="['/admin/brands', b.id, 'details']" [state]="{ brand: b }" class="btn-item-action" [title]="currentLang() === 'en' ? 'View Details' : 'عرض التفاصيل'">
+            <span class="material-icons-round">visibility</span>
+          </a>
           <button type="button" class="btn-item-action" (click)="openEditModal(b)" [title]="currentLang() === 'en' ? 'Edit' : 'تعديل'">
             <span class="material-icons-round">edit</span>
           </button>
