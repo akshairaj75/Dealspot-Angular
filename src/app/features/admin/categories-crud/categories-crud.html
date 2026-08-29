@@ -1,251 +1,457 @@
-<div class="crud-container">
-    <div class="crud-header">
-        <h2>Manage Categories</h2>
-        <button class="btn btn-primary" (click)="openAddModal()">
-            <span class="material-icons-round">add</span>
-            <span>Add Category</span>
-        </button>
+<div class="categories-page">
+
+  <!-- ============================================================ -->
+  <!-- 1. PAGE HEADER                                                -->
+  <!-- ============================================================ -->
+  <div class="categories-header">
+    <div class="categories-header-left">
+      <div class="categories-icon-badge">
+        <span class="material-icons-round">category</span>
+      </div>
+      <div class="categories-header-text">
+        <h1>{{ currentLang() === 'en' ? 'Categories Management' : 'إدارة الفئات والأقسام' }}</h1>
+        <p>{{ currentLang() === 'en' ? 'Organize catalog hierarchy, parent categories, subcategories, and display order.' : 'تنظيم وتصنيف المنتجات والعروض، الأقسام الرئيسية والفرعية وترتيب الظهور.' }}</p>
+      </div>
     </div>
 
-    <!-- Tabs Navigation -->
-    <div class="tabs-container">
-        <button class="tab-button" [class.active]="activeTab === 'parent'" (click)="activeTab = 'parent'">
-            <span class="material-icons-round">folder</span>
-            <span>Parent Categories ({{ parentCategories.length }})</span>
+    <button class="btn-new-category" (click)="openAddModal()">
+      <span class="material-icons-round">add_circle_outline</span>
+      <span>{{ currentLang() === 'en' ? 'Add Category' : 'إضافة فئة جديدة' }}</span>
+    </button>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 2. TABS & FILTER TOOLBAR                                      -->
+  <!-- ============================================================ -->
+  <div class="categories-nav-card">
+    <div class="nav-top-row">
+      <!-- Tab Switcher -->
+      <div class="category-tabs">
+        <button 
+          type="button" 
+          class="cat-tab-btn" 
+          [class.active]="activeTab === 'parent'" 
+          (click)="activeTab = 'parent'"
+        >
+          <span class="material-icons-round">folder</span>
+          <span>{{ currentLang() === 'en' ? 'Parent Categories' : 'الأقسام الرئيسية' }}</span>
+          <span class="tab-count-pill">{{ parentCategories.length }}</span>
         </button>
-        <button class="tab-button" [class.active]="activeTab === 'sub'" (click)="activeTab = 'sub'">
-            <span class="material-icons-round">folder_open</span>
-            <span>Subcategories ({{ subCategories.length }})</span>
+
+        <button 
+          type="button" 
+          class="cat-tab-btn" 
+          [class.active]="activeTab === 'sub'" 
+          (click)="activeTab = 'sub'"
+        >
+          <span class="material-icons-round">folder_open</span>
+          <span>{{ currentLang() === 'en' ? 'Subcategories' : 'الأقسام الفرعية' }}</span>
+          <span class="tab-count-pill">{{ subCategories.length }}</span>
         </button>
+      </div>
+
+      <!-- Item Counter Pill -->
+      <div class="items-total-pill">
+        <span class="material-icons-round icon-xs">layers</span>
+        <span>{{ (activeTab === 'parent' ? getFilteredParentCategories().length : getFilteredSubCategories().length) }} {{ currentLang() === 'en' ? 'Items' : 'عنصر' }}</span>
+      </div>
     </div>
 
-    <!-- Reorder Info Banner -->
-    <div class="reorder-info-banner">
-        <div class="banner-left">
-            <span class="material-icons-round banner-icon">drag_indicator</span>
-            <span><strong>Drag to Reorder:</strong> Grab the <span class="material-icons-round inline-icon">drag_indicator</span> handle or use <span class="material-icons-round inline-icon">keyboard_arrow_up</span><span class="material-icons-round inline-icon">keyboard_arrow_down</span> arrows to reorder categories. New order saves automatically.</span>
-        </div>
-        <div class="saving-badge" *ngIf="isSavingOrder">
-            <span class="spinner-small"></span>
-            <span>Saving order...</span>
-        </div>
-    </div>
+    <!-- Filters Row -->
+    <div class="toolbar-controls-row">
+      <!-- Search Input -->
+      <div class="search-wrap">
+        <span class="material-icons-round search-ico">search</span>
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery" 
+          [placeholder]="currentLang() === 'en' ? 'Search by category name (EN/AR)...' : 'ابحث باسم الفئة...'" 
+        >
+        <button type="button" class="btn-clear" *ngIf="searchQuery" (click)="clearSearch()">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
 
-    <!-- Filter controls (Only for Subcategories tab) -->
-    <div class="filter-controls" *ngIf="activeTab === 'sub'">
-        <span class="filter-label">Filter by Parent:</span>
-        <select [(ngModel)]="selectedParentFilter" class="filter-select">
-            <option value="">All Parent Categories</option>
-            <option *ngFor="let parent of parentCategories" [value]="parent.id">
-                {{ parent.nameEn }}
-            </option>
+      <!-- Parent Filter Dropdown (Subcategories Tab Only) -->
+      <div class="parent-filter-wrap" *ngIf="activeTab === 'sub'">
+        <span class="filter-prefix-icon material-icons-round">filter_list</span>
+        <select [(ngModel)]="selectedParentFilter" class="parent-select-control">
+          <option value="">{{ currentLang() === 'en' ? 'All Parent Categories' : 'جميع الأقسام الرئيسية' }}</option>
+          <option *ngFor="let parent of parentCategories" [value]="parent.id">
+            {{ currentLang() === 'en' ? parent.nameEn : (parent.nameAr || parent.nameEn) }}
+          </option>
         </select>
+      </div>
     </div>
+  </div>
 
-    <!-- Parent Categories Table -->
-    <div class="card table-wrapper" *ngIf="activeTab === 'parent'">
-        <table class="admin-table drag-table">
-            <thead>
-                <tr>
-                    <th style="width: 70px; text-align: center;">Reorder</th>
-                    <th style="width: 70px;">Order</th>
-                    <th>ID</th>
-                    <th>Icon / Image</th>
-                    <th>Name (EN)</th>
-                    <th>Name (AR)</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr 
-                    *ngFor="let cat of parentCategories; let i = index"
-                    [class.is-dragging]="draggedIndex === i && dragTab === 'parent'"
-                    [class.drag-over-row]="dragOverIndex === i && dragTab === 'parent'"
-                    (dragover)="onDragOver($event, i)"
-                    (drop)="onDrop($event, i, 'parent')"
-                >
-                    <td class="drag-handle-cell">
-                        <div class="drag-handle-actions">
-                            <span 
-                                class="material-icons-round drag-handle-icon" 
-                                draggable="true"
-                                (dragstart)="onDragStart($event, i, 'parent')"
-                                (dragend)="onDragEnd()"
-                                title="Drag to reorder"
-                            >drag_indicator</span>
-                            <div class="arrow-buttons">
-                                <button class="btn-arrow" (click)="moveUp(i, 'parent')" [disabled]="i === 0" title="Move Up">
-                                    <span class="material-icons-round">keyboard_arrow_up</span>
-                                </button>
-                                <button class="btn-arrow" (click)="moveDown(i, 'parent')" [disabled]="i === parentCategories.length - 1" title="Move Down">
-                                    <span class="material-icons-round">keyboard_arrow_down</span>
-                                </button>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="order-badge">#{{ cat.sortOrder || (i + 1) }}</span>
-                    </td>
-                    <td>{{ cat.id }}</td>
-                    <td>
-                        <div style="display:flex;align-items:center;gap:8px">
-                            <img *ngIf="cat.imageUrl" [src]="filePath + cat.imageUrl" class="category-image" alt="Category">
-                            <span *ngIf="!cat.imageUrl" class="material-icons-round text-primary">{{ cat.iconSlug || 'folder' }}</span>
-                        </div>
-                    </td>
-                    <td><strong>{{ cat.nameEn }}</strong></td>
-                    <td>{{ cat.nameAr }}</td>
-                    <td>
-                        <span class="badge" [class.badge-featured]="cat.active ?? (cat.is_active === 1 || cat.isActive === 1 || cat.is_active === true || cat.isActive === true)"
-                            [class.badge-discount]="!(cat.active ?? (cat.is_active === 1 || cat.isActive === 1 || cat.is_active === true || cat.isActive === true))">
-                            {{ (cat.active ?? (cat.is_active === 1 || cat.isActive === 1 || cat.is_active === true || cat.isActive === true)) ? 'Active' : 'Inactive' }}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="action-buttons-cell">
-                            <button class="btn-icon" (click)="openEditModal(cat)" title="Edit"><span
-                                    class="material-icons-round">edit</span></button>
-                            <button class="btn-icon text-danger" (click)="deleteCategory(cat.id)" title="Delete"><span
-                                    class="material-icons-round">delete</span></button>
-                        </div>
-                    </td>
-                </tr>
-                <tr *ngIf="parentCategories.length === 0">
-                    <td colspan="8" style="text-align: center; padding: 30px; color: var(--text-muted);">
-                        No parent categories found.
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+  <!-- ============================================================ -->
+  <!-- 3. REORDER INFO BANNER                                        -->
+  <!-- ============================================================ -->
+  <div class="reorder-info-banner">
+    <div class="banner-left">
+      <span class="material-icons-round banner-icon">swap_vert</span>
+      <span class="banner-text">
+        <strong>{{ currentLang() === 'en' ? 'Display Reordering:' : 'ترتيب الفئات:' }}</strong> 
+        {{ currentLang() === 'en' ? 'Drag handles (⋮⋮) in list or tap (▲ ▼) arrows on mobile cards. New order is saved automatically.' : 'اسحب المقبض (⋮⋮) في القائمة أو استخدم الأسهم على الجوال. يتم حفظ الترتيب تلقائياً.' }}
+      </span>
     </div>
-
-    <!-- Subcategories Table -->
-    <div class="card table-wrapper" *ngIf="activeTab === 'sub'">
-        <table class="admin-table drag-table">
-            <thead>
-                <tr>
-                    <th style="width: 70px; text-align: center;">Reorder</th>
-                    <th style="width: 70px;">Order</th>
-                    <th>ID</th>
-                    <th>Name (EN)</th>
-                    <th>Name (AR)</th>
-                    <th>Parent Category</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr 
-                    *ngFor="let cat of getFilteredSubCategories(); let i = index"
-                    [class.is-dragging]="draggedIndex === i && dragTab === 'sub'"
-                    [class.drag-over-row]="dragOverIndex === i && dragTab === 'sub'"
-                    (dragover)="onDragOver($event, i)"
-                    (drop)="onDrop($event, i, 'sub')"
-                >
-                    <td class="drag-handle-cell">
-                        <div class="drag-handle-actions">
-                            <span 
-                                class="material-icons-round drag-handle-icon" 
-                                draggable="true"
-                                (dragstart)="onDragStart($event, i, 'sub')"
-                                (dragend)="onDragEnd()"
-                                title="Drag to reorder"
-                            >drag_indicator</span>
-                            <div class="arrow-buttons">
-                                <button class="btn-arrow" (click)="moveUp(i, 'sub')" [disabled]="i === 0" title="Move Up">
-                                    <span class="material-icons-round">keyboard_arrow_up</span>
-                                </button>
-                                <button class="btn-arrow" (click)="moveDown(i, 'sub')" [disabled]="i === getFilteredSubCategories().length - 1" title="Move Down">
-                                    <span class="material-icons-round">keyboard_arrow_down</span>
-                                </button>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="order-badge">#{{ cat.sortOrder || (i + 1) }}</span>
-                    </td>
-                    <td>{{ cat.id }}</td>
-                    <td><strong>{{ cat.nameEn }}</strong></td>
-                    <td>{{ cat.nameAr }}</td>
-                    <td>
-                        <span class="parent-badge">
-                            <span class="material-icons-round" style="font-size: 14px; margin-right: 4px;">folder</span>
-                            {{ cat.parentNameEn }}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="badge" [class.badge-featured]="cat.active ?? (cat.is_active === 1 || cat.isActive === 1 || cat.is_active === true || cat.isActive === true)"
-                            [class.badge-discount]="!(cat.active ?? (cat.is_active === 1 || cat.isActive === 1 || cat.is_active === true || cat.isActive === true))">
-                            {{ (cat.active ?? (cat.is_active === 1 || cat.isActive === 1 || cat.is_active === true || cat.isActive === true)) ? 'Active' : 'Inactive' }}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="action-buttons-cell">
-                            <button class="btn-icon" (click)="openEditModal(cat)" title="Edit"><span
-                                    class="material-icons-round">edit</span></button>
-                            <button class="btn-icon text-danger" (click)="deleteCategory(cat.id)" title="Delete"><span
-                                    class="material-icons-round">delete</span></button>
-                        </div>
-                    </td>
-                </tr>
-                <tr *ngIf="getFilteredSubCategories().length === 0">
-                    <td colspan="8" style="text-align: center; padding: 30px; color: var(--text-muted);">
-                        No subcategories found.
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="saving-badge" *ngIf="isSavingOrder">
+      <span class="spinner-small"></span>
+      <span>{{ currentLang() === 'en' ? 'Saving order...' : 'جاري الحفظ...' }}</span>
     </div>
+  </div>
 
-    <!-- Add/Edit Modal -->
-    <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
-        <div class="modal-content" (click)="$event.stopPropagation()">
-            <div class="modal-header">
-                <h3>{{ editingCategoryId ? 'Edit Category' : 'Add Category' }}</h3>
-                <button class="btn-icon border-none" (click)="closeModal()"><span
-                        class="material-icons-round">close</span></button>
-            </div>
-            <div class="modal-body">
-                <form [formGroup]="catForm" (submit)="onSubmit()" class="auth-form">
-                    <div class="form-group">
-                        <label class="form-label">Category Name (EN)</label>
-                        <input type="text" formControlName="nameEn" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Category Name (AR)</label>
-                        <input type="text" formControlName="nameAr" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Icon Slug (Material Icon name)</label>
-                        <input type="text" formControlName="iconSlug" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Parent Category</label>
-                        <select formControlName="parentId" class="form-control">
-                            <option [ngValue]="null">None (Root Category)</option>
-                            <option *ngFor="let c of parentCategories" [ngValue]="c.id" [disabled]="c.id === editingCategoryId">{{ c.nameEn }}</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Sort Order</label>
-                        <input type="number" formControlName="sortOrder" class="form-control">
-                    </div>
+  <!-- ============================================================ -->
+  <!-- 4. EMPTY STATE                                                -->
+  <!-- ============================================================ -->
+  <div 
+    class="categories-empty" 
+    *ngIf="(activeTab === 'parent' ? getFilteredParentCategories().length : getFilteredSubCategories().length) === 0"
+  >
+    <div class="empty-circle">
+      <span class="material-icons-round">category</span>
+    </div>
+    <h3>{{ currentLang() === 'en' ? 'No Categories Found' : 'لم يتم العثور على أي فئات' }}</h3>
+    <p>
+      {{ searchQuery || selectedParentFilter 
+          ? (currentLang() === 'en' ? 'No categories match your active filter or search query.' : 'لا توجد فئات مطابقة للبحث أو الفلتر المحدد.') 
+          : (currentLang() === 'en' ? 'No categories configured yet. Click "Add Category" to get started.' : 'لم يتم تكوين أي فئات حتى الآن. انقر على "إضافة فئة" للبدء.') }}
+    </p>
+    <button class="btn-empty-reset" *ngIf="searchQuery || selectedParentFilter" (click)="clearSearch(); selectedParentFilter = ''">
+      <span class="material-icons-round">refresh</span>
+      <span>{{ currentLang() === 'en' ? 'Reset Filters' : 'إعادة ضبط الفلاتر' }}</span>
+    </button>
+  </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Category Image</label>
-                        <div class="file-upload-box">
-                            <input type="file" (change)="onFileSelected($event)" accept="image/*">
-                        </div>
-                    </div>
-                    <div class="form-group checkbox-label">
-                        <input type="checkbox" formControlName="isActive">
-                        <span>Active Status</span>
-                    </div>
-                    <button type="submit" [disabled]="catForm.invalid" class="btn btn-primary w-full">Save
-                        Changes</button>
-                </form>
-            </div>
+  <!-- ============================================================ -->
+  <!-- 5. AUTOMATIC DESKTOP LIST / TABLE VIEW (>= 768px)             -->
+  <!-- ============================================================ -->
+  <div 
+    class="desktop-list-view table-shell" 
+    *ngIf="(activeTab === 'parent' ? getFilteredParentCategories().length : getFilteredSubCategories().length) > 0"
+  >
+    <div class="table-scroll">
+      <table class="categories-table drag-table">
+        <thead>
+          <tr>
+            <th style="width: 70px; text-align: center;">{{ currentLang() === 'en' ? 'Reorder' : 'الترتيب' }}</th>
+            <th style="width: 60px;">#</th>
+            <th style="width: 65px;">ID</th>
+            <th style="width: 75px;">{{ currentLang() === 'en' ? 'Media' : 'الأيقونة' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Category Name (EN)' : 'الاسم (الإنجليزية)' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Category Name (AR)' : 'الاسم (العربية)' }}</th>
+            <th *ngIf="activeTab === 'sub'">{{ currentLang() === 'en' ? 'Parent Category' : 'القسم الرئيسي' }}</th>
+            <th style="width: 100px;">{{ currentLang() === 'en' ? 'Status' : 'الحالة' }}</th>
+            <th class="td-actions" style="width: 100px;">{{ currentLang() === 'en' ? 'Actions' : 'الإجراءات' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr 
+            *ngFor="let cat of (activeTab === 'parent' ? getFilteredParentCategories() : getFilteredSubCategories()); let i = index"
+            [class.is-dragging]="draggedIndex === i && dragTab === activeTab"
+            [class.drag-over-row]="dragOverIndex === i && dragTab === activeTab"
+            (dragover)="onDragOver($event, i)"
+            (drop)="onDrop($event, i, activeTab)"
+          >
+            <!-- Drag Handle Cell -->
+            <td class="drag-handle-cell">
+              <div class="drag-handle-actions">
+                <span 
+                  class="material-icons-round drag-handle-icon" 
+                  draggable="true"
+                  (dragstart)="onDragStart($event, i, activeTab)"
+                  (dragend)="onDragEnd()"
+                  [title]="currentLang() === 'en' ? 'Drag to reorder' : 'اسحب لإعادة الترتيب'"
+                >drag_indicator</span>
+                <div class="arrow-buttons">
+                  <button type="button" class="btn-arrow" (click)="moveUp(i, activeTab, $event)" [disabled]="i === 0" title="Move Up">
+                    <span class="material-icons-round">keyboard_arrow_up</span>
+                  </button>
+                  <button type="button" class="btn-arrow" (click)="moveDown(i, activeTab, $event)" [disabled]="i === (activeTab === 'parent' ? getFilteredParentCategories().length : getFilteredSubCategories().length) - 1" title="Move Down">
+                    <span class="material-icons-round">keyboard_arrow_down</span>
+                  </button>
+                </div>
+              </div>
+            </td>
+
+            <!-- Order # -->
+            <td>
+              <span class="order-badge">#{{ cat.sortOrder || (i + 1) }}</span>
+            </td>
+
+            <!-- ID -->
+            <td class="td-id">{{ cat.id }}</td>
+
+            <!-- Media / Icon -->
+            <td>
+              <div class="table-media-wrap">
+                <img *ngIf="cat.imageUrl" [src]="filePath + cat.imageUrl" class="cat-avatar-img-sm" [alt]="cat.nameEn">
+                <div *ngIf="!cat.imageUrl" class="cat-icon-chip">
+                  <span class="material-icons-round icon-md">{{ cat.iconSlug || 'folder' }}</span>
+                </div>
+              </div>
+            </td>
+
+            <!-- Name (EN) -->
+            <td><strong class="cat-row-title">{{ cat.nameEn }}</strong></td>
+
+            <!-- Name (AR) -->
+            <td class="td-arabic">{{ cat.nameAr }}</td>
+
+            <!-- Parent (Subcategories only) -->
+            <td *ngIf="activeTab === 'sub'">
+              <span class="parent-chip">
+                <span class="material-icons-round icon-xs">folder</span>
+                <span>{{ currentLang() === 'en' ? (cat.parentNameEn || 'Root') : (cat.parentNameAr || cat.parentNameEn || 'رئيسي') }}</span>
+              </span>
+            </td>
+
+            <!-- Status -->
+            <td>
+              <span 
+                class="status-pill"
+                [class.status-active]="cat.active === true || cat.active === 1 || cat.isActive === true || cat.isActive === 1 || cat.is_active === 1 || cat.is_active === true"
+                [class.status-inactive]="!(cat.active === true || cat.active === 1 || cat.isActive === true || cat.isActive === 1 || cat.is_active === 1 || cat.is_active === true)"
+              >
+                <span class="status-dot"></span>
+                <span>{{ (cat.active === true || cat.active === 1 || cat.isActive === true || cat.isActive === 1 || cat.is_active === 1 || cat.is_active === true) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}</span>
+              </span>
+            </td>
+
+            <!-- Actions -->
+            <td class="td-actions">
+              <div class="tbl-actions">
+                <button type="button" class="tbl-btn" (click)="openEditModal(cat)" [title]="currentLang() === 'en' ? 'Edit' : 'تعديل'">
+                  <span class="material-icons-round">edit</span>
+                </button>
+                <button type="button" class="tbl-btn del" (click)="deleteCategory(cat.id)" [title]="currentLang() === 'en' ? 'Delete' : 'حذف'">
+                  <span class="material-icons-round">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 6. AUTOMATIC MOBILE LIST VIEW (< 768px)                       -->
+  <!-- ============================================================ -->
+  <div 
+    class="mobile-list-view categories-mobile-list" 
+    *ngIf="(activeTab === 'parent' ? getFilteredParentCategories().length : getFilteredSubCategories().length) > 0"
+  >
+    <!-- List Item -->
+    <div 
+      class="mobile-cat-item" 
+      *ngFor="let cat of (activeTab === 'parent' ? getFilteredParentCategories() : getFilteredSubCategories()); let i = index"
+      [attr.data-index]="i"
+      [class.card-inactive]="!(cat.active === true || cat.active === 1 || cat.isActive === true || cat.isActive === 1 || cat.is_active === 1 || cat.is_active === true)"
+      [class.is-dragging]="draggedIndex === i && dragTab === activeTab"
+      [class.drag-over-row]="dragOverIndex === i && dragTab === activeTab"
+      (dragover)="onDragOver($event, i)"
+      (drop)="onDrop($event, i, activeTab)"
+    >
+      <!-- Left: Drag Grip Handle + Reorder Up/Down Mini Arrows + Avatar -->
+      <div class="item-left-group">
+        <span 
+          class="material-icons-round drag-handle-icon mobile-drag-grip" 
+          draggable="true"
+          (dragstart)="onDragStart($event, i, activeTab)"
+          (dragend)="onDragEnd()"
+          (touchstart)="onTouchStart($event, i, activeTab)"
+          (touchmove)="onTouchMove($event, activeTab)"
+          (touchend)="onTouchEnd($event, activeTab)"
+          [title]="currentLang() === 'en' ? 'Drag to reorder' : 'اسحب لإعادة الترتيب'"
+        >drag_indicator</span>
+
+        <div class="mobile-reorder-arrows">
+          <button 
+            type="button" 
+            class="btn-mini-arrow" 
+            [disabled]="i === 0"
+            (click)="moveUp(i, activeTab, $event)"
+            [title]="currentLang() === 'en' ? 'Move Up' : 'تحريك للأعلى'"
+          >
+            <span class="material-icons-round">keyboard_arrow_up</span>
+          </button>
+          <button 
+            type="button" 
+            class="btn-mini-arrow" 
+            [disabled]="i === (activeTab === 'parent' ? getFilteredParentCategories().length : getFilteredSubCategories().length) - 1"
+            (click)="moveDown(i, activeTab, $event)"
+            [title]="currentLang() === 'en' ? 'Move Down' : 'تحريك للأسفل'"
+          >
+            <span class="material-icons-round">keyboard_arrow_down</span>
+          </button>
         </div>
+
+        <div class="cat-avatar">
+          <img *ngIf="cat.imageUrl" [src]="filePath + cat.imageUrl" class="cat-avatar-img" [alt]="cat.nameEn">
+          <span *ngIf="!cat.imageUrl" class="material-icons-round cat-avatar-icon">{{ cat.iconSlug || 'folder' }}</span>
+        </div>
+      </div>
+
+      <!-- Middle: Identity Information -->
+      <div class="cat-info">
+        <div class="cat-title-row">
+          <h3 class="cat-name-en">{{ cat.nameEn }}</h3>
+          <span class="order-badge">#{{ cat.sortOrder || (i + 1) }}</span>
+        </div>
+        <span class="cat-name-ar">{{ cat.nameAr }}</span>
+
+        <!-- Parent Category Tag (Subcategories Tab) -->
+        <div class="parent-tag" *ngIf="activeTab === 'sub'">
+          <span class="material-icons-round icon-xs">subdirectory_arrow_right</span>
+          <span>{{ currentLang() === 'en' ? (cat.parentNameEn || 'Root') : (cat.parentNameAr || cat.parentNameEn || 'رئيسي') }}</span>
+        </div>
+      </div>
+
+      <!-- Right: Status Pill & Integrated Actions -->
+      <div class="item-right-group">
+        <span 
+          class="status-pill"
+          [class.status-active]="cat.active === true || cat.active === 1 || cat.isActive === true || cat.isActive === 1 || cat.is_active === 1 || cat.is_active === true"
+          [class.status-inactive]="!(cat.active === true || cat.active === 1 || cat.isActive === true || cat.isActive === 1 || cat.is_active === 1 || cat.is_active === true)"
+        >
+          <span class="status-dot"></span>
+          <span>{{ (cat.active === true || cat.active === 1 || cat.isActive === true || cat.isActive === 1 || cat.is_active === 1 || cat.is_active === true) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}</span>
+        </span>
+
+        <div class="item-action-btns">
+          <button type="button" class="btn-item-action" (click)="openEditModal(cat)" [title]="currentLang() === 'en' ? 'Edit' : 'تعديل'">
+            <span class="material-icons-round">edit</span>
+          </button>
+          <button type="button" class="btn-item-action btn-item-del" (click)="deleteCategory(cat.id)" [title]="currentLang() === 'en' ? 'Delete' : 'حذف'">
+            <span class="material-icons-round">delete</span>
+          </button>
+        </div>
+      </div>
     </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 7. ADD / EDIT CATEGORY MODAL                                  -->
+  <!-- ============================================================ -->
+  <div class="category-modal-overlay" *ngIf="isModalOpen" (click)="closeModal()">
+    <div class="category-modal" (click)="$event.stopPropagation()">
+
+      <!-- Modal Header -->
+      <div class="cat-modal-head">
+        <div class="modal-icon-group">
+          <div class="modal-icon-ring">
+            <span class="material-icons-round">{{ editingCategoryId ? 'edit' : 'add_box' }}</span>
+          </div>
+          <div class="modal-head-text">
+            <h3>{{ editingCategoryId ? (currentLang() === 'en' ? 'Edit Category' : 'تعديل بيانات الفئة') : (currentLang() === 'en' ? 'Add New Category' : 'إضافة فئة جديدة') }}</h3>
+            <p>{{ currentLang() === 'en' ? 'Configure titles, hierarchy, sort order, and visual icon.' : 'إدخال مسميات الفئة، التسلسل الهرمي، ترتيب العرض والأيقونة.' }}</p>
+          </div>
+        </div>
+        <button type="button" class="btn-modal-close" (click)="closeModal()">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="cat-modal-body">
+        <form [formGroup]="catForm" (submit)="onSubmit()" class="cat-form" id="cat-form">
+
+          <!-- Section: Basic Information -->
+          <div class="form-section-label">{{ currentLang() === 'en' ? 'Category Names' : 'مسميات الفئة' }}</div>
+
+          <div class="form-row-2">
+            <div class="f-group">
+              <label class="f-label">{{ currentLang() === 'en' ? 'Category Name (EN) *' : 'اسم الفئة (الإنجليزية) *' }}</label>
+              <input class="f-input" type="text" formControlName="nameEn" placeholder="e.g. Electronics" required>
+            </div>
+            <div class="f-group">
+              <label class="f-label">{{ currentLang() === 'en' ? 'Category Name (AR) *' : 'اسم الفئة (العربية) *' }}</label>
+              <input class="f-input" type="text" formControlName="nameAr" placeholder="مثال: الإلكترونيات" dir="rtl" required>
+            </div>
+          </div>
+
+          <!-- Section: Hierarchy & Sorting -->
+          <div class="form-section-label">{{ currentLang() === 'en' ? 'Hierarchy & Sorting' : 'التسلسل الهرمي والترتيب' }}</div>
+
+          <div class="form-row-2">
+            <!-- Parent Category Dropdown -->
+            <div class="f-group">
+              <label class="f-label">{{ currentLang() === 'en' ? 'Parent Category' : 'القسم الرئيسي' }}</label>
+              <select formControlName="parentId" class="f-input">
+                <option [ngValue]="null">{{ currentLang() === 'en' ? 'None (Root Category)' : 'بدون (قسم رئيسي)' }}</option>
+                <option *ngFor="let c of parentCategories" [ngValue]="c.id" [disabled]="c.id === editingCategoryId">
+                  {{ currentLang() === 'en' ? c.nameEn : (c.nameAr || c.nameEn) }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Sort Order -->
+            <div class="f-group">
+              <label class="f-label">{{ currentLang() === 'en' ? 'Display Sort Order *' : 'ترتيب الظهور *' }}</label>
+              <input class="f-input" type="number" formControlName="sortOrder" placeholder="1" required>
+            </div>
+          </div>
+
+          <!-- Section: Icon & Media -->
+          <div class="form-section-label">{{ currentLang() === 'en' ? 'Icon & Media Asset' : 'الأيقونة والصورة' }}</div>
+
+          <div class="form-row-2">
+            <!-- Icon Slug -->
+            <div class="f-group">
+              <label class="f-label">{{ currentLang() === 'en' ? 'Material Icon Slug *' : 'رمز الأيقونة (Material Icon) *' }}</label>
+              <div class="icon-input-wrap">
+                <span class="material-icons-round input-icon-preview">{{ catForm.get('iconSlug')?.value || 'folder' }}</span>
+                <input class="f-input icon-padded-input" type="text" formControlName="iconSlug" placeholder="folder, restaurant, shopping_bag..." required>
+              </div>
+            </div>
+
+            <!-- Image Upload -->
+            <div class="f-group">
+              <label class="f-label">{{ currentLang() === 'en' ? 'Category Image (Optional)' : 'صورة الفئة (اختياري)' }}</label>
+              <div class="custom-file-upload">
+                <input type="file" (change)="onFileSelected($event)" accept="image/*" id="cat-img-file" class="file-input-hidden">
+                <label for="cat-img-file" class="file-upload-trigger">
+                  <span class="material-icons-round">cloud_upload</span>
+                  <span>{{ currentLang() === 'en' ? 'Choose Image' : 'اختر صورة' }}</span>
+                </label>
+                <div class="img-preview-thumb" *ngIf="imagePreviewUrl">
+                  <img [src]="imagePreviewUrl" alt="Preview">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Coverage & Status -->
+          <div class="form-section-label">{{ currentLang() === 'en' ? 'Visibility & Status' : 'الحالة والظهور' }}</div>
+
+          <div class="status-row">
+            <label class="toggle-wrap">
+              <input type="checkbox" formControlName="isActive">
+              <span class="toggle-track"></span>
+            </label>
+            <div class="toggle-text">
+              <h4>{{ currentLang() === 'en' ? 'Active Status' : 'حالة الفئة النشطة' }}</h4>
+              <p>{{ currentLang() === 'en' ? 'Active categories appear across customer search filters and storefront catalogs.' : 'الفئات النشطة تظهر في واجهة المستخدم وقوائم التصفية.' }}</p>
+            </div>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="cat-modal-foot">
+        <button class="btn-cancel" type="button" (click)="closeModal()">
+          {{ currentLang() === 'en' ? 'Cancel' : 'إلغاء' }}
+        </button>
+        <button class="btn-save" type="submit" form="cat-form" [disabled]="catForm.invalid">
+          <span class="material-icons-round">save</span>
+          <span>{{ editingCategoryId ? (currentLang() === 'en' ? 'Save Changes' : 'حفظ التعديلات') : (currentLang() === 'en' ? 'Create Category' : 'إنشاء الفئة') }}</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
 </div>

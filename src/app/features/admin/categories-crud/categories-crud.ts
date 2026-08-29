@@ -1,13 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { CategoryService } from '../../../core/services/category.service';
+import { ChangeDetectorRef, Component, inject, OnInit, signal, HostListener } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { CategoryService } from '../../../core/services/category.service';
+import { TranslationService } from '../../../core/services/translation.service';
 import Swal from 'sweetalert2';
 import { environment } from '../../../environment/environment';
 
 @Component({
   selector: 'app-categories-crud',
+  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './categories-crud.html',
   styleUrl: './categories-crud.css',
@@ -15,23 +16,25 @@ import { environment } from '../../../environment/environment';
 export class CategoriesCrud implements OnInit {
   private fb = inject(FormBuilder);
   private categoryService = inject(CategoryService);
-  // private adminService = inject(AdminService);
+  private translationService = inject(TranslationService);
+  private cd = inject(ChangeDetectorRef);
 
-  constructor(
-    private cd: ChangeDetectorRef
-  ) {
-
-  }
-
+  currentLang = this.translationService.currentLang;
   categories: any[] = [];
   catForm!: FormGroup;
   isModalOpen = false;
   editingCategoryId: number | null = null;
   filePath = environment.filePath;
-  
+  imagePreviewUrl: string | null = null;
+
   // Tab state
   activeTab: 'parent' | 'sub' = 'parent';
-  
+
+  // View mode & search
+  viewMode = signal<'GRID' | 'TABLE'>('GRID');
+  searchQuery = '';
+  openMenuId = signal<number | null>(null);
+
   // Filter for subcategories
   selectedParentFilter: string = '';
 
@@ -40,6 +43,37 @@ export class CategoriesCrud implements OnInit {
   dragOverIndex: number | null = null;
   dragTab: 'parent' | 'sub' | null = null;
   isSavingOrder = false;
+
+  parentCategories: any[] = [];
+  subCategories: any[] = [];
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    if (this.openMenuId() !== null) {
+      this.openMenuId.set(null);
+    }
+  }
+
+  toggleCatMenu(id: number, event: Event): void {
+    event.stopPropagation();
+    if (this.openMenuId() === id) {
+      this.openMenuId.set(null);
+    } else {
+      this.openMenuId.set(id);
+    }
+  }
+
+  closeCatMenu(): void {
+    this.openMenuId.set(null);
+  }
+
+  setViewMode(mode: 'GRID' | 'TABLE'): void {
+    this.viewMode.set(mode);
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+  }
 
   ngOnInit(): void {
     this.loadCategories();
@@ -53,32 +87,101 @@ export class CategoriesCrud implements OnInit {
       image: [null]
     });
   }
-  parentCategories: any[] = [];
-  subCategories: any[] = [];
 
   loadCategories(): void {
-    this.categoryService.getCategories().subscribe(res => {
-      this.categories = res || [];
+    this.categoryService.getCategories().subscribe({
+      next: (res) => {
+        this.categories = res || [];
 
-      // Parent categories (parentId is null) sorted by sortOrder
-      this.parentCategories = this.categories
-        .filter((c: any) => c.parentId === null)
-        .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+        // Parent categories (parentId is null) sorted by sortOrder
+        this.parentCategories = this.categories
+          .filter((c: any) => c.parentId === null)
+          .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
-      // Subcategories (parentId is not null) sorted by sortOrder
-      this.subCategories = this.categories
-        .filter((c: any) => c.parentId !== null)
-        .map((sub: any) => {
-          const parent = this.parentCategories.find(p => p.id === sub.parentId);
-          return {
-            ...sub,
-            parentNameEn: parent ? parent.nameEn : 'Unknown'
-          };
-        })
-        .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+        // Subcategories (parentId is not null) sorted by sortOrder
+        this.subCategories = this.categories
+          .filter((c: any) => c.parentId !== null)
+          .map((sub: any) => {
+            const parent = this.parentCategories.find(p => p.id === sub.parentId);
+            return {
+              ...sub,
+              parentNameEn: parent ? parent.nameEn : 'Unknown',
+              parentNameAr: parent ? parent.nameAr : ''
+            };
+          })
+          .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
-      this.cd.detectChanges();
+        this.cd.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error loading categories:', err);
+      }
     });
+  }
+
+  getFilteredParentCategories(): any[] {
+    let list = this.parentCategories;
+    if (this.searchQuery.trim()) {
+      const q = this.searchQuery.toLowerCase().trim();
+      list = list.filter(c =>
+        (c.nameEn || '').toLowerCase().includes(q) ||
+        (c.nameAr || '').toLowerCase().includes(q) ||
+        (c.iconSlug || '').toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }
+
+  getFilteredSubCategories(): any[] {
+    let list = this.subCategories;
+    if (this.selectedParentFilter) {
+      const filterId = Number(this.selectedParentFilter);
+      list = list.filter(sub => sub.parentId === filterId);
+    }
+    if (this.searchQuery.trim()) {
+      const q = this.searchQuery.toLowerCase().trim();
+      list = list.filter(c =>
+        (c.nameEn || '').toLowerCase().includes(q) ||
+        (c.nameAr || '').toLowerCase().includes(q) ||
+        (c.parentNameEn || '').toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }
+
+  onTouchStart(event: TouchEvent, index: number, tab: 'parent' | 'sub'): void {
+    this.draggedIndex = index;
+    this.dragTab = tab;
+    this.dragOverIndex = index;
+  }
+
+  onTouchMove(event: TouchEvent, tab: 'parent' | 'sub'): void {
+    if (this.draggedIndex === null || this.dragTab !== tab) return;
+
+    const touch = event.touches[0];
+    if (!touch) return;
+
+    const target = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (!target) return;
+
+    const itemElement = target.closest('.mobile-cat-item') as HTMLElement;
+    if (itemElement && itemElement.dataset['index'] !== undefined) {
+      const targetIdx = Number(itemElement.dataset['index']);
+      if (!isNaN(targetIdx) && targetIdx !== this.dragOverIndex) {
+        this.dragOverIndex = targetIdx;
+        this.cd.detectChanges();
+      }
+    }
+  }
+
+  onTouchEnd(event: TouchEvent, tab: 'parent' | 'sub'): void {
+    if (this.draggedIndex !== null && this.dragOverIndex !== null && this.dragTab === tab) {
+      if (this.draggedIndex !== this.dragOverIndex) {
+        this.onDrop(new DragEvent('drop'), this.dragOverIndex, tab);
+        return;
+      }
+    }
+    this.onDragEnd();
   }
 
   onDragStart(event: DragEvent, index: number, tab: 'parent' | 'sub'): void {
@@ -142,14 +245,16 @@ export class CategoriesCrud implements OnInit {
     this.saveOrder(list);
   }
 
-  moveUp(index: number, tab: 'parent' | 'sub'): void {
+  moveUp(index: number, tab: 'parent' | 'sub', event?: Event): void {
+    if (event) event.stopPropagation();
     if (index <= 0) return;
     this.draggedIndex = index;
     this.dragTab = tab;
     this.onDrop(new DragEvent('drop'), index - 1, tab);
   }
 
-  moveDown(index: number, tab: 'parent' | 'sub'): void {
+  moveDown(index: number, tab: 'parent' | 'sub', event?: Event): void {
+    if (event) event.stopPropagation();
     const list = tab === 'parent' ? this.parentCategories : this.getFilteredSubCategories();
     if (index >= list.length - 1) return;
     this.draggedIndex = index;
@@ -180,7 +285,7 @@ export class CategoriesCrud implements OnInit {
         });
         Toast.fire({
           icon: 'success',
-          title: 'Categories order updated!'
+          title: this.currentLang() === 'en' ? 'Category order saved!' : 'تم حفظ ترتيب الفئات بنجاح!'
         });
       },
       error: (err) => {
@@ -192,22 +297,15 @@ export class CategoriesCrud implements OnInit {
     });
   }
 
-  getFilteredSubCategories() {
-    if (!this.selectedParentFilter) {
-      return this.subCategories;
-    }
-    const filterId = Number(this.selectedParentFilter);
-    return this.subCategories.filter(sub => sub.parentId === filterId);
-  }
-
   openAddModal(): void {
     this.editingCategoryId = null;
+    this.imagePreviewUrl = null;
     this.catForm.reset({
       nameEn: '',
       nameAr: '',
       iconSlug: 'folder',
-      parentId: null,
-      sortOrder: 1,
+      parentId: this.activeTab === 'sub' && this.selectedParentFilter ? Number(this.selectedParentFilter) : (this.activeTab === 'sub' && this.parentCategories.length > 0 ? this.parentCategories[0].id : null),
+      sortOrder: this.activeTab === 'parent' ? this.parentCategories.length + 1 : this.subCategories.length + 1,
       isActive: true,
       image: null
     });
@@ -216,6 +314,7 @@ export class CategoriesCrud implements OnInit {
 
   openEditModal(cat: any): void {
     this.editingCategoryId = cat.id;
+    this.imagePreviewUrl = cat.imageUrl ? (this.filePath + cat.imageUrl) : null;
     const isActive = cat.active !== undefined
       ? !!cat.active
       : (cat.is_active === 1 || cat.isActive === 1 || cat.is_active === true || cat.isActive === true);
@@ -234,12 +333,19 @@ export class CategoriesCrud implements OnInit {
 
   closeModal(): void {
     this.isModalOpen = false;
+    this.imagePreviewUrl = null;
   }
 
-  onFileSelected(event: any) {
+  onFileSelected(event: any): void {
     const file: File = event.target.files[0];
     if (file) {
       this.catForm.patchValue({ image: file });
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagePreviewUrl = reader.result as string;
+        this.cd.detectChanges();
+      };
+      reader.readAsDataURL(file);
     }
   }
 
@@ -266,9 +372,11 @@ export class CategoriesCrud implements OnInit {
     if (isDuplicate) {
       Swal.fire({
         icon: 'warning',
-        title: 'Duplicate Category',
-        text: 'A category with this English or Arabic name already exists!',
-        confirmButtonColor: '#3085d6'
+        title: this.currentLang() === 'en' ? 'Duplicate Category' : 'فئة مكررة',
+        text: this.currentLang() === 'en'
+          ? 'A category with this English or Arabic name already exists!'
+          : 'توجد فئة بهذا الاسم العربي أو الإنجليزي مسبقاً!',
+        confirmButtonColor: '#10b981'
       });
       return;
     }
@@ -305,10 +413,10 @@ export class CategoriesCrud implements OnInit {
       next: () => {
         Swal.fire({
           icon: 'success',
-          title: 'Success!',
+          title: this.currentLang() === 'en' ? 'Success!' : 'تم بنجاح!',
           text: this.editingCategoryId
-            ? 'Category updated successfully.'
-            : 'Category created successfully.',
+            ? (this.currentLang() === 'en' ? 'Category updated successfully.' : 'تم تعديل الفئة بنجاح.')
+            : (this.currentLang() === 'en' ? 'Category created successfully.' : 'تم إنشاء الفئة بنجاح.'),
           timer: 2000,
           showConfirmButton: false
         });
@@ -318,11 +426,12 @@ export class CategoriesCrud implements OnInit {
       },
       error: (error) => {
         console.error(error);
-
         Swal.fire({
           icon: 'error',
-          title: this.editingCategoryId ? 'Update Failed' : 'Creation Failed',
-          text: error?.error?.message || 'Something went wrong. Please try again.',
+          title: this.editingCategoryId
+            ? (this.currentLang() === 'en' ? 'Update Failed' : 'فشل التعديل')
+            : (this.currentLang() === 'en' ? 'Creation Failed' : 'فشل الإنشاء'),
+          text: error?.error?.message || (this.currentLang() === 'en' ? 'Something went wrong. Please try again.' : 'حدث خطأ ما. يرجى المحاولة لاحقاً.'),
           confirmButtonColor: '#d33'
         });
       }
@@ -331,21 +440,22 @@ export class CategoriesCrud implements OnInit {
 
   deleteCategory(id: number): void {
     Swal.fire({
-      title: 'Are you sure?',
-      text: 'Do you want to delete this category?',
+      title: this.currentLang() === 'en' ? 'Are you sure?' : 'هل أنت متأكد؟',
+      text: this.currentLang() === 'en' ? 'Do you want to delete this category?' : 'هل ترغب في حذف هذه الفئة نهائياً؟',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, delete it!'
+      cancelButtonColor: '#64748b',
+      confirmButtonText: this.currentLang() === 'en' ? 'Yes, delete it!' : 'نعم، احذفها',
+      cancelButtonText: this.currentLang() === 'en' ? 'Cancel' : 'إلغاء'
     }).then((result) => {
       if (result.isConfirmed) {
         this.categoryService.deleteCategory(id).subscribe({
           next: () => {
             Swal.fire({
               icon: 'success',
-              title: 'Deleted!',
-              text: 'Category deleted successfully.',
+              title: this.currentLang() === 'en' ? 'Deleted!' : 'تم الحذف!',
+              text: this.currentLang() === 'en' ? 'Category deleted successfully.' : 'تم حذف الفئة بنجاح.',
               timer: 1500,
               showConfirmButton: false
             });
@@ -360,4 +470,3 @@ export class CategoriesCrud implements OnInit {
     });
   }
 }
-export { TranslationService } from '../../../core/services/translation.service';

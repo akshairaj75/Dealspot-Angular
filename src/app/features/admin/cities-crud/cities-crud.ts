@@ -22,7 +22,7 @@ export class CitiesCrudComponent implements OnInit {
   cityForm!: FormGroup;
   isModalOpen = false;
   editingCityId: number | null = null;
-  
+
   viewMode = signal<'GRID' | 'TABLE'>('GRID');
   searchQuery = '';
   openMenuId = signal<number | null>(null);
