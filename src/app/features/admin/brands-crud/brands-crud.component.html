@@ -129,7 +129,7 @@
       <div class="brand-info-wrap">
         <div class="brand-title-row">
           <h3 class="brand-name-en">{{ b.nameEn }}</h3>
-          <span class="brand-id-pill">#{{ b.id }}</span>
+          <span class="brand-id-pill" [title]="currentLang() === 'en' ? 'Brand ID: ' + b.id : 'معرف العلامة: ' + b.id">ID: #{{ b.id }}</span>
           <span class="featured-chip" *ngIf="b.featured || b.isFeatured">
             <span class="material-icons-round icon-xs">star</span>
             <span>Featured</span>

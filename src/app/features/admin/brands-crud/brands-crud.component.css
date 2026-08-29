@@ -361,12 +361,13 @@
 .brand-id-pill {
   font-size: 0.72rem;
   font-weight: 700;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-family: monospace;
   background: var(--surface-hover);
-  padding: 1px 5px;
+  padding: 1px 6px;
   border-radius: 4px;
   border: 1px solid var(--border);
+  letter-spacing: 0.02em;
 }
 
 .featured-chip {
@@ -679,7 +680,11 @@
 
 .brand-modal-body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
   padding: 1.25rem;
 }
 

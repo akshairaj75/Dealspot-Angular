@@ -105,27 +105,25 @@
       </div>
 
       <div class="filters-group">
-        <select class="form-control filter-select" [(ngModel)]="selectedCityFilter" (change)="applyFilter()">
-          <option value="">{{ currentLang() === 'en' ? 'All Cities' : 'جميع المدن' }}</option>
-          <option *ngFor="let c of cities()" [value]="c.id">
-            {{ currentLang() === 'en' ? (c.nameEn || c.name_en) : (c.nameAr || c.name_ar || c.nameEn) }}
-          </option>
-        </select>
+        <div class="filter-select-wrap">
+          <span class="material-icons-round select-prefix-icon">place</span>
+          <select class="form-control filter-select" [(ngModel)]="selectedCityFilter" (change)="applyFilter()">
+            <option value="">{{ currentLang() === 'en' ? 'All Cities' : 'جميع المدن' }}</option>
+            <option *ngFor="let c of cities()" [value]="c.id">
+              {{ currentLang() === 'en' ? (c.nameEn || c.name_en) : (c.nameAr || c.name_ar || c.nameEn) }}
+            </option>
+          </select>
+        </div>
 
-        <select class="form-control filter-select" [(ngModel)]="selectedCategoryFilter" (change)="applyFilter()">
-          <option value="">{{ currentLang() === 'en' ? 'All Categories' : 'جميع الفئات' }}</option>
-          <option *ngFor="let cat of categories()" [value]="cat.id">
-            {{ currentLang() === 'en' ? (cat.nameEn || cat.name_en || cat.name) : (cat.nameAr || cat.name_ar || cat.nameEn || cat.name) }}
-          </option>
-        </select>
-
-        <select class="form-control filter-select" [(ngModel)]="selectedStatusFilter" (change)="applyFilter()">
-          <option value="">{{ currentLang() === 'en' ? 'All Status' : 'كل الحالات' }}</option>
-          <option value="active">{{ currentLang() === 'en' ? 'Active' : 'نشط' }}</option>
-          <option value="inactive">{{ currentLang() === 'en' ? 'Inactive' : 'غير نشط' }}</option>
-          <option value="verified">{{ currentLang() === 'en' ? 'Verified Only' : 'معتمد فقط' }}</option>
-          <option value="featured">{{ currentLang() === 'en' ? 'Featured Only' : 'مميز فقط' }}</option>
-        </select>
+        <div class="filter-select-wrap">
+          <span class="material-icons-round select-prefix-icon">category</span>
+          <select class="form-control filter-select" [(ngModel)]="selectedCategoryFilter" (change)="applyFilter()">
+            <option value="">{{ currentLang() === 'en' ? 'All Categories' : 'جميع الفئات' }}</option>
+            <option *ngFor="let cat of categories()" [value]="cat.id">
+              {{ currentLang() === 'en' ? (cat.nameEn || cat.name_en || cat.name) : (cat.nameAr || cat.name_ar || cat.nameEn || cat.name) }}
+            </option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
@@ -143,29 +141,43 @@
       *ngFor="let s of filteredStores()"
       [class.card-inactive]="!s.active"
     >
-      <!-- Left: Store Logo Avatar -->
-      <div class="store-avatar-box">
-        <img
-          *ngIf="s.logoUrl"
-          [src]="filePath + s.logoUrl"
-          alt="{{ s.nameEn }} logo"
-          (error)="$any($event.target).src = 'assets/images/placeholder-store.png'"
-        />
-        <span *ngIf="!s.logoUrl" class="material-icons-round avatar-placeholder-icon">storefront</span>
-      </div>
+      <!-- Item Main Info -->
+      <div class="store-item-main">
+        <!-- Store Logo Avatar -->
+        <div class="store-avatar-box">
+          <img
+            *ngIf="s.logoUrl"
+            [src]="filePath + s.logoUrl"
+            alt="{{ s.nameEn }} logo"
+            (error)="$any($event.target).src = 'assets/images/placeholder-store.png'"
+          />
+          <span *ngIf="!s.logoUrl" class="material-icons-round avatar-placeholder-icon">storefront</span>
+        </div>
 
-      <!-- Middle: Store Details -->
-      <div class="store-info-wrap">
-        <div class="store-title-row">
-          <h3 class="store-name-primary">{{ currentLang() === 'en' ? (s.nameEn || s.name_en) : (s.nameAr || s.name_ar || s.nameEn) }}</h3>
-          <span class="store-id-pill">#{{ s.id }}</span>
-          <span class="store-featured-badge" *ngIf="s.featured || s.is_featured">★ Featured</span>
-          <span class="store-verified-badge" *ngIf="s.verified" [title]="currentLang() === 'en' ? 'Verified Partner' : 'شريك معتمد'">
-            <span class="material-icons-round icon-xs">verified</span>
+        <!-- Store Names & Badges -->
+        <div class="store-info-wrap">
+          <div class="store-title-row">
+            <h3 class="store-name-primary">{{ currentLang() === 'en' ? (s.nameEn || s.name_en) : (s.nameAr || s.name_ar || s.nameEn) }}</h3>
+            <span class="store-id-pill">#{{ s.id }}</span>
+            <span class="store-featured-badge" *ngIf="s.featured || s.is_featured">★ Featured</span>
+            <span class="store-verified-badge" *ngIf="s.verified" [title]="currentLang() === 'en' ? 'Verified Partner' : 'شريك معتمد'">
+              <span class="material-icons-round icon-xs">verified</span>
+            </span>
+          </div>
+          <span class="store-name-secondary">{{ currentLang() === 'en' ? (s.nameAr || s.name_ar) : (s.nameEn || s.name_en) }}</span>
+        </div>
+
+        <!-- Status Pill (Desktop Alignment) -->
+        <div class="store-desktop-status">
+          <span class="status-pill" [class.status-active]="s.active" [class.status-inactive]="!s.active">
+            <span class="status-dot"></span>
+            <span>{{ s.active ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'معطل') }}</span>
           </span>
         </div>
-        <span class="store-name-secondary">{{ currentLang() === 'en' ? (s.nameAr || s.name_ar) : (s.nameEn || s.name_en) }}</span>
+      </div>
 
+      <!-- Item Meta Tags & Actions Bar -->
+      <div class="store-item-footer">
         <div class="store-meta-tags">
           <span class="store-tag" *ngIf="s.cityNameEn || s.cityNameAr || s.city?.nameEn || s.city?.name_en">
             <span class="material-icons-round icon-xs">place</span>
@@ -183,42 +195,42 @@
             CR: {{ s.crNumber }}
           </span>
         </div>
-      </div>
 
-      <!-- Right: Status & Actions -->
-      <div class="item-right-group">
-        <span class="status-pill" [class.status-active]="s.active" [class.status-inactive]="!s.active">
-          <span class="status-dot"></span>
-          <span>{{ s.active ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'معطل') }}</span>
-        </span>
+        <div class="item-actions-group">
+          <!-- Status Pill (Mobile Alignment) -->
+          <span class="status-pill store-mobile-status" [class.status-active]="s.active" [class.status-inactive]="!s.active">
+            <span class="status-dot"></span>
+            <span>{{ s.active ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'معطل') }}</span>
+          </span>
 
-        <div class="item-action-btns">
-          <a
-            [routerLink]="['/admin/stores', s.id, 'branches']"
-            class="btn-item-action btn-item-branches"
-            [title]="currentLang() === 'en' ? 'Manage Branches' : 'إدارة الفروع'"
-          >
-            <span class="material-icons-round">domain</span>
-          </a>
+          <div class="item-action-btns">
+            <a
+              [routerLink]="['/admin/stores', s.id, 'branches']"
+              class="btn-item-action btn-item-branches"
+              [title]="currentLang() === 'en' ? 'Manage Branches' : 'إدارة الفروع'"
+            >
+              <span class="material-icons-round">domain</span>
+            </a>
 
-          <button
-            type="button"
-            class="btn-item-action"
-            (click)="openEditModal(s)"
-            [title]="currentLang() === 'en' ? 'Edit Store' : 'تعديل المتجر'"
-          >
-            <span class="material-icons-round">edit</span>
-          </button>
+            <button
+              type="button"
+              class="btn-item-action"
+              (click)="openEditModal(s)"
+              [title]="currentLang() === 'en' ? 'Edit Store' : 'تعديل المتجر'"
+            >
+              <span class="material-icons-round">edit</span>
+            </button>
 
-          <button
-            *ngIf="authService.isSuperAdmin()"
-            type="button"
-            class="btn-item-action btn-item-del"
-            (click)="deleteStore(s)"
-            [title]="currentLang() === 'en' ? 'Delete Store' : 'حذف المتجر'"
-          >
-            <span class="material-icons-round">delete</span>
-          </button>
+            <button
+              *ngIf="authService.isSuperAdmin()"
+              type="button"
+              class="btn-item-action btn-item-del"
+              (click)="deleteStore(s)"
+              [title]="currentLang() === 'en' ? 'Delete Store' : 'حذف المتجر'"
+            >
+              <span class="material-icons-round">delete</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
