@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CityService } from '../../../core/services/city.service';
@@ -22,6 +22,67 @@ export class CitiesCrudComponent implements OnInit {
   cityForm!: FormGroup;
   isModalOpen = false;
   editingCityId: number | null = null;
+  
+  viewMode = signal<'GRID' | 'TABLE'>('GRID');
+  searchQuery = '';
+  openMenuId = signal<number | null>(null);
+  copiedCityId = signal<number | null>(null);
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    if (this.openMenuId() !== null) {
+      this.openMenuId.set(null);
+    }
+  }
+
+  toggleCityMenu(id: number, event: Event): void {
+    event.stopPropagation();
+    if (this.openMenuId() === id) {
+      this.openMenuId.set(null);
+    } else {
+      this.openMenuId.set(id);
+    }
+  }
+
+  closeCityMenu(): void {
+    this.openMenuId.set(null);
+  }
+
+  copyCoords(lat: number, lng: number, id: number, event?: Event): void {
+    if (event) event.stopPropagation();
+    const text = `${lat}, ${lng}`;
+    navigator.clipboard.writeText(text).then(() => {
+      this.copiedCityId.set(id);
+      setTimeout(() => this.copiedCityId.set(null), 2000);
+    });
+  }
+
+  openInMap(lat: number, lng: number, event?: Event): void {
+    if (event) event.stopPropagation();
+    window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank');
+  }
+
+  setViewMode(mode: 'GRID' | 'TABLE'): void {
+    this.viewMode.set(mode);
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+  }
+
+  getFilteredCities(): any[] {
+    let list = this.cities();
+    if (this.searchQuery.trim()) {
+      const q = this.searchQuery.toLowerCase().trim();
+      list = list.filter(c => {
+        const nameEn = (c.nameEn || c.name_en || '').toLowerCase();
+        const nameAr = (c.nameAr || c.name_ar || '').toLowerCase();
+        const region = (c.regionCode || c.region_code || '').toLowerCase();
+        return nameEn.includes(q) || nameAr.includes(q) || region.includes(q);
+      });
+    }
+    return list;
+  }
 
   ngOnInit(): void {
     this.loadCities();
