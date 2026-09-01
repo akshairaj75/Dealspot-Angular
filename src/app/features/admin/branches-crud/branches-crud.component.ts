@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -7,6 +7,7 @@ import { StoreBranchService } from '../../../core/services/store-branch.service'
 import { CityService } from '../../../core/services/city.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { CustomSelectComponent } from '../../../shared/components/custom-select/custom-select.component';
+import { environment } from '../../../environment/environment';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -26,16 +27,69 @@ export class BranchesCrudComponent implements OnInit {
   private cd = inject(ChangeDetectorRef);
 
   currentLang = this.translationService.currentLang;
+  filePath = environment.filePath;
 
   store = signal<any | null>(null);
   branches = signal<any[]>([]);
   cities = signal<any[]>([]);
+
+  searchQuery = signal<string>('');
+  selectedCityFilter = signal<any>(null);
+  selectedStatusFilter = signal<string>('ALL');
 
   branchForm!: FormGroup;
   isModalOpen = false;
   editingBranchId: number | null = null;
   storeId!: number;
   loading = false;
+
+  statusFilterOptions = computed(() => [
+    { value: 'ALL', nameEn: 'All Statuses', nameAr: 'جميع الحالات' },
+    { value: 'ACTIVE', nameEn: 'Active Only', nameAr: 'نشط فقط' },
+    { value: 'INACTIVE', nameEn: 'Inactive Only', nameAr: 'غير نشط فقط' }
+  ]);
+
+  totalBranchesCount = computed(() => this.branches().length);
+  activeBranchesCount = computed(() =>
+    this.branches().filter(b => b.active === 1 || b.active === true || b.isActive === true || b.is_active === 1).length
+  );
+  twentyFourSevenCount = computed(() =>
+    this.branches().filter(b => b.twentyFourHours || b.is_24_hours).length
+  );
+
+  filteredBranches = computed(() => {
+    let list = this.branches();
+    const q = (this.searchQuery() || '').trim().toLowerCase();
+    const cityId = this.selectedCityFilter();
+    const status = this.selectedStatusFilter();
+
+    if (q) {
+      list = list.filter(b => {
+        const name = (b.branchName || b.branch_name || '').toLowerCase();
+        const addrEn = (b.addressEn || b.address_en || '').toLowerCase();
+        const addrAr = (b.addressAr || b.address_ar || '').toLowerCase();
+        const phone = (b.phone || '').toLowerCase();
+        const cityEn = (b.cityNameEn || b.city?.nameEn || '').toLowerCase();
+        const cityAr = (b.cityNameAr || b.city?.nameAr || '').toLowerCase();
+        return name.includes(q) || addrEn.includes(q) || addrAr.includes(q) || phone.includes(q) || cityEn.includes(q) || cityAr.includes(q);
+      });
+    }
+
+    if (cityId !== null && cityId !== undefined && cityId !== '') {
+      list = list.filter(b => {
+        const bCityId = b.cityId ?? b.city_id ?? b.city?.id;
+        return String(bCityId) === String(cityId);
+      });
+    }
+
+    if (status === 'ACTIVE') {
+      list = list.filter(b => b.active === 1 || b.active === true || b.isActive === true || b.is_active === 1);
+    } else if (status === 'INACTIVE') {
+      list = list.filter(b => b.active === 0 || b.active === false || b.isActive === false || b.is_active === 0);
+    }
+
+    return list;
+  });
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -245,5 +299,23 @@ export class BranchesCrudComponent implements OnInit {
         });
       }
     });
+  }
+
+  getStoreLogoUrl(): string {
+    const s = this.store();
+    if (!s) return '';
+    const logo = s.logoUrl || s.logo_url || s.logo;
+    if (!logo) return '';
+    if (logo.startsWith('http://') || logo.startsWith('https://') || logo.startsWith('data:') || logo.startsWith('assets/')) {
+      return logo;
+    }
+    const base = this.filePath || environment.filePath || '';
+    if (base.endsWith('/') && logo.startsWith('/')) {
+      return base + logo.substring(1);
+    }
+    if (!base.endsWith('/') && !logo.startsWith('/')) {
+      return base + '/' + logo;
+    }
+    return base + logo;
   }
 }

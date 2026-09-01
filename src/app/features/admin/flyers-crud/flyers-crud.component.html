@@ -1,305 +1,513 @@
-<div class="crud-container">
+<div class="crud-container" [dir]="currentLang() === 'ar' ? 'rtl' : 'ltr'">
   <!-- Header -->
   <div class="crud-header">
-    <h2>{{ currentLang() === 'en' ? 'Store Flyers & Brochures' : 'إدارة النشرات والعروض الأسبوعية' }}</h2>
-    <button class="btn btn-primary" (click)="openAddModal()">
+    <div class="header-title-group">
+      <div class="header-icon-wrapper">
+        <span class="material-icons-round">menu_book</span>
+      </div>
+      <div>
+        <h2 class="page-title">{{ currentLang() === 'en' ? 'Store Flyers & Catalogues' : 'إدارة النشرات والعروض الأسبوعية' }}</h2>
+        <p class="page-subtitle">{{ currentLang() === 'en' ? 'Publish weekly promotional catalogues, flyer pages, and PDF brochures' : 'نشر كراسات العروض الأسبوعية، مجلات التخفيضات، وملفات PDF' }}</p>
+      </div>
+    </div>
+
+    <button class="btn-primary" (click)="openAddModal()">
       <span class="material-icons-round">post_add</span>
-      <span>{{ currentLang() === 'en' ? 'Add Flyer' : 'إضافة منشور' }}</span>
+      <span>{{ currentLang() === 'en' ? 'Add New Flyer' : 'إضافة منشور جديد' }}</span>
     </button>
   </div>
 
-  <!-- Search and Stats Row -->
-  <div class="search-stats-row">
-    <div class="search-box-wrapper">
-      <span class="material-icons-round search-icon">search</span>
-      <input 
-        type="text" 
-        [(ngModel)]="searchQuery" 
-        (ngModelChange)="applyFilter()"
-        [placeholder]="currentLang() === 'en' ? 'Search flyers by title, retailer, city...' : 'ابحث عن النشرات بالعنوان، المتجر، المدينة...'" 
-        class="search-input" 
-      />
+  <!-- Summary Stats Cards Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon-wrapper stat-icon-blue">
+        <span class="material-icons-round">menu_book</span>
+      </div>
+      <div class="stat-details">
+        <span class="stat-value">{{ totalFlyersCount() }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Total Catalogues' : 'إجمالي النشرات' }}</span>
+      </div>
     </div>
-    <div class="stats-badge">
-      <span class="material-icons-round">menu_book</span>
-      <span>{{ currentLang() === 'en' ? 'Total Flyers:' : 'إجمالي النشرات:' }} <strong>{{ flyers().length }}</strong></span>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrapper stat-icon-green">
+        <span class="material-icons-round">check_circle</span>
+      </div>
+      <div class="stat-details">
+        <span class="stat-value">{{ activeFlyersCount() }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Active Flyers' : 'نشرات نشطة' }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrapper stat-icon-amber">
+        <span class="material-icons-round">visibility</span>
+      </div>
+      <div class="stat-details">
+        <span class="stat-value">{{ totalFlyerViewsCount() }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Total Views' : 'إجمالي المشاهدات' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters & Search Toolbar -->
+  <div class="card filter-card">
+    <div class="filter-row">
+      <div class="search-input-wrapper">
+        <span class="material-icons-round search-icon">search</span>
+        <input
+          type="text"
+          class="form-control search-input"
+          [placeholder]="currentLang() === 'en' ? 'Search by flyer title, store, city...' : 'ابحث بالعنوان، المتجر، المدينة...'"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+        />
+        <button *ngIf="searchQuery()" class="clear-search-btn" (click)="searchQuery.set('')">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <div class="filters-group">
+        <div style="min-width: 170px;">
+          <app-custom-select
+            [options]="stores()"
+            [ngModel]="selectedStoreFilter()"
+            (ngModelChange)="selectedStoreFilter.set($event)"
+            valueKey="id"
+            labelEnKey="nameEn"
+            labelArKey="nameAr"
+            [placeholder]="currentLang() === 'en' ? 'All Stores' : 'جميع المتاجر'"
+            [allowUnset]="true"
+            [unsetLabel]="currentLang() === 'en' ? 'All Stores' : 'جميع المتاجر'"
+            [filePath]="filePath"
+          ></app-custom-select>
+        </div>
+
+        <div style="min-width: 160px;">
+          <app-custom-select
+            [options]="cities()"
+            [ngModel]="selectedCityFilter()"
+            (ngModelChange)="selectedCityFilter.set($event)"
+            valueKey="id"
+            labelEnKey="nameEn"
+            labelArKey="nameAr"
+            [placeholder]="currentLang() === 'en' ? 'All Cities' : 'جميع المدن'"
+            [allowUnset]="true"
+            [unsetLabel]="currentLang() === 'en' ? 'All Cities' : 'جميع المدن'"
+          ></app-custom-select>
+        </div>
+
+        <div style="min-width: 150px;">
+          <app-custom-select
+            [options]="statusFilterOptions()"
+            [ngModel]="selectedStatusFilter()"
+            (ngModelChange)="selectedStatusFilter.set($event)"
+            valueKey="value"
+            labelEnKey="nameEn"
+            labelArKey="nameAr"
+            [placeholder]="currentLang() === 'en' ? 'All Statuses' : 'جميع الحالات'"
+          ></app-custom-select>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Loading State -->
-  <div class="spinner-container" *ngIf="loading">
+  <div class="loading-state" *ngIf="loading">
     <div class="spinner"></div>
+    <span>{{ currentLang() === 'en' ? 'Loading flyers...' : 'جاري تحميل النشرات...' }}</span>
   </div>
 
-  <!-- Table list -->
-  <div class="card table-wrapper" *ngIf="!loading">
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>{{ currentLang() === 'en' ? 'Cover' : 'الغلاف' }}</th>
-          <th>ID</th>
-          <th>{{ currentLang() === 'en' ? 'Flyer Title' : 'عنوان المنشور' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Retailer Store' : 'المتجر' }}</th>
-          <th>{{ currentLang() === 'en' ? 'City' : 'المدينة' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Total Pages' : 'الصفحات' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Validity Period' : 'فترة الصلاحية' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Views' : 'المشاهدات' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Status' : 'الحالة' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Actions' : 'الإجراءات' }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let f of filteredFlyers()">
-          <td>
-            <img 
-              [src]="getCoverImageUrl(f)" 
-              class="admin-table-flyer-cover" 
-              alt="cover"
-              (error)="$any($event.target).src = 'https://placehold.co/80x110?text=No+Cover'"
-            >
-          </td>
-          <td>{{ f.id }}</td>
-          <td>
-            <div class="flyer-title-cell">
-              <strong>{{ currentLang() === 'en' ? (f.titleEn || f.title_en) : (f.titleAr || f.title_ar || f.titleEn) }}</strong>
-              <span class="text-muted text-xs" *ngIf="currentLang() === 'en' && f.titleAr">{{ f.titleAr }}</span>
-              <span class="text-muted text-xs" *ngIf="currentLang() === 'ar' && f.titleEn">{{ f.titleEn }}</span>
-            </div>
-          </td>
-          <td>
-            <span class="store-badge">
-              <span class="material-icons-round" style="font-size: 14px;">storefront</span>
-              <span>{{ currentLang() === 'en' ? (f.storeNameEn || f.store?.nameEn || f.store_id) : (f.storeNameAr || f.store?.nameAr || f.storeNameEn || f.store_id) }}</span>
-            </span>
-          </td>
-          <td>
-            <span class="city-badge">
-              {{ currentLang() === 'en' ? (f.cityNameEn || f.city?.nameEn || f.city_id) : (f.cityNameAr || f.city?.nameAr || f.cityNameEn || f.city_id) }}
-            </span>
-          </td>
-          <td>
-            <span class="pages-count-pill">
-              <span class="material-icons-round" style="font-size: 13px;">auto_stories</span>
-              <span>{{ f.totalPages || f.total_pages || (f.pages ? f.pages.length : 0) }} {{ currentLang() === 'en' ? 'p.' : 'ص' }}</span>
-            </span>
-          </td>
-          <td>
-            <div class="date-column-desc">
-              <span class="date-from">{{ currentLang() === 'en' ? 'From:' : 'من:' }} {{ f.validFrom || f.valid_from }}</span>
-              <span class="date-until">{{ currentLang() === 'en' ? 'To:' : 'إلى:' }} {{ f.validUntil || f.valid_until }}</span>
-            </div>
-          </td>
-          <td>
-            <span class="views-text">
-              <span class="material-icons-round" style="font-size: 13px; color: var(--text-muted);">visibility</span>
-              <span>{{ f.viewCount || f.view_count || 0 }}</span>
-            </span>
-          </td>
-          <td>
-            <span
-              class="badge"
-              [class.badge-featured]="f.active === true || f.active === 1 || f.isActive === true"
-              [class.badge-discount]="f.active === false || f.active === 0 || f.isActive === false"
-            >
-              {{ (f.active === true || f.active === 1 || f.isActive === true) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}
-            </span>
-          </td>
-          <td>
-            <div class="action-buttons-cell">
-              <button class="btn-icon" (click)="openEditModal(f)" [title]="currentLang() === 'en' ? 'Edit Flyer' : 'تعديل المنشور'">
-                <span class="material-icons-round">edit</span>
-              </button>
-              <a [routerLink]="['/admin/flyers', f.id, 'pages']" class="btn-icon text-primary" [title]="currentLang() === 'en' ? 'Manage Pages' : 'إدارة الصفحات'">
+  <!-- Empty State -->
+  <div class="empty-card" *ngIf="!loading && filteredFlyers().length === 0">
+    <span class="material-icons-round empty-icon">menu_book</span>
+    <h3>{{ currentLang() === 'en' ? 'No flyers found' : 'لم يتم العثور على نشرات' }}</h3>
+    <p>{{ currentLang() === 'en' ? 'Try adjusting your search criteria or click "Add New Flyer" to upload one.' : 'جرب تغيير خيارات البحث أو انقر على "إضافة منشور جديد".' }}</p>
+  </div>
+
+  <!-- Responsive Dual View: Desktop Table & Mobile Cards -->
+  <div class="flyers-view-wrapper" *ngIf="!loading && filteredFlyers().length > 0">
+    <!-- Desktop Table View -->
+    <div class="card table-container desktop-table-only">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th style="width: 70px;">{{ currentLang() === 'en' ? 'Cover' : 'الغلاف' }}</th>
+            <th style="width: 60px;">ID</th>
+            <th>{{ currentLang() === 'en' ? 'Flyer Title' : 'عنوان المنشور' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Retailer' : 'المتجر' }}</th>
+            <th>{{ currentLang() === 'en' ? 'City' : 'المدينة' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Pages' : 'الصفحات' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Validity Period' : 'فترة الصلاحية' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Views' : 'المشاهدات' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Status' : 'الحالة' }}</th>
+            <th style="text-align: center; width: 120px;">{{ currentLang() === 'en' ? 'Actions' : 'الإجراءات' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let f of filteredFlyers()" [class.row-inactive]="!(f.active === true || f.active === 1 || f.isActive === true)">
+            <td>
+              <div class="flyer-cover-box">
+                <img 
+                  [src]="getCoverImageUrl(f)" 
+                  class="flyer-cover-img" 
+                  alt="cover"
+                  (error)="$any($event.target).src = 'https://placehold.co/80x110?text=No+Cover'"
+                />
+              </div>
+            </td>
+            <td class="cell-id">#{{ f.id }}</td>
+            <td class="cell-flyer-title">
+              <div class="flyer-title-box">
+                <strong class="title-primary">{{ currentLang() === 'en' ? (f.titleEn || f.title_en) : (f.titleAr || f.title_ar || f.titleEn) }}</strong>
+                <span class="title-secondary" *ngIf="currentLang() === 'en' && (f.titleAr || f.title_ar)">{{ f.titleAr || f.title_ar }}</span>
+                <span class="title-secondary" *ngIf="currentLang() === 'ar' && (f.titleEn || f.title_en)">{{ f.titleEn || f.title_en }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="store-chip">
+                <span class="material-icons-round store-icon">storefront</span>
+                <span>{{ currentLang() === 'en' ? (f.storeNameEn || f.store?.nameEn || f.store_id) : (f.storeNameAr || f.store?.nameAr || f.storeNameEn || f.store_id) }}</span>
+              </span>
+            </td>
+            <td>
+              <span class="city-pill">
+                <span class="material-icons-round city-icon">location_on</span>
+                {{ currentLang() === 'en' ? (f.cityNameEn || f.city?.nameEn || f.city_id) : (f.cityNameAr || f.city?.nameAr || f.cityNameEn || f.city_id) }}
+              </span>
+            </td>
+            <td>
+              <span class="pages-pill">
                 <span class="material-icons-round">auto_stories</span>
-              </a>
-              <button class="btn-icon text-danger" (click)="deleteFlyer(f.id)" [title]="currentLang() === 'en' ? 'Delete Flyer' : 'حذف المنشور'">
-                <span class="material-icons-round">delete</span>
-              </button>
+                <span>{{ f.totalPages || f.total_pages || (f.pages ? f.pages.length : 0) }} {{ currentLang() === 'en' ? 'pages' : 'صفحات' }}</span>
+              </span>
+            </td>
+            <td>
+              <div class="validity-box">
+                <span class="date-from">
+                  <span class="material-icons-round date-icon">event_available</span>
+                  <span>{{ f.validFrom || f.valid_from }}</span>
+                </span>
+                <span class="date-until">
+                  <span class="material-icons-round date-icon">event_busy</span>
+                  <span>{{ f.validUntil || f.valid_until }}</span>
+                </span>
+              </div>
+            </td>
+            <td>
+              <span class="views-chip">
+                <span class="material-icons-round">visibility</span>
+                <span>{{ f.viewCount || f.view_count || 0 }}</span>
+              </span>
+            </td>
+            <td>
+              <span
+                class="status-chip"
+                [class.status-active]="f.active === true || f.active === 1 || f.isActive === true"
+                [class.status-inactive]="!(f.active === true || f.active === 1 || f.isActive === true)"
+              >
+                <span class="status-dot"></span>
+                <span>{{ (f.active === true || f.active === 1 || f.isActive === true) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}</span>
+              </span>
+            </td>
+            <td style="text-align: center;">
+              <div class="action-buttons-wrap">
+                <button class="btn-item-action btn-item-edit" (click)="openEditModal(f)" [title]="currentLang() === 'en' ? 'Edit Flyer' : 'تعديل المنشور'">
+                  <span class="material-icons-round">edit</span>
+                </button>
+                <a [routerLink]="['/admin/flyers', f.id, 'pages']" class="btn-item-action btn-item-pages" [title]="currentLang() === 'en' ? 'Manage Pages' : 'إدارة الصفحات'">
+                  <span class="material-icons-round">auto_stories</span>
+                </a>
+                <button class="btn-item-action btn-item-del" (click)="deleteFlyer(f.id)" [title]="currentLang() === 'en' ? 'Delete Flyer' : 'حذف المنشور'">
+                  <span class="material-icons-round">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile Responsive Cards View -->
+    <div class="mobile-cards-only">
+      <div 
+        class="flyer-card-item" 
+        *ngFor="let f of filteredFlyers()"
+        [class.card-inactive]="!(f.active === true || f.active === 1 || f.isActive === true)"
+      >
+        <div class="flyer-card-main">
+          <img 
+            [src]="getCoverImageUrl(f)" 
+            class="flyer-card-cover" 
+            alt="cover"
+            (error)="$any($event.target).src = 'https://placehold.co/80x110?text=No+Cover'"
+          />
+
+          <div class="flyer-card-info">
+            <div class="card-header-row">
+              <span class="flyer-id-badge">#{{ f.id }}</span>
+              <span
+                class="status-chip"
+                [class.status-active]="f.active === true || f.active === 1 || f.isActive === true"
+                [class.status-inactive]="!(f.active === true || f.active === 1 || f.isActive === true)"
+              >
+                <span class="status-dot"></span>
+                <span>{{ (f.active === true || f.active === 1 || f.isActive === true) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}</span>
+              </span>
             </div>
-          </td>
-        </tr>
-        <tr *ngIf="filteredFlyers().length === 0">
-          <td colspan="10" class="empty-table-cell">
-            <span class="material-icons-round empty-table-icon">menu_book</span>
-            <p>{{ currentLang() === 'en' ? 'No flyers found. Click Add Flyer to publish one.' : 'لا توجد نشرات مسجلة. انقر على إضافة منشور لنشر كتالوج جديد.' }}</p>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+
+            <h3 class="flyer-card-title">{{ currentLang() === 'en' ? (f.titleEn || f.title_en) : (f.titleAr || f.title_ar || f.titleEn) }}</h3>
+
+            <div class="card-meta-wrap">
+              <span class="store-chip">
+                <span class="material-icons-round store-icon">storefront</span>
+                <span>{{ currentLang() === 'en' ? (f.storeNameEn || f.store?.nameEn || f.store_id) : (f.storeNameAr || f.store?.nameAr || f.storeNameEn || f.store_id) }}</span>
+              </span>
+
+              <span class="city-pill">
+                <span class="material-icons-round city-icon">location_on</span>
+                {{ currentLang() === 'en' ? (f.cityNameEn || f.city?.nameEn || f.city_id) : (f.cityNameAr || f.city?.nameAr || f.cityNameEn || f.city_id) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flyer-card-details">
+          <div class="detail-badge-row">
+            <span class="pages-pill">
+              <span class="material-icons-round">auto_stories</span>
+              <span>{{ f.totalPages || f.total_pages || (f.pages ? f.pages.length : 0) }} {{ currentLang() === 'en' ? 'pages' : 'صفحات' }}</span>
+            </span>
+
+            <span class="views-chip">
+              <span class="material-icons-round">visibility</span>
+              <span>{{ f.viewCount || f.view_count || 0 }} {{ currentLang() === 'en' ? 'views' : 'مشاهدات' }}</span>
+            </span>
+          </div>
+
+          <div class="validity-box">
+            <span class="date-from">
+              <span class="material-icons-round date-icon">event_available</span>
+              <span>{{ f.validFrom || f.valid_from }}</span>
+            </span>
+            <span class="date-separator">→</span>
+            <span class="date-until">
+              <span class="material-icons-round date-icon">event_busy</span>
+              <span>{{ f.validUntil || f.valid_until }}</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="flyer-card-footer">
+          <a [routerLink]="['/admin/flyers', f.id, 'pages']" class="btn-manage-pages">
+            <span class="material-icons-round">auto_stories</span>
+            <span>{{ currentLang() === 'en' ? 'Manage Pages' : 'إدارة صفحات الكتالوج' }}</span>
+          </a>
+
+          <div class="action-buttons-wrap">
+            <button class="btn-item-action btn-item-edit" (click)="openEditModal(f)" [title]="currentLang() === 'en' ? 'Edit Flyer' : 'تعديل المنشور'">
+              <span class="material-icons-round">edit</span>
+            </button>
+            <button class="btn-item-action btn-item-del" (click)="deleteFlyer(f.id)" [title]="currentLang() === 'en' ? 'Delete Flyer' : 'حذف المنشور'">
+              <span class="material-icons-round">delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Add/Edit Modal -->
   <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
-    <div class="modal-content modal-content-lg" (click)="$event.stopPropagation()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>{{ editingFlyerId ? (currentLang() === 'en' ? 'Edit Flyer Catalogue' : 'تعديل بيانات المنشور') : (currentLang() === 'en' ? 'Add Store Flyer' : 'إضافة منشور عروض جديد') }}</h3>
-        <button class="btn-icon border-none" (click)="closeModal()">
+        <div class="modal-title-group">
+          <div class="modal-header-icon">
+            <span class="material-icons-round">post_add</span>
+          </div>
+          <div>
+            <h3>{{ editingFlyerId ? (currentLang() === 'en' ? 'Edit Flyer Catalogue' : 'تعديل بيانات المنشور') : (currentLang() === 'en' ? 'Add Store Flyer' : 'إضافة منشور عروض جديد') }}</h3>
+            <p class="modal-subtitle">{{ currentLang() === 'en' ? 'Configure flyer metadata, validity period, and catalogue page images' : 'تحديد بيانات المنشور، فترة الصلاحية، وتحميل صفحات العروض' }}</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close" (click)="closeModal()">
           <span class="material-icons-round">close</span>
         </button>
       </div>
-      <div class="modal-body modal-scrollable">
-        <form [formGroup]="flyerForm" (submit)="onSubmit()" class="auth-form">
-          <!-- Row 1: Titles EN & AR -->
-          <div class="form-row">
-            <div class="form-group flex-1">
-              <label class="form-label">{{ currentLang() === 'en' ? 'Flyer Title (English) *' : 'عنوان المنشور (الإنجليزية) *' }}</label>
-              <input type="text" formControlName="title_en" class="form-control" placeholder="e.g. Weekly Super Saver Deals">
-              <div class="error-msg" *ngIf="flyerForm.get('title_en')?.touched && flyerForm.get('title_en')?.invalid">
-                {{ currentLang() === 'en' ? 'English title is required.' : 'العنوان بالإنجليزية مطلوب.' }}
+
+      <div class="modal-form">
+        <div class="modal-body">
+          <form [formGroup]="flyerForm" (submit)="onSubmit()" id="flyerModalForm">
+            <!-- Section 1: Basic Titles -->
+            <div class="form-section">
+              <div class="section-title">
+                <span class="material-icons-round">title</span>
+                <span>{{ currentLang() === 'en' ? 'Flyer Titles' : 'عنوان المنشور' }}</span>
               </div>
-            </div>
 
-            <div class="form-group flex-1">
-              <label class="form-label">{{ currentLang() === 'en' ? 'Flyer Title (Arabic) *' : 'عنوان المنشور (العربية) *' }}</label>
-              <input type="text" formControlName="title_ar" class="form-control" placeholder="مثال: عروض التوفير الأسبوعية الكبرى">
-              <div class="error-msg" *ngIf="flyerForm.get('title_ar')?.touched && flyerForm.get('title_ar')?.invalid">
-                {{ currentLang() === 'en' ? 'Arabic title is required.' : 'العنوان بالعربية مطلوب.' }}
-              </div>
-            </div>
-          </div>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label">{{ currentLang() === 'en' ? 'Flyer Title (English) *' : 'عنوان المنشور (الإنجليزية) *' }}</label>
+                  <input type="text" formControlName="title_en" class="form-control" placeholder="e.g. Weekly Super Saver Deals">
+                  <div class="error-msg" *ngIf="flyerForm.get('title_en')?.touched && flyerForm.get('title_en')?.invalid">
+                    {{ currentLang() === 'en' ? 'English title is required.' : 'العنوان بالإنجليزية مطلوب.' }}
+                  </div>
+                </div>
 
-          <!-- Row 2: Store & City -->
-          <div class="form-row">
-            <div class="form-group flex-1">
-              <label class="form-label">{{ currentLang() === 'en' ? 'Retailer Store *' : 'المتجر المعلن *' }}</label>
-              <app-custom-select
-                formControlName="store_id"
-                [options]="stores()"
-                valueKey="id"
-                labelEnKey="nameEn"
-                labelArKey="nameAr"
-                [placeholder]="currentLang() === 'en' ? '-- Select Retailer --' : '-- اختر المتجر --'"
-              ></app-custom-select>
-              <div class="error-msg" *ngIf="flyerForm.get('store_id')?.touched && flyerForm.get('store_id')?.invalid">
-                {{ currentLang() === 'en' ? 'Store is required.' : 'المتجر مطلوب.' }}
-              </div>
-            </div>
-
-            <div class="form-group flex-1">
-              <label class="form-label">{{ currentLang() === 'en' ? 'Target City *' : 'المدينة المستهدفة *' }}</label>
-              <app-custom-select
-                formControlName="city_id"
-                [options]="cities()"
-                valueKey="id"
-                labelEnKey="nameEn"
-                labelArKey="nameAr"
-                [placeholder]="currentLang() === 'en' ? '-- Select City --' : '-- اختر المدينة --'"
-              ></app-custom-select>
-              <div class="error-msg" *ngIf="flyerForm.get('city_id')?.touched && flyerForm.get('city_id')?.invalid">
-                {{ currentLang() === 'en' ? 'City is required.' : 'المدينة مطلوبة.' }}
-              </div>
-            </div>
-          </div>
-
-          <!-- Row 3: Validity Dates -->
-          <div class="form-row">
-            <div class="form-group flex-1">
-              <label class="form-label">{{ currentLang() === 'en' ? 'Valid From *' : 'صالح من تاريخ *' }}</label>
-              <input type="date" formControlName="valid_from" class="form-control">
-              <div class="error-msg" *ngIf="flyerForm.get('valid_from')?.touched && flyerForm.get('valid_from')?.invalid">
-                {{ currentLang() === 'en' ? 'Valid from date is required.' : 'تاريخ البداية مطلوب.' }}
-              </div>
-            </div>
-
-            <div class="form-group flex-1">
-              <label class="form-label">{{ currentLang() === 'en' ? 'Valid Until *' : 'صالح حتى تاريخ *' }}</label>
-              <input type="date" formControlName="valid_until" class="form-control">
-              <div class="error-msg" *ngIf="flyerForm.get('valid_until')?.touched && flyerForm.get('valid_until')?.invalid">
-                {{ currentLang() === 'en' ? 'Valid until date is required.' : 'تاريخ النهاية مطلوب.' }}
-              </div>
-            </div>
-          </div>
-
-          <!-- Row 4: Page Image Files (Multi-upload) -->
-          <div class="form-group upload-section-card">
-            <label class="form-label">
-              <span class="material-icons-round inline-icon">collections</span>
-              <span>{{ currentLang() === 'en' ? 'Catalogue Page Images (Multiple Files) *' : 'صور صفحات المنشور (عدة صور) *' }}</span>
-            </label>
-            <div class="file-upload-box">
-              <input type="file" (change)="onPageFilesSelected($event)" accept="image/*" multiple>
-              <p class="file-upload-hint">
-                <span class="material-icons-round upload-icon">cloud_upload</span>
-                <span>{{ currentLang() === 'en' ? 'Drag and drop or click to upload flyer pages (JPG, PNG, WEBP)' : 'اسحب أو انقر لاختيار صفحات الكتالوج' }}</span>
-              </p>
-            </div>
-
-            <!-- Previews of newly selected files -->
-            <div *ngIf="pagePreviewUrls.length > 0" class="pages-preview-grid">
-              <div class="page-preview-item" *ngFor="let preview of pagePreviewUrls; let i = index">
-                <img [src]="preview" alt="Page preview">
-                <span class="page-num-badge">Page {{ i + 1 }} {{ i === 0 ? '(Cover)' : '' }}</span>
-                <button type="button" class="btn-remove-page" (click)="removePageFile(i)" title="Remove">
-                  <span class="material-icons-round">close</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Existing pages when editing -->
-            <div *ngIf="editingFlyerId && pagePreviewUrls.length === 0 && existingPages.length > 0" class="existing-pages-section">
-              <span class="text-xs text-muted">{{ currentLang() === 'en' ? 'Current Pages in Catalogue:' : 'الصفحات الحالية في الكتالوج:' }}</span>
-              <div class="pages-preview-grid">
-                <div class="page-preview-item" *ngFor="let page of existingPages">
-                  <img [src]="getPageImageUrl(page)" alt="Existing page">
-                  <span class="page-num-badge">Page {{ page.pageNumber }}</span>
+                <div class="form-group">
+                  <label class="form-label">{{ currentLang() === 'en' ? 'Flyer Title (Arabic) *' : 'عنوان المنشور (العربية) *' }}</label>
+                  <input type="text" formControlName="title_ar" class="form-control" placeholder="مثال: عروض التوفير الأسبوعية الكبرى">
+                  <div class="error-msg" *ngIf="flyerForm.get('title_ar')?.touched && flyerForm.get('title_ar')?.invalid">
+                    {{ currentLang() === 'en' ? 'Arabic title is required.' : 'العنوان بالعربية مطلوب.' }}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Row 5: PDF File Upload (Optional) -->
-          <div class="form-group">
-            <label class="form-label">
-              <span class="material-icons-round inline-icon">picture_as_pdf</span>
-              <span>{{ currentLang() === 'en' ? 'Downloadable PDF Document (Optional)' : 'ملف PDF للكتالوج (اختياري)' }}</span>
-            </label>
-            <div class="pdf-upload-container">
-              <input type="file" (change)="onPdfFileSelected($event)" accept="application/pdf" class="form-control">
-              <div *ngIf="pdfFileName" class="pdf-selected-badge">
-                <span class="material-icons-round text-danger">picture_as_pdf</span>
-                <span>{{ pdfFileName }}</span>
-                <button type="button" class="btn-icon-xs" (click)="removePdfFile()">
-                  <span class="material-icons-round">close</span>
-                </button>
+            <!-- Section 2: Store & City -->
+            <div class="form-section">
+              <div class="section-title">
+                <span class="material-icons-round">storefront</span>
+                <span>{{ currentLang() === 'en' ? 'Retailer & Target City' : 'المتجر والمدينة المستهدفة' }}</span>
               </div>
-              <div *ngIf="!pdfFileName && existingPdfUrl" class="pdf-existing-badge">
-                <span class="material-icons-round text-danger">picture_as_pdf</span>
-                <span>{{ currentLang() === 'en' ? 'PDF already uploaded for this flyer' : 'ملف PDF مرفق مسبقاً' }}</span>
+
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label">{{ currentLang() === 'en' ? 'Retailer Store *' : 'المتجر المعلن *' }}</label>
+                  <app-custom-select
+                    formControlName="store_id"
+                    [options]="stores()"
+                    valueKey="id"
+                    labelEnKey="nameEn"
+                    labelArKey="nameAr"
+                    [placeholder]="currentLang() === 'en' ? '-- Select Retailer --' : '-- اختر المتجر --'"
+                    [filePath]="filePath"
+                  ></app-custom-select>
+                  <div class="error-msg" *ngIf="flyerForm.get('store_id')?.touched && flyerForm.get('store_id')?.invalid">
+                    {{ currentLang() === 'en' ? 'Store is required.' : 'المتجر مطلوب.' }}
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">{{ currentLang() === 'en' ? 'Target City *' : 'المدينة المستهدفة *' }}</label>
+                  <app-custom-select
+                    formControlName="city_id"
+                    [options]="cities()"
+                    valueKey="id"
+                    labelEnKey="nameEn"
+                    labelArKey="nameAr"
+                    [placeholder]="currentLang() === 'en' ? '-- Select City --' : '-- اختر المدينة --'"
+                  ></app-custom-select>
+                  <div class="error-msg" *ngIf="flyerForm.get('city_id')?.touched && flyerForm.get('city_id')?.invalid">
+                    {{ currentLang() === 'en' ? 'City is required.' : 'المدينة مطلوبة.' }}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Row 6: Descriptions -->
-          <div class="form-row">
-            <div class="form-group flex-1">
-              <label class="form-label">{{ currentLang() === 'en' ? 'Description (English)' : 'الوصف (الإنجليزية)' }}</label>
-              <textarea formControlName="description_en" class="form-control" rows="2" placeholder="Summary of promotions..."></textarea>
+            <!-- Section 3: Validity Period -->
+            <div class="form-section">
+              <div class="section-title">
+                <span class="material-icons-round">date_range</span>
+                <span>{{ currentLang() === 'en' ? 'Catalogue Validity Period' : 'تاريخ بداية ونهاية العروض' }}</span>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label">{{ currentLang() === 'en' ? 'Valid From *' : 'صالح من تاريخ *' }}</label>
+                  <input type="date" formControlName="valid_from" class="form-control">
+                  <div class="error-msg" *ngIf="flyerForm.get('valid_from')?.touched && flyerForm.get('valid_from')?.invalid">
+                    {{ currentLang() === 'en' ? 'Valid from date is required.' : 'تاريخ البداية مطلوب.' }}
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">{{ currentLang() === 'en' ? 'Valid Until *' : 'صالح حتى تاريخ *' }}</label>
+                  <input type="date" formControlName="valid_until" class="form-control">
+                  <div class="error-msg" *ngIf="flyerForm.get('valid_until')?.touched && flyerForm.get('valid_until')?.invalid">
+                    {{ currentLang() === 'en' ? 'Valid until date is required.' : 'تاريخ النهاية مطلوب.' }}
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div class="form-group flex-1">
-              <label class="form-label">{{ currentLang() === 'en' ? 'Description (Arabic)' : 'الوصف (العربية)' }}</label>
-              <textarea formControlName="description_ar" class="form-control" rows="2" placeholder="ملخص تفاصيل العروض..."></textarea>
+            <!-- Section 4: Page Uploads -->
+            <div class="form-section">
+              <div class="section-title">
+                <span class="material-icons-round">collections</span>
+                <span>{{ currentLang() === 'en' ? 'Catalogue Page Images (Multiple Files)' : 'صور صفحات المنشور والكتالوج' }}</span>
+              </div>
+
+              <div class="file-upload-box">
+                <input type="file" (change)="onPageFilesSelected($event)" accept="image/*" multiple class="file-input-hidden" id="pageFilesInput">
+                <label for="pageFilesInput" class="upload-dropzone">
+                  <span class="material-icons-round upload-icon">cloud_upload</span>
+                  <span class="upload-text">{{ currentLang() === 'en' ? 'Click or drag images to upload catalogue pages (JPG, PNG, WEBP)' : 'انقر أو اسحب صور صفحات الكتالوج هنا' }}</span>
+                </label>
+              </div>
+
+              <!-- Previews of newly selected files -->
+              <div *ngIf="pagePreviewUrls.length > 0" class="pages-preview-grid">
+                <div class="page-preview-item" *ngFor="let preview of pagePreviewUrls; let i = index">
+                  <img [src]="preview" alt="Page preview">
+                  <span class="page-num-badge">Page {{ i + 1 }} {{ i === 0 ? '(Cover)' : '' }}</span>
+                  <button type="button" class="btn-remove-page" (click)="removePageFile(i)" title="Remove">
+                    <span class="material-icons-round">close</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Existing pages when editing -->
+              <div *ngIf="editingFlyerId && pagePreviewUrls.length === 0 && existingPages.length > 0" class="existing-pages-section">
+                <span class="existing-pages-label">{{ currentLang() === 'en' ? 'Current Pages in Catalogue:' : 'الصفحات الحالية في الكتالوج:' }}</span>
+                <div class="pages-preview-grid">
+                  <div class="page-preview-item" *ngFor="let page of existingPages">
+                    <img [src]="getPageImageUrl(page)" alt="Existing page">
+                    <span class="page-num-badge">Page {{ page.pageNumber }}</span>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- Row 7: Active Checkbox -->
-          <div class="checkbox-row">
-            <label class="checkbox-label">
-              <input type="checkbox" formControlName="is_active">
-              <span>{{ currentLang() === 'en' ? 'Active Flyer (Published)' : 'منشور نشط وظاهر للمستخدمين' }}</span>
-            </label>
-          </div>
+            <!-- Section 5: PDF Brochure -->
+            <div class="form-section">
+              <div class="section-title">
+                <span class="material-icons-round">picture_as_pdf</span>
+                <span>{{ currentLang() === 'en' ? 'PDF Brochure Document (Optional)' : 'ملف الكتالوج صيغة PDF (اختياري)' }}</span>
+              </div>
 
-          <!-- Modal Actions -->
-          <div class="modal-footer-actions">
-            <button type="button" class="btn btn-secondary" (click)="closeModal()">
-              {{ currentLang() === 'en' ? 'Cancel' : 'إلغاء' }}
-            </button>
-            <button type="submit" [disabled]="flyerForm.invalid" class="btn btn-primary">
-              {{ currentLang() === 'en' ? 'Save Flyer' : 'حفظ المنشور' }}
-            </button>
-          </div>
-        </form>
+              <div class="file-upload-box">
+                <input type="file" (change)="onPdfFileSelected($event)" accept="application/pdf" class="file-input-hidden" id="pdfFileInput">
+                <label for="pdfFileInput" class="upload-dropzone dropzone-pdf">
+                  <span class="material-icons-round upload-icon text-red">picture_as_pdf</span>
+                  <span class="upload-text" *ngIf="!pdfFileName">{{ currentLang() === 'en' ? 'Upload PDF Catalogue File (Max 25MB)' : 'تحميل كتالوج PDF' }}</span>
+                  <span class="upload-filename" *ngIf="pdfFileName">{{ pdfFileName }}</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Section 6: Active Status Switch -->
+            <div class="toggles-box">
+              <label class="toggle-card">
+                <input type="checkbox" formControlName="is_active">
+                <span class="toggle-content">
+                  <span class="toggle-title">{{ currentLang() === 'en' ? 'Flyer Active & Published' : 'منشور نشط ومتاح للعملاء' }}</span>
+                  <span class="toggle-desc">{{ currentLang() === 'en' ? 'Active flyers are visible in the app and website directory' : 'المنشورات النشطة تظهر للمستخدمين في صفحة العروض' }}</span>
+                </span>
+              </label>
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" (click)="closeModal()">
+            {{ currentLang() === 'en' ? 'Cancel' : 'إلغاء' }}
+          </button>
+          <button type="submit" form="flyerModalForm" [disabled]="flyerForm.invalid" class="btn-primary">
+            <span class="material-icons-round">save</span>
+            <span>{{ currentLang() === 'en' ? 'Save Catalogue' : 'حفظ المنشور' }}</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>

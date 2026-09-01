@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -33,13 +33,72 @@ export class FlyersCrudComponent implements OnInit {
   flyers = signal<any[]>([]);
   stores = signal<any[]>([]);
   cities = signal<any[]>([]);
-  filteredFlyers = signal<any[]>([]);
-  searchQuery = '';
+
+  searchQuery = signal<string>('');
+  selectedStoreFilter = signal<any>(null);
+  selectedCityFilter = signal<any>(null);
+  selectedStatusFilter = signal<string>('ALL');
 
   flyerForm!: FormGroup;
   isModalOpen = false;
   editingFlyerId: number | null = null;
   loading = false;
+
+  statusFilterOptions = computed(() => [
+    { value: 'ALL', nameEn: 'All Statuses', nameAr: 'جميع الحالات' },
+    { value: 'ACTIVE', nameEn: 'Active Only', nameAr: 'نشط فقط' },
+    { value: 'INACTIVE', nameEn: 'Inactive Only', nameAr: 'غير نشط فقط' }
+  ]);
+
+  totalFlyersCount = computed(() => this.flyers().length);
+  activeFlyersCount = computed(() =>
+    this.flyers().filter(f => f.active === true || f.active === 1 || f.isActive === true).length
+  );
+  totalFlyerViewsCount = computed(() =>
+    this.flyers().reduce((acc, f) => acc + (f.viewCount || f.view_count || 0), 0)
+  );
+
+  filteredFlyers = computed(() => {
+    let list = this.flyers();
+    const q = (this.searchQuery() || '').trim().toLowerCase();
+    const storeId = this.selectedStoreFilter();
+    const cityId = this.selectedCityFilter();
+    const status = this.selectedStatusFilter();
+
+    if (q) {
+      list = list.filter(f => {
+        const titleEn = (f.titleEn || f.title_en || '').toLowerCase();
+        const titleAr = (f.titleAr || f.title_ar || '').toLowerCase();
+        const storeEn = (f.storeNameEn || f.store?.nameEn || '').toLowerCase();
+        const storeAr = (f.storeNameAr || f.store?.nameAr || '').toLowerCase();
+        const cityEn = (f.cityNameEn || f.city?.nameEn || '').toLowerCase();
+        const cityAr = (f.cityNameAr || f.city?.nameAr || '').toLowerCase();
+        return titleEn.includes(q) || titleAr.includes(q) || storeEn.includes(q) || storeAr.includes(q) || cityEn.includes(q) || cityAr.includes(q);
+      });
+    }
+
+    if (storeId !== null && storeId !== undefined && storeId !== '') {
+      list = list.filter(f => {
+        const fStoreId = f.storeId ?? f.store_id ?? f.store?.id;
+        return String(fStoreId) === String(storeId);
+      });
+    }
+
+    if (cityId !== null && cityId !== undefined && cityId !== '') {
+      list = list.filter(f => {
+        const fCityId = f.cityId ?? f.city_id ?? f.city?.id;
+        return String(fCityId) === String(cityId);
+      });
+    }
+
+    if (status === 'ACTIVE') {
+      list = list.filter(f => f.active === true || f.active === 1 || f.isActive === true);
+    } else if (status === 'INACTIVE') {
+      list = list.filter(f => f.active === false || f.active === 0 || f.isActive === false);
+    }
+
+    return list;
+  });
 
   // File uploads
   selectedPageFiles: File[] = [];
@@ -110,21 +169,7 @@ export class FlyersCrudComponent implements OnInit {
   }
 
   applyFilter(): void {
-    const query = this.searchQuery.toLowerCase().trim();
-    if (!query) {
-      this.filteredFlyers.set(this.flyers());
-      return;
-    }
-
-    const filtered = this.flyers().filter(f =>
-      (f.titleEn && f.titleEn.toLowerCase().includes(query)) ||
-      (f.titleAr && f.titleAr.toLowerCase().includes(query)) ||
-      (f.storeNameEn && f.storeNameEn.toLowerCase().includes(query)) ||
-      (f.storeNameAr && f.storeNameAr.toLowerCase().includes(query)) ||
-      (f.cityNameEn && f.cityNameEn.toLowerCase().includes(query)) ||
-      (f.id && f.id.toString().includes(query))
-    );
-    this.filteredFlyers.set(filtered);
+    // Computed signal handles reactive filtering automatically
   }
 
   openAddModal(): void {

@@ -1,254 +1,455 @@
-<div class="crud-container">
+<div class="crud-container" [dir]="currentLang() === 'ar' ? 'rtl' : 'ltr'">
   <!-- Header with Back Button and Add Button -->
   <div class="crud-header">
-    <div class="header-titles">
-      <a routerLink="/admin/stores" class="btn btn-outline btn-back">
+    <div class="header-content">
+      <a routerLink="/admin/stores" class="btn-back" [title]="currentLang() === 'en' ? 'Back to Stores' : 'العودة للمتاجر'">
         <span class="material-icons-round">{{ currentLang() === 'ar' ? 'arrow_forward' : 'arrow_back' }}</span>
-        <span>{{ currentLang() === 'en' ? 'Back to Stores' : 'العودة للمتاجر' }}</span>
       </a>
-      <h2>
-        {{ currentLang() === 'en' ? 'Manage Branches:' : 'إدارة الفروع:' }} 
-        <span class="store-highlight">{{ store()?.nameEn || store()?.name_en || ('Store #' + storeId) }}</span>
-      </h2>
+      
+      <div class="header-title-group">
+        <div class="store-avatar-mini" *ngIf="getStoreLogoUrl()">
+          <img [src]="getStoreLogoUrl()" [alt]="store()?.nameEn || 'Store Logo'" (error)="$any($event.target).style.display='none'">
+        </div>
+        <div>
+          <div class="header-badge">{{ currentLang() === 'en' ? 'Branch Management' : 'إدارة الفروع' }}</div>
+          <h2 class="page-title">
+            {{ currentLang() === 'en' ? 'Branches for' : 'فروع متجر' }} 
+            <span class="store-highlight">{{ currentLang() === 'en' ? (store()?.nameEn || store()?.name_en || ('Store #' + storeId)) : (store()?.nameAr || store()?.name_ar || store()?.nameEn || ('متجر #' + storeId)) }}</span>
+          </h2>
+        </div>
+      </div>
     </div>
-    <button class="btn btn-primary" (click)="openAddModal()">
+
+    <button class="btn-primary" (click)="openAddModal()">
       <span class="material-icons-round">add_location_alt</span>
-      <span>{{ currentLang() === 'en' ? 'Add Branch' : 'إضافة فرع' }}</span>
+      <span>{{ currentLang() === 'en' ? 'Add New Branch' : 'إضافة فرع جديد' }}</span>
     </button>
   </div>
 
-  <!-- Loading State -->
-  <div class="spinner-container" *ngIf="loading">
-    <div class="spinner"></div>
+  <!-- Summary Stats Cards Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon-wrapper stat-icon-blue">
+        <span class="material-icons-round">location_city</span>
+      </div>
+      <div class="stat-details">
+        <span class="stat-value">{{ totalBranchesCount() }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Total Branches' : 'إجمالي الفروع' }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrapper stat-icon-green">
+        <span class="material-icons-round">check_circle</span>
+      </div>
+      <div class="stat-details">
+        <span class="stat-value">{{ activeBranchesCount() }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Active Branches' : 'فروع نشطة' }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrapper stat-icon-amber">
+        <span class="material-icons-round">schedule</span>
+      </div>
+      <div class="stat-details">
+        <span class="stat-value">{{ twentyFourSevenCount() }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? '24/7 Open Branches' : 'فروع 24 ساعة' }}</span>
+      </div>
+    </div>
   </div>
 
-  <!-- Branches Table -->
-  <div class="card table-wrapper" *ngIf="!loading">
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>{{ currentLang() === 'en' ? 'Branch Name' : 'اسم الفرع' }}</th>
-          <th>{{ currentLang() === 'en' ? 'City' : 'المدينة' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Address' : 'العنوان' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Coordinates' : 'الإحداثيات' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Hours' : 'ساعات العمل' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Phone' : 'الهاتف' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Status' : 'الحالة' }}</th>
-          <th>{{ currentLang() === 'en' ? 'Actions' : 'الإجراءات' }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let b of branches()">
-          <td>{{ b.id }}</td>
-          <td>
-            <strong>{{ b.branchName || b.branch_name }}</strong>
-          </td>
-          <td>
-            <span class="city-badge">
+  <!-- Filters & Search Toolbar -->
+  <div class="card filter-card">
+    <div class="filter-row">
+      <div class="search-input-wrapper">
+        <span class="material-icons-round search-icon">search</span>
+        <input
+          type="text"
+          class="form-control search-input"
+          [placeholder]="currentLang() === 'en' ? 'Search by branch name, address, city, phone...' : 'ابحث باسم الفرع، العنوان، المدينة، أو الهاتف...'"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+        />
+        <button *ngIf="searchQuery()" class="clear-search-btn" (click)="searchQuery.set('')">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <div class="filters-group">
+        <div style="min-width: 170px;">
+          <app-custom-select
+            [options]="cities()"
+            [ngModel]="selectedCityFilter()"
+            (ngModelChange)="selectedCityFilter.set($event)"
+            valueKey="id"
+            labelEnKey="nameEn"
+            labelArKey="nameAr"
+            [placeholder]="currentLang() === 'en' ? 'All Cities' : 'جميع المدن'"
+            [allowUnset]="true"
+            [unsetLabel]="currentLang() === 'en' ? 'All Cities' : 'جميع المدن'"
+          ></app-custom-select>
+        </div>
+
+        <div style="min-width: 170px;">
+          <app-custom-select
+            [options]="statusFilterOptions()"
+            [ngModel]="selectedStatusFilter()"
+            (ngModelChange)="selectedStatusFilter.set($event)"
+            valueKey="value"
+            labelEnKey="nameEn"
+            labelArKey="nameAr"
+            [placeholder]="currentLang() === 'en' ? 'All Statuses' : 'جميع الحالات'"
+          ></app-custom-select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Spinner Loading State -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <span>{{ currentLang() === 'en' ? 'Loading branches...' : 'جاري تحميل الفروع...' }}</span>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-card" *ngIf="!loading && filteredBranches().length === 0">
+    <span class="material-icons-round empty-icon">storefront</span>
+    <h3>{{ currentLang() === 'en' ? 'No branches found' : 'لم يتم العثور على فروع' }}</h3>
+    <p>{{ currentLang() === 'en' ? 'Try adjusting your search criteria or click "Add New Branch" to create one.' : 'جرب تغيير خيارات البحث أو انقر على "إضافة فرع جديد".' }}</p>
+  </div>
+
+  <!-- Responsive Dual View: Desktop Table & Mobile Cards -->
+  <div class="branches-view-wrapper" *ngIf="!loading && filteredBranches().length > 0">
+    <!-- Desktop Table View -->
+    <div class="card table-container desktop-table-only">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th style="width: 60px;">ID</th>
+            <th>{{ currentLang() === 'en' ? 'Branch Info' : 'معلومات الفرع' }}</th>
+            <th>{{ currentLang() === 'en' ? 'City' : 'المدينة' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Address' : 'العنوان' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Location' : 'الموقع' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Hours' : 'ساعات العمل' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Phone' : 'الهاتف' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Status' : 'الحالة' }}</th>
+            <th style="text-align: center; width: 100px;">{{ currentLang() === 'en' ? 'Actions' : 'الإجراءات' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let b of filteredBranches()" [class.row-inactive]="!(b.active === 1 || b.active === true || b.isActive === true || b.is_active === 1)">
+            <td class="cell-id">#{{ b.id }}</td>
+            <td class="cell-branch-name">
+              <div class="branch-name-box">
+                <span class="material-icons-round branch-type-icon">store</span>
+                <strong>{{ b.branchName || b.branch_name }}</strong>
+              </div>
+            </td>
+            <td>
+              <span class="city-pill">
+                <span class="material-icons-round city-icon">location_on</span>
+                {{ currentLang() === 'en' ? (b.cityNameEn || b.cityName || b.city?.nameEn || b.city_id) : (b.cityNameAr || b.cityNameEn || b.city?.nameAr || b.city_id) }}
+              </span>
+            </td>
+            <td>
+              <div class="address-cell">
+                <span class="addr-primary" *ngIf="b.addressEn || b.address_en">{{ b.addressEn || b.address_en }}</span>
+                <span class="addr-secondary" *ngIf="b.addressAr || b.address_ar">{{ b.addressAr || b.address_ar }}</span>
+                <span *ngIf="!b.addressEn && !b.addressAr && !b.address_en && !b.address_ar" class="text-muted">-</span>
+              </div>
+            </td>
+            <td>
+              <a 
+                *ngIf="b.latitude && b.longitude" 
+                [href]="'https://www.google.com/maps/search/?api=1&query=' + b.latitude + ',' + b.longitude" 
+                target="_blank" 
+                class="map-pill-btn"
+                title="View on Google Maps"
+              >
+                <span class="material-icons-round map-icon">map</span>
+                <span>{{ b.latitude | number:'1.2-4' }}, {{ b.longitude | number:'1.2-4' }}</span>
+              </a>
+              <span *ngIf="!b.latitude || !b.longitude" class="text-muted">-</span>
+            </td>
+            <td>
+              <span class="badge-247" *ngIf="b.twentyFourHours || b.is_24_hours">
+                <span class="material-icons-round">schedule</span> 24/7
+              </span>
+              <span *ngIf="!b.twentyFourHours && !b.is_24_hours" class="hours-badge">
+                <span class="material-icons-round clock-icon">access_time</span>
+                <span>{{ (b.openTime || b.open_time || '08:00').slice(0, 5) }} - {{ (b.closeTime || b.close_time || '23:00').slice(0, 5) }}</span>
+              </span>
+            </td>
+            <td>
+              <span class="phone-chip" *ngIf="b.phone">
+                <span class="material-icons-round phone-icon">call</span>
+                <span>{{ b.phone }}</span>
+              </span>
+              <span *ngIf="!b.phone" class="text-muted">-</span>
+            </td>
+            <td>
+              <span
+                class="status-chip"
+                [class.status-active]="b.active === 1 || b.active === true || b.isActive === true || b.is_active === 1"
+                [class.status-inactive]="!(b.active === 1 || b.active === true || b.isActive === true || b.is_active === 1)"
+              >
+                <span class="status-dot"></span>
+                <span>{{ (b.active === 1 || b.active === true || b.isActive === true || b.is_active === 1) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}</span>
+              </span>
+            </td>
+            <td style="text-align: center;">
+              <div class="action-buttons-wrap">
+                <button class="btn-item-action btn-item-edit" (click)="openEditModal(b)" [title]="currentLang() === 'en' ? 'Edit Branch' : 'تعديل الفرع'">
+                  <span class="material-icons-round">edit</span>
+                </button>
+                <button class="btn-item-action btn-item-del" (click)="deleteBranch(b.id)" [title]="currentLang() === 'en' ? 'Delete Branch' : 'حذف الفرع'">
+                  <span class="material-icons-round">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile Responsive Cards View -->
+    <div class="mobile-cards-only">
+      <div 
+        class="branch-card-item" 
+        *ngFor="let b of filteredBranches()"
+        [class.card-inactive]="!(b.active === 1 || b.active === true || b.isActive === true || b.is_active === 1)"
+      >
+        <div class="branch-card-header">
+          <div class="branch-card-title-group">
+            <span class="material-icons-round card-store-icon">store</span>
+            <div>
+              <h3 class="branch-card-title">{{ b.branchName || b.branch_name }}</h3>
+              <span class="branch-id-badge">#{{ b.id }}</span>
+            </div>
+          </div>
+          <span
+            class="status-chip"
+            [class.status-active]="b.active === 1 || b.active === true || b.isActive === true || b.is_active === 1"
+            [class.status-inactive]="!(b.active === 1 || b.active === true || b.isActive === true || b.is_active === 1)"
+          >
+            <span class="status-dot"></span>
+            <span>{{ (b.active === 1 || b.active === true || b.isActive === true || b.is_active === 1) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}</span>
+          </span>
+        </div>
+
+        <div class="branch-card-body">
+          <div class="card-meta-row">
+            <span class="city-pill">
+              <span class="material-icons-round city-icon">location_on</span>
               {{ currentLang() === 'en' ? (b.cityNameEn || b.cityName || b.city?.nameEn || b.city_id) : (b.cityNameAr || b.cityNameEn || b.city?.nameAr || b.city_id) }}
             </span>
-          </td>
-          <td>
-            <div class="address-cell">
-              <span *ngIf="b.addressEn || b.address_en">{{ b.addressEn || b.address_en }}</span>
-              <span *ngIf="b.addressAr || b.address_ar" class="text-muted text-xs">{{ b.addressAr || b.address_ar }}</span>
-              <span *ngIf="!b.addressEn && !b.addressAr && !b.address_en && !b.address_ar" class="text-muted">-</span>
-            </div>
-          </td>
-          <td>
-            <a 
-              *ngIf="b.latitude && b.longitude" 
-              [href]="'https://www.google.com/maps/search/?api=1&query=' + b.latitude + ',' + b.longitude" 
-              target="_blank" 
-              class="map-link-btn"
-              title="Open in Maps"
-            >
-              <span class="material-icons-round map-icon">pin_drop</span>
-              <span>{{ b.latitude | number:'1.2-4' }}, {{ b.longitude | number:'1.2-4' }}</span>
-            </a>
-            <span *ngIf="!b.latitude || !b.longitude" class="text-muted">-</span>
-          </td>
-          <td>
-            <span class="badge badge-featured" *ngIf="b.twentyFourHours || b.is_24_hours">
-              <span class="material-icons-round" style="font-size: 13px;">schedule</span> 24/7
+
+            <span class="badge-247" *ngIf="b.twentyFourHours || b.is_24_hours">
+              <span class="material-icons-round">schedule</span> 24/7
             </span>
+
             <span *ngIf="!b.twentyFourHours && !b.is_24_hours" class="hours-badge">
-              <span class="material-icons-round clock-mini-icon">schedule</span>
-              <span>{{ (b.openTime || b.open_time || '').slice(0, 5) }} - {{ (b.closeTime || b.close_time || '').slice(0, 5) }}</span>
+              <span class="material-icons-round clock-icon">access_time</span>
+              <span>{{ (b.openTime || b.open_time || '08:00').slice(0, 5) }} - {{ (b.closeTime || b.close_time || '23:00').slice(0, 5) }}</span>
             </span>
-          </td>
-          <td>
-            <span *ngIf="b.phone">{{ b.phone }}</span>
-            <span *ngIf="!b.phone" class="text-muted">-</span>
-          </td>
-          <td>
-            <span
-              class="badge"
-              [class.badge-featured]="b.active === 1 || b.active === true || b.isActive === true || b.is_active === 1"
-              [class.badge-discount]="b.active === 0 || b.active === false || b.isActive === false || b.is_active === 0"
-            >
-              {{ (b.active === 1 || b.active === true || b.isActive === true || b.is_active === 1) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}
-            </span>
-          </td>
-          <td>
-            <div class="action-buttons-cell">
-              <button class="btn-icon" (click)="openEditModal(b)" [title]="currentLang() === 'en' ? 'Edit Branch' : 'تعديل الفرع'">
-                <span class="material-icons-round">edit</span>
-              </button>
-              <button class="btn-icon text-danger" (click)="deleteBranch(b.id)" [title]="currentLang() === 'en' ? 'Delete Branch' : 'حذف الفرع'">
-                <span class="material-icons-round">delete</span>
-              </button>
-            </div>
-          </td>
-        </tr>
-        <tr *ngIf="branches().length === 0">
-          <td colspan="9" class="empty-table-cell">
-            <span class="material-icons-round empty-table-icon">storefront</span>
-            <p>{{ currentLang() === 'en' ? 'No branches found for this store. Click Add Branch to create one.' : 'لا توجد فروع مسجلة لهذا المتجر. انقر على إضافة فرع لإنشاء فرع.' }}</p>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+          </div>
+
+          <div class="card-address-info" *ngIf="b.addressEn || b.address_en || b.addressAr || b.address_ar">
+            <span class="material-icons-round addr-icon">place</span>
+            <span>{{ currentLang() === 'en' ? (b.addressEn || b.address_en || b.addressAr || b.address_ar) : (b.addressAr || b.address_ar || b.addressEn || b.address_en) }}</span>
+          </div>
+
+          <div class="card-phone-info" *ngIf="b.phone">
+            <span class="material-icons-round phone-icon">call</span>
+            <span>{{ b.phone }}</span>
+          </div>
+        </div>
+
+        <div class="branch-card-footer">
+          <a 
+            *ngIf="b.latitude && b.longitude" 
+            [href]="'https://www.google.com/maps/search/?api=1&query=' + b.latitude + ',' + b.longitude" 
+            target="_blank" 
+            class="map-pill-btn"
+          >
+            <span class="material-icons-round map-icon">map</span>
+            <span>{{ currentLang() === 'en' ? 'Open Map' : 'فتح الخريطة' }}</span>
+          </a>
+          <span *ngIf="!b.latitude || !b.longitude" class="text-muted text-sm">{{ currentLang() === 'en' ? 'No coordinates' : 'لا توجد إحداثيات' }}</span>
+
+          <div class="action-buttons-wrap">
+            <button class="btn-item-action btn-item-edit" (click)="openEditModal(b)" [title]="currentLang() === 'en' ? 'Edit Branch' : 'تعديل الفرع'">
+              <span class="material-icons-round">edit</span>
+            </button>
+            <button class="btn-item-action btn-item-del" (click)="deleteBranch(b.id)" [title]="currentLang() === 'en' ? 'Delete Branch' : 'حذف الفرع'">
+              <span class="material-icons-round">delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Add/Edit Modal -->
   <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
-    <div class="modal-content modal-content-lg" (click)="$event.stopPropagation()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>{{ editingBranchId ? (currentLang() === 'en' ? 'Edit Branch' : 'تعديل بيانات الفرع') : (currentLang() === 'en' ? 'Add Store Branch' : 'إضافة فرع جديد') }}</h3>
-        <button class="btn-icon border-none" (click)="closeModal()">
+        <div class="modal-title-group">
+          <div class="modal-header-icon">
+            <span class="material-icons-round">add_location_alt</span>
+          </div>
+          <div>
+            <h3>{{ editingBranchId ? (currentLang() === 'en' ? 'Edit Branch' : 'تعديل بيانات الفرع') : (currentLang() === 'en' ? 'Add Store Branch' : 'إضافة فرع جديد') }}</h3>
+            <p class="modal-subtitle">{{ currentLang() === 'en' ? 'Configure branch location, contact details & operating hours' : 'ضبط موقع الفرع، معلومات التواصل، وساعات العمل' }}</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close" (click)="closeModal()">
           <span class="material-icons-round">close</span>
         </button>
       </div>
-      <div class="modal-body modal-scrollable">
-        <form [formGroup]="branchForm" (submit)="onSubmit()" class="auth-form">
-          <!-- Row 1: Branch Name & City -->
-          <div class="form-row">
-            <div class="form-group flex-1">
-              <label class="form-label">{{ currentLang() === 'en' ? 'Branch Name *' : 'اسم الفرع *' }}</label>
-              <input type="text" formControlName="branchName" class="form-control" placeholder="e.g. Olaya Mall Branch">
-              <div class="error-msg" *ngIf="branchForm.get('branchName')?.touched && branchForm.get('branchName')?.invalid">
-                {{ currentLang() === 'en' ? 'Branch name is required.' : 'اسم الفرع مطلوب.' }}
+
+      <div class="modal-form">
+        <div class="modal-body">
+          <form [formGroup]="branchForm" (submit)="onSubmit()" id="branchModalForm">
+            <!-- Section 1: Basic Info -->
+            <div class="form-section">
+              <div class="section-title">
+                <span class="material-icons-round">storefront</span>
+                <span>{{ currentLang() === 'en' ? 'Basic Branch Information' : 'المعلومات الأساسية للفرع' }}</span>
               </div>
-            </div>
 
-            <div class="form-group flex-1">
-              <label class="form-label">{{ currentLang() === 'en' ? 'City *' : 'المدينة *' }}</label>
-              <app-custom-select
-                formControlName="cityId"
-                [options]="cities()"
-                valueKey="id"
-                labelEnKey="nameEn"
-                labelArKey="nameAr"
-                [placeholder]="currentLang() === 'en' ? 'Select City' : 'اختر المدينة'"
-              ></app-custom-select>
-              <div class="error-msg" *ngIf="branchForm.get('cityId')?.touched && branchForm.get('cityId')?.invalid">
-                {{ currentLang() === 'en' ? 'City is required.' : 'المدينة مطلوبة.' }}
-              </div>
-            </div>
-          </div>
-
-          <!-- Row 2: Address EN & AR -->
-          <div class="form-row">
-            <div class="form-group flex-1">
-              <label class="form-label">{{ currentLang() === 'en' ? 'Address (English)' : 'العنوان (الإنجليزية)' }}</label>
-              <input type="text" formControlName="addressEn" class="form-control" placeholder="e.g. King Fahd Rd, Building 12">
-            </div>
-
-            <div class="form-group flex-1">
-              <label class="form-label">{{ currentLang() === 'en' ? 'Address (Arabic)' : 'العنوان (العربية)' }}</label>
-              <input type="text" formControlName="addressAr" class="form-control" placeholder="مثال: طريق الملك فهد، مبنى 12">
-            </div>
-          </div>
-
-          <!-- Row 3: Latitude, Longitude, Phone -->
-          <div class="form-row">
-            <div class="form-group flex-1">
-              <label class="form-label">{{ currentLang() === 'en' ? 'Latitude *' : 'خط العرض (Latitude) *' }}</label>
-              <input type="number" step="0.000001" formControlName="latitude" class="form-control" placeholder="e.g. 24.7136">
-            </div>
-
-            <div class="form-group flex-1">
-              <label class="form-label">{{ currentLang() === 'en' ? 'Longitude *' : 'خط الطول (Longitude) *' }}</label>
-              <input type="number" step="0.000001" formControlName="longitude" class="form-control" placeholder="e.g. 46.6753">
-            </div>
-
-            <div class="form-group flex-1">
-              <label class="form-label">{{ currentLang() === 'en' ? 'Phone Number' : 'رقم الهاتف' }}</label>
-              <input type="text" formControlName="phone" class="form-control" placeholder="e.g. +966 11 123 4567">
-            </div>
-          </div>
-
-          <!-- Row 4: Clock-style Operating Hours -->
-          <div class="operating-hours-section" *ngIf="!branchForm.get('twentyFourHours')?.value">
-            <div class="section-title-badge">
-              <span class="material-icons-round">schedule</span>
-              <span>{{ currentLang() === 'en' ? 'Store Operating Hours' : 'أوقات وساعات العمل' }}</span>
-            </div>
-
-            <div class="form-row">
-              <!-- Open Time -->
-              <div class="form-group flex-1">
-                <label class="form-label">{{ currentLang() === 'en' ? 'Opening Time (Clock)' : 'وقت الافتتاح (الساعة)' }}</label>
-                <div class="time-picker-box">
-                  <span class="material-icons-round time-clock-icon">alarm</span>
-                  <input 
-                    type="time" 
-                    formControlName="openTime" 
-                    class="form-control clock-input"
-                  >
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label">{{ currentLang() === 'en' ? 'Branch Name *' : 'اسم الفرع *' }}</label>
+                  <input type="text" formControlName="branchName" class="form-control" [placeholder]="currentLang() === 'en' ? 'e.g. Olaya Main Branch' : 'مثال: فرع العليا الرئيسي'">
+                  <div class="error-msg" *ngIf="branchForm.get('branchName')?.touched && branchForm.get('branchName')?.invalid">
+                    {{ currentLang() === 'en' ? 'Branch name is required.' : 'اسم الفرع مطلوب.' }}
+                  </div>
                 </div>
-                <div class="preset-chips">
-                  <button type="button" class="preset-btn" (click)="setTimePreset('openTime', '08:00')">08:00 AM</button>
-                  <button type="button" class="preset-btn" (click)="setTimePreset('openTime', '09:00')">09:00 AM</button>
-                  <button type="button" class="preset-btn" (click)="setTimePreset('openTime', '10:00')">10:00 AM</button>
+
+                <div class="form-group">
+                  <label class="form-label">{{ currentLang() === 'en' ? 'City *' : 'المدينة *' }}</label>
+                  <app-custom-select
+                    formControlName="cityId"
+                    [options]="cities()"
+                    valueKey="id"
+                    labelEnKey="nameEn"
+                    labelArKey="nameAr"
+                    [placeholder]="currentLang() === 'en' ? 'Select City' : 'اختر المدينة'"
+                  ></app-custom-select>
+                  <div class="error-msg" *ngIf="branchForm.get('cityId')?.touched && branchForm.get('cityId')?.invalid">
+                    {{ currentLang() === 'en' ? 'City is required.' : 'المدينة مطلوبة.' }}
+                  </div>
                 </div>
               </div>
 
-              <!-- Close Time -->
-              <div class="form-group flex-1">
-                <label class="form-label">{{ currentLang() === 'en' ? 'Closing Time (Clock)' : 'وقت الإغلاق (الساعة)' }}</label>
-                <div class="time-picker-box">
-                  <span class="material-icons-round time-clock-icon">bedtime</span>
-                  <input 
-                    type="time" 
-                    formControlName="closeTime" 
-                    class="form-control clock-input"
-                  >
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label">{{ currentLang() === 'en' ? 'Address (English)' : 'العنوان (الإنجليزية)' }}</label>
+                  <input type="text" formControlName="addressEn" class="form-control" placeholder="e.g. King Fahd Rd, Building 12">
                 </div>
-                <div class="preset-chips">
-                  <button type="button" class="preset-btn" (click)="setTimePreset('closeTime', '22:00')">10:00 PM</button>
-                  <button type="button" class="preset-btn" (click)="setTimePreset('closeTime', '23:00')">11:00 PM</button>
-                  <button type="button" class="preset-btn" (click)="setTimePreset('closeTime', '00:00')">12:00 AM</button>
+
+                <div class="form-group">
+                  <label class="form-label">{{ currentLang() === 'en' ? 'Address (Arabic)' : 'العنوان (العربية)' }}</label>
+                  <input type="text" formControlName="addressAr" class="form-control" placeholder="مثال: طريق الملك فهد، مبنى 12">
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Row 5: Checkboxes -->
-          <div class="checkbox-row">
-            <label class="checkbox-label">
-              <input type="checkbox" formControlName="twentyFourHours">
-              <span>{{ currentLang() === 'en' ? 'Open 24/7 (Always Open)' : 'مفتوح 24/7 (على مدار الساعة)' }}</span>
-            </label>
+            <!-- Section 2: Location & Contact -->
+            <div class="form-section">
+              <div class="section-title">
+                <span class="material-icons-round">pin_drop</span>
+                <span>{{ currentLang() === 'en' ? 'Coordinates & Phone' : 'الإحداثيات ورقم التواصل' }}</span>
+              </div>
 
-            <label class="checkbox-label">
-              <input type="checkbox" formControlName="isActive">
-              <span>{{ currentLang() === 'en' ? 'Active Branch' : 'فرع نشط ومتاح' }}</span>
-            </label>
-          </div>
+              <div class="form-row-3">
+                <div class="form-group">
+                  <label class="form-label">{{ currentLang() === 'en' ? 'Latitude *' : 'خط العرض *' }}</label>
+                  <input type="number" step="0.000001" formControlName="latitude" class="form-control" placeholder="e.g. 24.7136">
+                </div>
 
-          <!-- Actions -->
-          <div class="modal-footer-actions">
-            <button type="button" class="btn btn-secondary" (click)="closeModal()">
-              {{ currentLang() === 'en' ? 'Cancel' : 'إلغاء' }}
-            </button>
-            <button type="submit" [disabled]="branchForm.invalid" class="btn btn-primary">
-              {{ currentLang() === 'en' ? 'Save Branch' : 'حفظ الفرع' }}
-            </button>
-          </div>
-        </form>
+                <div class="form-group">
+                  <label class="form-label">{{ currentLang() === 'en' ? 'Longitude *' : 'خط الطول *' }}</label>
+                  <input type="number" step="0.000001" formControlName="longitude" class="form-control" placeholder="e.g. 46.6753">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">{{ currentLang() === 'en' ? 'Phone Number' : 'رقم الهاتف' }}</label>
+                  <input type="text" formControlName="phone" class="form-control" placeholder="e.g. +966 11 123 4567">
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 3: Operating Hours -->
+            <div class="form-section">
+              <div class="section-title">
+                <span class="material-icons-round">schedule</span>
+                <span>{{ currentLang() === 'en' ? 'Operating Schedule' : 'أوقات وساعات العمل' }}</span>
+              </div>
+
+              <div class="operating-hours-box" *ngIf="!branchForm.get('twentyFourHours')?.value">
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label class="form-label">{{ currentLang() === 'en' ? 'Opening Time' : 'وقت الافتتاح' }}</label>
+                    <div class="time-picker-wrap">
+                      <span class="material-icons-round time-icon">alarm</span>
+                      <input type="time" formControlName="openTime" class="form-control time-input">
+                    </div>
+                    <div class="preset-chips">
+                      <button type="button" class="preset-chip" (click)="setTimePreset('openTime', '08:00')">08:00 AM</button>
+                      <button type="button" class="preset-chip" (click)="setTimePreset('openTime', '09:00')">09:00 AM</button>
+                      <button type="button" class="preset-chip" (click)="setTimePreset('openTime', '10:00')">10:00 AM</button>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">{{ currentLang() === 'en' ? 'Closing Time' : 'وقت الإغلاق' }}</label>
+                    <div class="time-picker-wrap">
+                      <span class="material-icons-round time-icon">bedtime</span>
+                      <input type="time" formControlName="closeTime" class="form-control time-input">
+                    </div>
+                    <div class="preset-chips">
+                      <button type="button" class="preset-chip" (click)="setTimePreset('closeTime', '22:00')">10:00 PM</button>
+                      <button type="button" class="preset-chip" (click)="setTimePreset('closeTime', '23:00')">11:00 PM</button>
+                      <button type="button" class="preset-chip" (click)="setTimePreset('closeTime', '00:00')">12:00 AM</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 4: Switches & Status -->
+            <div class="toggles-box">
+              <label class="toggle-card">
+                <input type="checkbox" formControlName="twentyFourHours">
+                <span class="toggle-content">
+                  <span class="toggle-title">{{ currentLang() === 'en' ? 'Open 24 Hours (24/7)' : 'مفتوح 24/7 (على مدار الساعة)' }}</span>
+                  <span class="toggle-desc">{{ currentLang() === 'en' ? 'Check if this branch operates non-stop' : 'حدد الخيار إذا كان الفرع يعمل طوال اليوم دون إغلاق' }}</span>
+                </span>
+              </label>
+
+              <label class="toggle-card">
+                <input type="checkbox" formControlName="isActive">
+                <span class="toggle-content">
+                  <span class="toggle-title">{{ currentLang() === 'en' ? 'Branch Active & Published' : 'فرع نشط ومتاح للعامة' }}</span>
+                  <span class="toggle-desc">{{ currentLang() === 'en' ? 'Active branches are displayed on website and app' : 'الفروع النشطة تظهر في قائمة الفروع للمستخدمين' }}</span>
+                </span>
+              </label>
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" (click)="closeModal()">
+            {{ currentLang() === 'en' ? 'Cancel' : 'إلغاء' }}
+          </button>
+          <button type="submit" form="branchModalForm" [disabled]="branchForm.invalid" class="btn-primary">
+            <span class="material-icons-round">save</span>
+            <span>{{ currentLang() === 'en' ? 'Save Branch' : 'حفظ الفرع' }}</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
