@@ -35,6 +35,17 @@
     </div>
   </div>
 
+  <!-- Expired Offer Alert Banner -->
+  <div class="expired-alert-banner" *ngIf="offer()?.isExpired || offer()?.status === 'EXPIRED' || (offer()?.validUntil && isDateExpired(offer()?.validUntil))">
+    <div class="expired-alert-content">
+      <span class="material-icons-round alert-icon">warning</span>
+      <div class="alert-text">
+        <strong>{{ currentLang() === 'en' ? 'This Promotion Has Expired' : 'عذراً، هذا العرض انتهت فترة صلاحيته' }}</strong>
+        <p>{{ currentLang() === 'en' ? 'This offer expired on ' + (offer()?.validUntil || offer()?.valid_until) + '. Prices and promotional savings are no longer guaranteed by the store.' : 'انتهى هذا العرض بتاريخ ' + (offer()?.validUntil || offer()?.valid_until) + '. الأسعار والتخفيضات غير مضمونة حالياً من قبل المتجر.' }}</p>
+      </div>
+    </div>
+  </div>
+
   <!-- Noon-Style 3-Column Hero Grid -->
   <div class="noon-main-grid">
     

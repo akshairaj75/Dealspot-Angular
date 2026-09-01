@@ -43,6 +43,14 @@ export class OffersCrudComponent implements OnInit, OnDestroy {
     { id: 'BOGO', nameEn: 'BOGO', nameAr: 'BOGO' },
     { id: 'PROMO', nameEn: 'PROMO', nameAr: 'ترويجي' }
   ];
+
+  statusFilterOptions = [
+    { id: '', nameEn: 'All Statuses', nameAr: 'جميع الحالات' },
+    { id: 'ACTIVE', nameEn: 'Active Only', nameAr: 'نشط فقط' },
+    { id: 'EXPIRED', nameEn: 'Expired Only', nameAr: 'منتهي فقط' },
+    { id: 'UPCOMING', nameEn: 'Upcoming Only', nameAr: 'قادم فقط' },
+    { id: 'DISABLED', nameEn: 'Disabled', nameAr: 'معطل' }
+  ];
   private offerService = inject(OfferService);
   private storeService = inject(StoreService);
   private productService = inject(ProductService);
@@ -74,6 +82,7 @@ export class OffersCrudComponent implements OnInit, OnDestroy {
   searchQuery = '';
   selectedStoreFilter: number | string = '';
   selectedBadgeFilter: string = '';
+  selectedStatusFilter: string = '';
 
   offerForm!: FormGroup;
   isModalOpen = false;
@@ -149,7 +158,7 @@ export class OffersCrudComponent implements OnInit, OnDestroy {
       ? Number(this.authService.currentUser()?.storeId)
       : (this.selectedStoreFilter ? Number(this.selectedStoreFilter) : undefined);
 
-    this.offerService.getAllOffers(storeId).subscribe({
+    this.offerService.getAllOffers(storeId, true).subscribe({
       next: (res) => {
         this.offers.set(res || []);
         this.applyFilter();
@@ -287,7 +296,56 @@ export class OffersCrudComponent implements OnInit, OnDestroy {
       list = list.filter(o => o.badgeType === this.selectedBadgeFilter || o.badge_type === this.selectedBadgeFilter);
     }
 
+    if (this.selectedStatusFilter) {
+      const today = new Date().toISOString().split('T')[0];
+      if (this.selectedStatusFilter === 'ACTIVE') {
+        list = list.filter(o => (o.active === true || o.active === 1 || o.isActive === true) && !(o.validUntil && o.validUntil < today));
+      } else if (this.selectedStatusFilter === 'EXPIRED') {
+        list = list.filter(o => o.isExpired || o.status === 'EXPIRED' || (o.validUntil && o.validUntil < today));
+      } else if (this.selectedStatusFilter === 'UPCOMING') {
+        list = list.filter(o => o.isUpcoming || o.status === 'UPCOMING' || (o.validFrom && o.validFrom > today));
+      } else if (this.selectedStatusFilter === 'DISABLED') {
+        list = list.filter(o => o.active === false || o.active === 0 || o.isActive === false || o.status === 'DISABLED');
+      }
+    }
+
     this.filteredOffers.set(list);
+  }
+
+  extendOffer(id: number, days: number = 7): void {
+    Swal.fire({
+      title: this.currentLang() === 'en' ? 'Extend Offer Expiration?' : 'تمديد فترة العرض؟',
+      text: this.currentLang() === 'en'
+        ? `Extend this offer by +${days} days and activate it?`
+        : `هل تريد تمديد فترة العرض بـ +${days} أيام وتفعيله؟`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: this.currentLang() === 'en' ? `Yes, Extend (+${days} Days)` : `نعم، تمديد (+${days} أيام)`,
+      cancelButtonText: this.currentLang() === 'en' ? 'Cancel' : 'إلغاء'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.offerService.extendOffer(id, days).subscribe({
+          next: () => {
+            Swal.fire({
+              icon: 'success',
+              title: this.currentLang() === 'en' ? 'Extended!' : 'تم التمديد!',
+              text: this.currentLang() === 'en' ? `Offer extended by +${days} days.` : `تم تمديد العرض بنجاح بـ +${days} أيام.`,
+              timer: 1800,
+              showConfirmButton: false
+            });
+            this.loadOffers();
+          },
+          error: (err) => {
+            console.error('Failed to extend offer:', err);
+            Swal.fire({
+              icon: 'error',
+              title: this.currentLang() === 'en' ? 'Error' : 'خطأ',
+              text: err?.error?.message || (this.currentLang() === 'en' ? 'Failed to extend offer.' : 'فشل تمديد العرض.')
+            });
+          }
+        });
+      }
+    });
   }
 
   openAddModal(): void {
@@ -544,5 +602,17 @@ export class OffersCrudComponent implements OnInit, OnDestroy {
         });
       }
     });
+  }
+
+  getOfferImageUrl(offer: any): string {
+    if (!offer) return 'https://placehold.co/100x100?text=No+Image';
+    const raw = offer.imageUrl || offer.thumbnailUrl || offer.image_url || offer.thumbnail_url || offer.productPrimaryImageUrl || offer.product_primary_image_url;
+    if (raw && typeof raw === 'string' && raw.trim() !== '') {
+      if (raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('data:')) {
+        return raw;
+      }
+      return this.filePath + raw;
+    }
+    return 'https://placehold.co/100x100?text=No+Image';
   }
 }

@@ -420,7 +420,12 @@ export class OfferListComponent implements OnInit, OnDestroy {
 
   // Filters
   applyFilters(): void {
-    let list = [...this.rawOffers()];
+    const today = new Date().toISOString().split('T')[0];
+    let list = [...this.rawOffers()].filter(o => {
+      const isActive = o.active !== false && o.is_active !== 0 && o.isActive !== false;
+      const isNotExpired = !o.isExpired && o.status !== 'EXPIRED' && !(o.validUntil && o.validUntil < today) && !(o.valid_until && o.valid_until < today);
+      return isActive && isNotExpired;
+    });
 
     if (this.onlySaved()) {
       list = list.filter(o => this.isSaved(Number(o.id)));

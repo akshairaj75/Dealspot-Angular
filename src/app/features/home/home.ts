@@ -269,8 +269,17 @@ export class HomeComponent implements OnInit {
   }
 
   private organizeOffers(offers: any[]): void {
+    const today = new Date().toISOString().split('T')[0];
+
+    // Filter out inactive and expired offers from home screen carousels & grids
+    const validOffers = (offers || []).filter(o => {
+      const isActive = o.active !== false && o.is_active !== 0 && o.isActive !== false;
+      const isNotExpired = !o.isExpired && o.status !== 'EXPIRED' && !(o.validUntil && o.validUntil < today) && !(o.valid_until && o.valid_until < today);
+      return isActive && isNotExpired;
+    });
+
     // Flash Deals (flash=true or badgeType=FLASH)
-    const flash = offers.filter(o => 
+    const flash = validOffers.filter(o => 
       o.flash === true || 
       o.badgeType === 'FLASH' || 
       o.is_flash === 1 || 
@@ -279,17 +288,16 @@ export class HomeComponent implements OnInit {
     this.flashDeals.set(flash);
 
     // Featured Offers (featured=true or badgeType=FEATURED)
-    const featured = offers.filter(o => 
+    const featured = validOffers.filter(o => 
       o.featured === true || 
       o.badgeType === 'FEATURED' || 
       o.is_featured === 1 || 
       o.is_featured === true
     );
-    this.featuredOffers.set(featured.length > 0 ? featured : offers.slice(0, 4));
+    this.featuredOffers.set(featured.length > 0 ? featured : validOffers.slice(0, 4));
 
-    // Latest Offers (all active, newest first)
-    const latest = [...offers].filter(o => o.active !== false && o.is_active !== 0);
-    this.latestOffers.set(latest.slice(0, 8));
+    // Latest Offers (all valid active deals, newest first)
+    this.latestOffers.set(validOffers.slice(0, 8));
   }
 
   private filterByCity(cityId: number): void {

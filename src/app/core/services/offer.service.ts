@@ -11,10 +11,17 @@ export class OfferService {
 
   constructor(private http: HttpClient) {}
 
-  getAllOffers(storeId?: number): Observable<any[]> {
+  getAllOffers(storeId?: number, includeExpired?: boolean): Observable<any[]> {
     let url = this.apiUrl + '/fetch-all-offers';
+    const params: string[] = [];
     if (storeId) {
-      url += '?storeId=' + storeId;
+      params.push('storeId=' + storeId);
+    }
+    if (includeExpired) {
+      params.push('includeExpired=true');
+    }
+    if (params.length > 0) {
+      url += '?' + params.join('&');
     }
     return this.http.get<any[]>(url);
   }
@@ -38,6 +45,10 @@ export class OfferService {
 
   deleteOffer(id: number | string): Observable<any> {
     return this.http.delete(this.apiUrl + '/delete/' + id, { responseType: 'text' });
+  }
+
+  extendOffer(id: number | string, days: number = 7): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/extend?days=${days}`, {});
   }
 
   // Saved / Bookmark Operations

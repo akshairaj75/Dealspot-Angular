@@ -24,8 +24,8 @@
       </button>
     </div>
 
-    <div class="filter-dropdowns" style="display: flex; gap: 0.5rem;">
-      <div style="min-width: 180px;">
+    <div class="filter-dropdowns" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+      <div style="min-width: 170px;">
         <app-custom-select
           [options]="stores()"
           [(ngModel)]="selectedStoreFilter"
@@ -40,7 +40,7 @@
         ></app-custom-select>
       </div>
 
-      <div style="min-width: 160px;">
+      <div style="min-width: 150px;">
         <app-custom-select
           [options]="badgeFilterOptions"
           [(ngModel)]="selectedBadgeFilter"
@@ -53,6 +53,20 @@
           [unsetLabel]="currentLang() === 'en' ? 'All Badges' : 'جميع الشارات'"
         ></app-custom-select>
       </div>
+
+      <div style="min-width: 150px;">
+        <app-custom-select
+          [options]="statusFilterOptions"
+          [(ngModel)]="selectedStatusFilter"
+          (ngModelChange)="applyFilter()"
+          valueKey="id"
+          labelEnKey="nameEn"
+          labelArKey="nameAr"
+          [placeholder]="currentLang() === 'en' ? 'All Statuses' : 'جميع الحالات'"
+          [allowUnset]="true"
+          [unsetLabel]="currentLang() === 'en' ? 'All Statuses' : 'جميع الحالات'"
+        ></app-custom-select>
+      </div>
     </div>
   </div>
 
@@ -63,60 +77,37 @@
 
   <!-- Unified Responsive Card List View -->
   <div class="offers-list-view" *ngIf="!loading && filteredOffers().length > 0; else noOffers">
-    <div
-      class="offer-list-item"
-      *ngFor="let o of filteredOffers()"
-      [class.card-inactive]="!(o.active === true || o.is_active === 1 || o.active === 1)"
-    >
-      <!-- Left: Offer Image Avatar Box -->
-      <div class="offer-avatar-box">
-        <img
-          [src]="getImageUrl(o.imageUrl || o.thumbnailUrl || o.image_url)"
-          class="offer-img"
-          [alt]="o.titleEn || 'Offer'"
-          (error)="$any($event.target).src = 'https://placehold.co/100x100?text=No+Image'"
-        />
-      </div>
-
-      <!-- Middle: Details -->
-      <div class="offer-info-wrap">
-        <!-- Title Row & ID & Badge -->
-        <div class="offer-title-row">
-          <h3 class="offer-title-en">{{ o.titleEn || o.title_en }}</h3>
-          <span class="offer-id-pill" [title]="currentLang() === 'en' ? 'Offer ID: ' + o.id : 'معرف العرض: ' + o.id">ID: #{{ o.id }}</span>
-          
-          <span
-            class="offer-badge-chip"
-            [class.badge-featured]="o.badgeType === 'FEATURED' || o.badge_type === 'FEATURED'"
-            [class.badge-flash]="o.badgeType === 'FLASH' || o.badge_type === 'FLASH'"
-            [class.badge-bogo]="o.badgeType === 'BOGO' || o.badge_type === 'BOGO'"
-          >
-            <span class="material-icons-round icon-xs">local_offer</span>
-            <span>{{ o.badgeType || o.badge_type || 'NONE' }}</span>
+    <div class="offer-card-item card" *ngFor="let o of filteredOffers()">
+      <!-- Left: Thumbnail & Brand -->
+      <div class="item-left-group">
+        <div class="offer-thumb-box">
+          <img [src]="getOfferImageUrl(o)" [alt]="o.titleEn || 'Offer'" class="offer-thumb">
+          <span class="badge-chip" *ngIf="o.badgeType && o.badgeType !== 'NONE'">
+            {{ o.badgeType }}
           </span>
         </div>
+      </div>
 
-        <span class="offer-title-ar" *ngIf="o.titleAr || o.title_ar">{{ o.titleAr || o.title_ar }}</span>
+      <!-- Center: Title, Store, Category & Details -->
+      <div class="item-center-group">
+        <div class="offer-title-row">
+          <h3 class="offer-title">{{ currentLang() === 'en' ? (o.titleEn || o.title_en) : (o.titleAr || o.title_ar || o.titleEn) }}</h3>
+        </div>
 
-        <!-- Meta Row: Store & City + Category & Product -->
-        <div class="offer-meta-row">
-          <!-- Store Partner -->
+        <div class="offer-meta-chips">
           <span class="meta-chip store-chip">
             <span class="material-icons-round icon-xs">storefront</span>
-            <span>{{ currentLang() === 'en' ? (o.storeNameEn || o.store?.nameEn || o.store?.name_en || 'Store #' + o.storeId) : (o.storeNameAr || o.store?.nameAr || o.store?.name_ar || o.storeNameEn || 'متجر #' + o.storeId) }}</span>
-            <span class="city-tag" *ngIf="o.cityNameEn || o.city?.nameEn">({{ currentLang() === 'en' ? (o.cityNameEn || o.city?.nameEn) : (o.cityNameAr || o.city?.nameAr || o.cityNameEn) }})</span>
+            <span>{{ currentLang() === 'en' ? (o.storeNameEn || o.store?.nameEn || o.store_id) : (o.storeNameAr || o.store?.nameAr || o.storeNameEn || o.store_id) }}</span>
           </span>
 
-          <!-- Category -->
-          <span class="meta-chip category-chip">
+          <span class="meta-chip category-chip" *ngIf="o.categoryNameEn || o.category?.nameEn">
             <span class="material-icons-round icon-xs">category</span>
-            <span>{{ currentLang() === 'en' ? (o.categoryNameEn || o.category?.nameEn || 'General') : (o.categoryNameAr || o.category?.nameAr || 'عام') }}</span>
+            <span>{{ currentLang() === 'en' ? (o.categoryNameEn || o.category?.nameEn) : (o.categoryNameAr || o.category?.nameAr || o.categoryNameEn) }}</span>
           </span>
 
-          <!-- Linked Product -->
-          <span class="meta-chip product-chip" *ngIf="o.productNameEn || o.product?.nameEn">
-            <span class="material-icons-round icon-xs">inventory_2</span>
-            <span>{{ currentLang() === 'en' ? (o.productNameEn || o.product?.nameEn) : (o.productNameAr || o.product?.nameAr || o.productNameEn) }}</span>
+          <span class="meta-chip city-chip" *ngIf="o.cityNameEn || o.city?.nameEn">
+            <span class="material-icons-round icon-xs">place</span>
+            <span>{{ currentLang() === 'en' ? (o.cityNameEn || o.city?.nameEn) : (o.cityNameAr || o.city?.nameAr || o.cityNameEn) }}</span>
           </span>
         </div>
 
@@ -132,7 +123,7 @@
 
           <div class="validity-chip" *ngIf="o.validFrom || o.valid_from">
             <span class="material-icons-round icon-xs">event</span>
-            <span>{{ o.validFrom || o.valid_from }} → <strong class="text-danger">{{ o.validUntil || o.valid_until }}</strong></span>
+            <span>{{ o.validFrom || o.valid_from }} → <strong [class.text-danger]="o.isExpired || o.status === 'EXPIRED'">{{ o.validUntil || o.valid_until }}</strong></span>
           </div>
         </div>
       </div>
@@ -141,14 +132,26 @@
       <div class="item-right-group">
         <span
           class="status-pill"
-          [class.status-active]="o.active === true || o.is_active === 1 || o.active === 1"
-          [class.status-inactive]="o.active === false || o.is_active === 0 || o.active === 0"
+          [class.status-active]="(o.active === true || o.is_active === 1 || o.active === 1) && !o.isExpired && o.status !== 'EXPIRED'"
+          [class.status-expired]="o.isExpired || o.status === 'EXPIRED'"
+          [class.status-upcoming]="o.isUpcoming || o.status === 'UPCOMING'"
+          [class.status-inactive]="o.active === false || o.is_active === 0 || o.active === 0 || o.status === 'DISABLED'"
         >
           <span class="status-dot"></span>
-          <span>{{ (o.active === true || o.is_active === 1 || o.active === 1) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}</span>
+          <span>
+            {{
+              (o.isExpired || o.status === 'EXPIRED') ? (currentLang() === 'en' ? 'Expired' : 'منتهي') :
+              (o.isUpcoming || o.status === 'UPCOMING') ? (currentLang() === 'en' ? 'Upcoming' : 'قادم') :
+              (o.active === true || o.is_active === 1 || o.active === 1) ? (currentLang() === 'en' ? 'Active' : 'نشط') :
+              (currentLang() === 'en' ? 'Disabled' : 'معطل')
+            }}
+          </span>
         </span>
 
         <div class="item-action-btns">
+          <button type="button" class="btn-item-action btn-item-extend" (click)="extendOffer(o.id, 7)" [title]="currentLang() === 'en' ? 'Extend Offer (+7 Days)' : 'تمديد العرض (+7 أيام)'">
+            <span class="material-icons-round">more_time</span>
+          </button>
           <button type="button" class="btn-item-action" (click)="openEditModal(o)" [title]="currentLang() === 'en' ? 'Edit' : 'تعديل'">
             <span class="material-icons-round">edit</span>
           </button>

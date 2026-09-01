@@ -526,4 +526,10 @@ export class OfferDetailComponent implements OnInit {
       lang: this.currentLang()
     });
   }
+
+  isDateExpired(dateStr?: string): boolean {
+    if (!dateStr) return false;
+    const today = new Date().toISOString().split('T')[0];
+    return dateStr < today;
+  }
 }
