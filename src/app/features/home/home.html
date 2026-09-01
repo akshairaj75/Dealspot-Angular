@@ -81,7 +81,7 @@
       <a routerLink="/offers-list" [queryParams]="{flash: true}" class="see-all-link">{{ currentLang() === 'en' ? 'See All' : 'عرض الكل' }}</a>
     </div>
 
-    <div class="deals-horizontal-scroll">
+    <div class="deals-horizontal-scroll" [class.single-item]="flashDeals().length === 1">
       <div class="deal-horizontal-card card" *ngFor="let deal of flashDeals()">
         <!-- Discount Badge -->
         <span class="badge badge-discount discount-badge-float">-{{ deal.discountPct || deal.discount_pct || 0 }}%</span>

@@ -682,3 +682,38 @@
   left: auto;
   right: 12px;
 }
+
+/* Mobile Responsiveness for Store Hero Banner */
+@media (max-width: 768px) {
+  .store-hero-banner {
+    padding: 20px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .store-hero-left {
+    gap: 16px;
+    width: 100%;
+  }
+
+  .store-detail-logo-wrapper {
+    width: 72px;
+    height: 72px;
+    flex-shrink: 0;
+  }
+
+  .store-hero-right {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .follow-hero-btn {
+    flex: 1;
+    max-width: 180px;
+  }
+}
