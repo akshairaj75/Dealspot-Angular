@@ -235,10 +235,11 @@
                 <span class="text-success">{{ (b.isActive !== false && b.is_active !== 0) ? (currentLang() === 'en' ? 'Active Branch' : 'فرع نشط') : (currentLang() === 'en' ? 'Temporarily Closed' : 'مغلق مؤقتاً') }}</span>
               </div>
             </div>
-            <div class="branch-footer" *ngIf="b.latitude && b.longitude">
+            <div class="branch-footer">
               <a 
-                [href]="'https://www.google.com/maps/search/?api=1&query=' + b.latitude + ',' + b.longitude" 
+                [href]="getBranchMapUrl(b)" 
                 target="_blank"
+                rel="noopener noreferrer"
                 class="btn btn-outline w-full google-maps-btn"
               >
                 <span class="material-icons-round">map</span>

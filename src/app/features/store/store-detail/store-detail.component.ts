@@ -5,6 +5,7 @@ import { StoreService } from '../../../core/services/store.service';
 import { OfferService } from '../../../core/services/offer.service';
 import { FlyerService } from '../../../core/services/flyer.service';
 import { TranslationService } from '../../../core/services/translation.service';
+import { MapUtils } from '../../../core/utils/map-utils';
 import { environment } from '../../../environment/environment';
 
 import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
@@ -222,5 +223,18 @@ export class StoreDetailComponent implements OnInit {
       return url;
     }
     return this.filePath + url;
+  }
+
+  getBranchMapUrl(b: any): string {
+    return MapUtils.getGoogleMapsUrl({
+      latitude: b.latitude,
+      longitude: b.longitude,
+      addressEn: b.addressEn || b.address_en,
+      addressAr: b.addressAr || b.address_ar,
+      cityNameEn: b.cityNameEn || b.city?.nameEn,
+      cityNameAr: b.cityNameAr || b.city?.nameAr,
+      storeName: this.store()?.nameEn || this.store()?.nameAr,
+      lang: this.currentLang()
+    });
   }
 }

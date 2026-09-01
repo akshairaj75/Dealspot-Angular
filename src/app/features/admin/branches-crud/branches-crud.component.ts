@@ -7,13 +7,15 @@ import { StoreBranchService } from '../../../core/services/store-branch.service'
 import { CityService } from '../../../core/services/city.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { CustomSelectComponent } from '../../../shared/components/custom-select/custom-select.component';
+import { LocationPickerComponent } from '../../../shared/components/location-picker/location-picker.component';
+import { MapUtils } from '../../../core/utils/map-utils';
 import { environment } from '../../../environment/environment';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-branches-crud',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, CustomSelectComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, CustomSelectComponent, LocationPickerComponent],
   templateUrl: './branches-crud.component.html',
   styleUrl: './branches-crud.component.css'
 })
@@ -317,5 +319,31 @@ export class BranchesCrudComponent implements OnInit {
       return base + '/' + logo;
     }
     return base + logo;
+  }
+
+  getBranchMapUrl(b: any): string {
+    return MapUtils.getGoogleMapsUrl({
+      latitude: b.latitude,
+      longitude: b.longitude,
+      addressEn: b.addressEn || b.address_en,
+      addressAr: b.addressAr || b.address_ar,
+      cityNameEn: b.cityNameEn || b.city?.nameEn,
+      cityNameAr: b.cityNameAr || b.city?.nameAr,
+      storeName: this.store()?.nameEn || this.store()?.nameAr,
+      lang: this.currentLang()
+    });
+  }
+
+  openBranchMap(b: any, event?: Event): void {
+    MapUtils.openInGoogleMaps({
+      latitude: b.latitude,
+      longitude: b.longitude,
+      addressEn: b.addressEn || b.address_en,
+      addressAr: b.addressAr || b.address_ar,
+      cityNameEn: b.cityNameEn || b.city?.nameEn,
+      cityNameAr: b.cityNameAr || b.city?.nameAr,
+      storeName: this.store()?.nameEn || this.store()?.nameAr,
+      lang: this.currentLang()
+    }, event);
   }
 }

@@ -3,12 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CityService } from '../../../core/services/city.service';
 import { TranslationService } from '../../../core/services/translation.service';
+import { LocationPickerComponent } from '../../../shared/components/location-picker/location-picker.component';
+import { MapUtils } from '../../../core/utils/map-utils';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-cities-crud',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, LocationPickerComponent],
   templateUrl: 'cities-crud.html',
   styleUrls: ['./cities-crud.css']
 })
@@ -57,9 +59,24 @@ export class CitiesCrudComponent implements OnInit {
     });
   }
 
-  openInMap(lat: number, lng: number, event?: Event): void {
-    if (event) event.stopPropagation();
-    window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank');
+  getCityMapUrl(c: any): string {
+    return MapUtils.getGoogleMapsUrl({
+      latitude: c.latitude,
+      longitude: c.longitude,
+      cityNameEn: c.nameEn || c.name_en,
+      cityNameAr: c.nameAr || c.name_ar,
+      lang: this.currentLang()
+    });
+  }
+
+  openInMap(c: any, event?: Event): void {
+    MapUtils.openInGoogleMaps({
+      latitude: c.latitude,
+      longitude: c.longitude,
+      cityNameEn: c.nameEn || c.name_en,
+      cityNameAr: c.nameAr || c.name_ar,
+      lang: this.currentLang()
+    }, event);
   }
 
   setViewMode(mode: 'GRID' | 'TABLE'): void {

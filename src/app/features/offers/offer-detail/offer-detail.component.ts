@@ -7,6 +7,7 @@ import { StoreService } from '../../../core/services/store.service';
 import { ProductService } from '../../../core/services/product.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
+import { MapUtils } from '../../../core/utils/map-utils';
 import { environment } from '../../../environment/environment';
 import { APP_CONFIG } from '../../../core/config/app-config';
 
@@ -511,5 +512,18 @@ export class OfferDetailComponent implements OnInit {
     } else {
       return o.descriptionAr || o.description_ar || o.descriptionEn || (typeof o.description === 'string' ? o.description : '');
     }
+  }
+
+  getBranchMapUrl(b: any): string {
+    return MapUtils.getGoogleMapsUrl({
+      latitude: b.latitude,
+      longitude: b.longitude,
+      addressEn: b.addressEn || b.address_en,
+      addressAr: b.addressAr || b.address_ar,
+      cityNameEn: b.cityNameEn || b.city?.nameEn,
+      cityNameAr: b.cityNameAr || b.city?.nameAr,
+      storeName: b.storeNameEn || b.store?.nameEn || this.offer()?.storeNameEn || this.offer()?.store?.nameEn,
+      lang: this.currentLang()
+    });
   }
 }

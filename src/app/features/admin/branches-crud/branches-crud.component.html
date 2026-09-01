@@ -161,16 +161,15 @@
             </td>
             <td>
               <a 
-                *ngIf="b.latitude && b.longitude" 
-                [href]="'https://www.google.com/maps/search/?api=1&query=' + b.latitude + ',' + b.longitude" 
+                [href]="getBranchMapUrl(b)" 
                 target="_blank" 
+                rel="noopener noreferrer"
                 class="map-pill-btn"
-                title="View on Google Maps"
+                [title]="currentLang() === 'en' ? 'Open in Google Maps' : 'فتح في خرائط جوجل'"
               >
                 <span class="material-icons-round map-icon">map</span>
-                <span>{{ b.latitude | number:'1.2-4' }}, {{ b.longitude | number:'1.2-4' }}</span>
+                <span>{{ (b.latitude && b.longitude) ? (b.latitude | number:'1.2-4') + ', ' + (b.longitude | number:'1.2-4') : (currentLang() === 'en' ? 'Open Map' : 'فتح الخريطة') }}</span>
               </a>
-              <span *ngIf="!b.latitude || !b.longitude" class="text-muted">-</span>
             </td>
             <td>
               <span class="badge-247" *ngIf="b.twentyFourHours || b.is_24_hours">
@@ -268,15 +267,15 @@
 
         <div class="branch-card-footer">
           <a 
-            *ngIf="b.latitude && b.longitude" 
-            [href]="'https://www.google.com/maps/search/?api=1&query=' + b.latitude + ',' + b.longitude" 
+            [href]="getBranchMapUrl(b)" 
             target="_blank" 
+            rel="noopener noreferrer"
             class="map-pill-btn"
+            [title]="currentLang() === 'en' ? 'Open in Google Maps' : 'فتح في خرائط جوجل'"
           >
             <span class="material-icons-round map-icon">map</span>
             <span>{{ currentLang() === 'en' ? 'Open Map' : 'فتح الخريطة' }}</span>
           </a>
-          <span *ngIf="!b.latitude || !b.longitude" class="text-muted text-sm">{{ currentLang() === 'en' ? 'No coordinates' : 'لا توجد إحداثيات' }}</span>
 
           <div class="action-buttons-wrap">
             <button class="btn-item-action btn-item-edit" (click)="openEditModal(b)" [title]="currentLang() === 'en' ? 'Edit Branch' : 'تعديل الفرع'">
@@ -360,25 +359,24 @@
             <!-- Section 2: Location & Contact -->
             <div class="form-section">
               <div class="section-title">
-                <span class="material-icons-round">pin_drop</span>
-                <span>{{ currentLang() === 'en' ? 'Coordinates & Phone' : 'الإحداثيات ورقم التواصل' }}</span>
+                <span class="material-icons-round">map</span>
+                <span>{{ currentLang() === 'en' ? 'Map Location & Contact' : 'تحديد موقع الفرع والتواصل' }}</span>
               </div>
 
-              <div class="form-row-3">
-                <div class="form-group">
-                  <label class="form-label">{{ currentLang() === 'en' ? 'Latitude *' : 'خط العرض *' }}</label>
-                  <input type="number" step="0.000001" formControlName="latitude" class="form-control" placeholder="e.g. 24.7136">
-                </div>
+              <div class="form-group">
+                <label class="form-label">{{ currentLang() === 'en' ? 'Select Branch Location on Map *' : 'حدد موقع الفرع على الخريطة *' }}</label>
+                <app-location-picker
+                  [lat]="branchForm.get('latitude')?.value || 24.7136"
+                  [lng]="branchForm.get('longitude')?.value || 46.6753"
+                  (latChange)="branchForm.get('latitude')?.setValue($event)"
+                  (lngChange)="branchForm.get('longitude')?.setValue($event)"
+                  height="260px"
+                ></app-location-picker>
+              </div>
 
-                <div class="form-group">
-                  <label class="form-label">{{ currentLang() === 'en' ? 'Longitude *' : 'خط الطول *' }}</label>
-                  <input type="number" step="0.000001" formControlName="longitude" class="form-control" placeholder="e.g. 46.6753">
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">{{ currentLang() === 'en' ? 'Phone Number' : 'رقم الهاتف' }}</label>
-                  <input type="text" formControlName="phone" class="form-control" placeholder="e.g. +966 11 123 4567">
-                </div>
+              <div class="form-group" style="margin-top: 0.5rem;">
+                <label class="form-label">{{ currentLang() === 'en' ? 'Phone Number' : 'رقم الهاتف' }}</label>
+                <input type="text" formControlName="phone" class="form-control" placeholder="e.g. +966 11 123 4567">
               </div>
             </div>
 

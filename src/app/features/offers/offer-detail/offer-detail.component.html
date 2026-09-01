@@ -486,6 +486,19 @@
               <span class="material-icons-round font-xs text-muted">phone</span>
               <span>{{ b.phone || b.phoneNumber }}</span>
             </p>
+
+            <div style="margin-top: 0.75rem;">
+              <a 
+                [href]="getBranchMapUrl(b)" 
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn-outline btn-sm w-full"
+                style="display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; font-size: 0.78rem; border-radius: var(--radius-sm);"
+              >
+                <span class="material-icons-round" style="font-size: 1rem;">map</span>
+                <span>{{ currentLang() === 'en' ? 'Open Location in Maps' : 'فتح الموقع في الخريطة' }}</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>

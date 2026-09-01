@@ -100,7 +100,7 @@
         </span>
 
         <div class="item-action-btns">
-          <button type="button" class="btn-item-action" (click)="openInMap(c.latitude, c.longitude, $event)"
+          <button type="button" class="btn-item-action" (click)="openInMap(c, $event)"
             [title]="currentLang() === 'en' ? 'Open in Maps' : 'فتح الخريطة'">
             <span class="material-icons-round">open_in_new</span>
           </button>
@@ -171,18 +171,16 @@
           </div>
 
           <!-- Coordinates -->
-          <div class="form-section-label">{{ currentLang() === 'en' ? 'GPS Coordinates' : 'الإحداثيات الجغرافية' }}
-          </div>
+          <div class="form-section-label">{{ currentLang() === 'en' ? 'GPS Coordinates & Map Center' : 'الإحداثيات الجغرافية ومركز المدينة' }}</div>
 
-          <div class="form-row-2">
-            <div class="f-group">
-              <label class="f-label">{{ currentLang() === 'en' ? 'Latitude *' : 'خط العرض *' }}</label>
-              <input class="f-input" type="number" step="0.0001" formControlName="latitude" placeholder="24.7136">
-            </div>
-            <div class="f-group">
-              <label class="f-label">{{ currentLang() === 'en' ? 'Longitude *' : 'خط الطول *' }}</label>
-              <input class="f-input" type="number" step="0.0001" formControlName="longitude" placeholder="46.6753">
-            </div>
+          <div class="f-group" style="margin-bottom: 1rem;">
+            <app-location-picker
+              [lat]="cityForm.get('latitude')?.value || 24.7136"
+              [lng]="cityForm.get('longitude')?.value || 46.6753"
+              (latChange)="cityForm.get('latitude')?.setValue($event)"
+              (lngChange)="cityForm.get('longitude')?.setValue($event)"
+              height="240px"
+            ></app-location-picker>
           </div>
 
           <!-- Status -->
