@@ -283,7 +283,8 @@ export class HomeComponent implements OnInit {
       o.flash === true || 
       o.badgeType === 'FLASH' || 
       o.is_flash === 1 || 
-      o.is_flash === true
+      o.is_flash === true ||
+      o.isFlash === true
     );
     this.flashDeals.set(flash);
 
@@ -292,9 +293,10 @@ export class HomeComponent implements OnInit {
       o.featured === true || 
       o.badgeType === 'FEATURED' || 
       o.is_featured === 1 || 
-      o.is_featured === true
+      o.is_featured === true ||
+      o.isFeatured === true
     );
-    this.featuredOffers.set(featured.length > 0 ? featured : validOffers.slice(0, 4));
+    this.featuredOffers.set(featured);
 
     // Latest Offers (all valid active deals, newest first)
     this.latestOffers.set(validOffers.slice(0, 8));

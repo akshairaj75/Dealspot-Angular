@@ -401,7 +401,24 @@ export class OffersCrudComponent implements OnInit, OnDestroy {
     this.productSearchText = '';
     this.searchProducts('');
 
-    const pId = o.productId || o.product_id || null;
+    const pId = o.productId ?? o.product_id ?? (o.product ? o.product.id : null);
+    const storeId = o.storeId ?? o.store_id ?? (o.store ? o.store.id : '');
+    const categoryId = o.categoryId ?? o.category_id ?? (o.category ? o.category.id : '');
+    const cityId = o.cityId ?? o.city_id ?? (o.city ? o.city.id : '');
+
+    const formatDate = (val: any): string => {
+      if (!val) return '';
+      if (typeof val === 'string') {
+        return val.split('T')[0];
+      }
+      if (Array.isArray(val)) {
+        const y = val[0];
+        const m = String(val[1]).padStart(2, '0');
+        const d = String(val[2]).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+      return '';
+    };
 
     if (pId) {
       this.productService.getProductById(pId).subscribe({
@@ -431,16 +448,16 @@ export class OffersCrudComponent implements OnInit, OnDestroy {
     this.offerForm.reset({
       title_en: o.titleEn || o.title_en || '',
       title_ar: o.titleAr || o.title_ar || '',
-      store_id: o.storeId || o.store_id || '',
-      category_id: o.categoryId || o.category_id || '',
-      city_id: o.cityId || o.city_id || '',
+      store_id: storeId,
+      category_id: categoryId,
+      city_id: cityId,
       product_id: pId,
-      original_price: o.originalPrice || o.original_price || 0,
-      offer_price: o.offerPrice || o.offer_price || 0,
-      discount_pct: o.discountPct || o.discount_pct || 0,
+      original_price: o.originalPrice ?? o.original_price ?? 0,
+      offer_price: o.offerPrice ?? o.offer_price ?? 0,
+      discount_pct: o.discountPct ?? o.discount_pct ?? 0,
       badge_type: o.badgeType || o.badge_type || 'NONE',
-      valid_from: o.validFrom || o.valid_from || '',
-      valid_until: o.validUntil || o.valid_until || '',
+      valid_from: formatDate(o.validFrom || o.valid_from),
+      valid_until: formatDate(o.validUntil || o.valid_until),
       description_en: o.descriptionEn || o.description_en || '',
       description_ar: o.descriptionAr || o.description_ar || '',
       terms_en: o.termsEn || o.terms_en || '',
@@ -451,7 +468,17 @@ export class OffersCrudComponent implements OnInit, OnDestroy {
       is_in_store: o.inStore === true || o.is_in_store === 1 || o.is_in_store === true || o.inStore === undefined,
       is_active: o.active === true || o.is_active === 1 || o.is_active === true || o.active === undefined
     });
+
+    // Auto-calculate discount pct right after reset
+    const orig = Number(o.originalPrice ?? o.original_price ?? 0);
+    const offerPrice = Number(o.offerPrice ?? o.offer_price ?? 0);
+    if (orig > 0 && offerPrice >= 0 && offerPrice <= orig) {
+      const pct = Math.round(((orig - offerPrice) / orig) * 100);
+      this.offerForm.get('discount_pct')?.setValue(pct, { emitEvent: false });
+    }
+
     this.isModalOpen = true;
+    this.cd.detectChanges();
   }
 
   closeModal(): void {
