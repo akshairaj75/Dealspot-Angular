@@ -10,7 +10,8 @@ import {
   inject,
   signal,
   computed,
-  ChangeDetectorRef
+  ChangeDetectorRef,
+  ViewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/forms';
@@ -508,6 +509,8 @@ export class CustomSelectComponent implements ControlValueAccessor {
   @Output() selectionChange = new EventEmitter<any>();
   @Output() searchChange = new EventEmitter<string>();
 
+  @ViewChild('searchInput') searchInputRef?: ElementRef<HTMLInputElement>;
+
   isOpen = signal<boolean>(false);
   disabled = false;
   selectedValue: any = null;
@@ -624,6 +627,9 @@ export class CustomSelectComponent implements ControlValueAccessor {
       this.searchQuery.set('');
       this.onTouched();
       this.cd.detectChanges();
+      setTimeout(() => {
+        this.searchInputRef?.nativeElement?.focus();
+      }, 0);
     }
   }
 
