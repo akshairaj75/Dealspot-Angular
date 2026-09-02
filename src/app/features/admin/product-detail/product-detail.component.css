@@ -165,7 +165,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Hero / Overview Card ─────────────────────────────────── */
@@ -235,7 +237,9 @@
   opacity: 1;
 }
 
-.file-hidden { display: none; }
+.file-hidden {
+  display: none;
+}
 
 .hero-content {
   flex: 1;
@@ -264,7 +268,9 @@
   transition: transform 0.12s;
 }
 
-.status-pill:hover { transform: scale(1.04); }
+.status-pill:hover {
+  transform: scale(1.04);
+}
 
 .status-dot {
   width: 6px;
@@ -277,14 +283,20 @@
   color: #15803d;
   border: 1px solid #bbf7d0;
 }
-.status-active .status-dot { background: #22c55e; }
+
+.status-active .status-dot {
+  background: #22c55e;
+}
 
 .status-inactive {
   background: var(--surface-hover);
   color: var(--text-muted);
   border: 1px solid var(--border);
 }
-.status-inactive .status-dot { background: var(--text-muted); }
+
+.status-inactive .status-dot {
+  background: var(--text-muted);
+}
 
 .id-pill {
   font-size: 0.74rem;
@@ -363,8 +375,13 @@
   font-weight: 700;
 }
 
-.font-mono { font-family: monospace; }
-.icon-xs { font-size: 16px; }
+.font-mono {
+  font-family: monospace;
+}
+
+.icon-xs {
+  font-size: 16px;
+}
 
 /* ── Section Cards & Form Grid ────────────────────────────── */
 .details-grid-container {
@@ -447,9 +464,13 @@
 }
 
 :host-context([dir="rtl"]) .info-value,
-[dir="rtl"] .info-value { text-align: left; }
+[dir="rtl"] .info-value {
+  text-align: left;
+}
 
-.font-semibold { font-weight: 700; }
+.font-semibold {
+  font-weight: 700;
+}
 
 /* ── Description Box ──────────────────────────────────────── */
 .desc-box-container {
@@ -484,7 +505,9 @@
 }
 
 /* ── Specs List ───────────────────────────────────────────── */
-.specs-list-wrapper { width: 100%; }
+.specs-list-wrapper {
+  width: 100%;
+}
 
 .specs-grid {
   display: grid;
@@ -511,7 +534,10 @@
   font-weight: 600;
 }
 
-.spec-icon { font-size: 15px; color: var(--primary); }
+.spec-icon {
+  font-size: 15px;
+  color: var(--primary);
+}
 
 .spec-val {
   font-size: 0.88rem;
@@ -836,7 +862,12 @@ textarea.form-control {
   cursor: pointer;
 }
 
-.toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
 
 .slider {
   position: absolute;
@@ -859,13 +890,23 @@ textarea.form-control {
 }
 
 :host-context([dir="rtl"]) .slider::before,
-[dir="rtl"] .slider::before { left: auto; right: 2px; }
+[dir="rtl"] .slider::before {
+  left: auto;
+  right: 2px;
+}
 
-.toggle-switch input:checked + .slider { background-color: var(--primary); }
-.toggle-switch input:checked + .slider::before { transform: translateX(20px); }
+.toggle-switch input:checked+.slider {
+  background-color: var(--primary);
+}
 
-:host-context([dir="rtl"]) .toggle-switch input:checked + .slider::before,
-[dir="rtl"] .toggle-switch input:checked + .slider::before { transform: translateX(-20px); }
+.toggle-switch input:checked+.slider::before {
+  transform: translateX(20px);
+}
+
+:host-context([dir="rtl"]) .toggle-switch input:checked+.slider::before,
+[dir="rtl"] .toggle-switch input:checked+.slider::before {
+  transform: translateX(-20px);
+}
 
 .toggle-info {
   display: flex;
@@ -937,7 +978,12 @@ textarea.form-control {
     gap: 0.25rem;
   }
 
-  .info-value { text-align: left; }
+  .info-value {
+    text-align: left;
+  }
+
   :host-context([dir="rtl"]) .info-value,
-  [dir="rtl"] .info-value { text-align: right; }
+  [dir="rtl"] .info-value {
+    text-align: right;
+  }
 }

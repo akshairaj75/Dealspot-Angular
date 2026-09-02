@@ -8,7 +8,8 @@
       </div>
       <div>
         <h1 class="page-title">{{ currentLang() === 'en' ? 'Product Catalogue' : 'دليل المنتجات' }}</h1>
-        <p class="page-subtitle">{{ currentLang() === 'en' ? 'Manage master products, barcodes, specs and categories' : 'إدارة المنتجات والباركود والمواصفات والأقسام' }}</p>
+        <p class="page-subtitle">{{ currentLang() === 'en' ? 'Manage master products, barcodes, specs and categories' :
+          'إدارة المنتجات والباركود والمواصفات والأقسام' }}</p>
       </div>
     </div>
     <button class="btn btn-primary" (click)="openAddModal()">
@@ -22,46 +23,30 @@
     <div class="filter-row">
       <div class="search-input-wrapper">
         <span class="material-icons-round search-icon">search</span>
-        <input
-          type="text"
-          [(ngModel)]="searchQuery"
-          (ngModelChange)="onSearchChange($event)"
+        <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange($event)"
           [placeholder]="currentLang() === 'en' ? 'Search by name, brand, SKU, barcode, ID...' : 'ابحث بالاسم، الماركة، SKU، الباركود أو الرقم...'"
-          class="search-input"
-        />
-        <button type="button" class="clear-search-btn" *ngIf="searchQuery" (click)="searchQuery = ''; onSearchChange('')">
+          class="search-input" />
+        <button type="button" class="clear-search-btn" *ngIf="searchQuery"
+          (click)="searchQuery = ''; onSearchChange('')">
           <span class="material-icons-round">close</span>
         </button>
       </div>
 
       <div class="filters-group">
         <div class="filter-select-wrap" style="min-width: 180px;">
-          <app-custom-select
-            [options]="allCategories()"
-            [ngModel]="filterCategoryId()"
-            (ngModelChange)="onFilterCategoryChange($event)"
-            valueKey="id"
-            labelEnKey="nameEn"
-            labelArKey="nameAr"
-            [placeholder]="currentLang() === 'en' ? 'All Categories' : 'جميع الأقسام'"
-            [allowUnset]="true"
-            [unsetLabel]="currentLang() === 'en' ? 'All Categories' : 'جميع الأقسام'"
-          ></app-custom-select>
+          <app-custom-select [options]="allCategories()" [ngModel]="filterCategoryId()"
+            (ngModelChange)="onFilterCategoryChange($event)" valueKey="id" labelEnKey="nameEn" labelArKey="nameAr"
+            [placeholder]="currentLang() === 'en' ? 'All Categories' : 'جميع الأقسام'" [allowUnset]="true"
+            [unsetLabel]="currentLang() === 'en' ? 'All Categories' : 'جميع الأقسام'"></app-custom-select>
         </div>
 
         <div class="filter-select-wrap" style="min-width: 180px;">
-          <app-custom-select
-            [options]="brands()"
-            [ngModel]="filterBrandId()"
-            (ngModelChange)="onFilterBrandChange($event)"
-            valueKey="id"
-            labelEnKey="nameEn"
-            labelArKey="nameAr"
-            [placeholder]="currentLang() === 'en' ? 'All Brands' : 'جميع الماركات'"
-            [allowUnset]="true"
+          <app-custom-select [options]="brands()" [ngModel]="filterBrandId()"
+            (ngModelChange)="onFilterBrandChange($event)" valueKey="id" labelEnKey="nameEn" labelArKey="nameAr"
+            [searchable]="true" (searchChange)="onBrandSearch($event)" [loading]="loadingBrands()"
+            [placeholder]="currentLang() === 'en' ? 'All Brands' : 'جميع الماركات'" [allowUnset]="true"
             [unsetLabel]="currentLang() === 'en' ? 'All Brands' : 'جميع الماركات'"
-            [filePath]="filePath"
-          ></app-custom-select>
+            [filePath]="filePath"></app-custom-select>
         </div>
 
         <div class="filter-stats-group">
@@ -69,12 +54,8 @@
             <span class="material-icons-round icon-xs">inventory_2</span>
             <span><strong>{{ products().length }}</strong> / <strong>{{ totalElements() }}</strong></span>
           </span>
-          <button
-            type="button"
-            class="btn-reset-filters"
-            *ngIf="searchQuery || filterCategoryId() !== null || filterBrandId() !== null"
-            (click)="clearAllFilters()"
-          >
+          <button type="button" class="btn-reset-filters"
+            *ngIf="searchQuery || filterCategoryId() !== null || filterBrandId() !== null" (click)="clearAllFilters()">
             <span class="material-icons-round">filter_alt_off</span>
             <span>{{ currentLang() === 'en' ? 'Clear' : 'إلغاء' }}</span>
           </button>
@@ -91,30 +72,20 @@
 
   <!-- Unified Responsive Product List -->
   <div class="products-list-view" *ngIf="!loading() && products().length > 0">
-    <div
-      class="product-list-item"
-      *ngFor="let p of products()"
-      [class.card-inactive]="p.is_active === 0 || p.active === false || p.isActive === false"
-    >
+    <div class="product-list-item" *ngFor="let p of products()"
+      [class.card-inactive]="p.is_active === 0 || p.active === false || p.isActive === false">
       <!-- Item Main Row (Click to view product details) -->
-      <div class="product-item-main" [routerLink]="['/admin/products', p.id, 'details']" [state]="{ product: p }" style="cursor: pointer;">
+      <div class="product-item-main" [routerLink]="['/admin/products', p.id, 'details']" [state]="{ product: p }"
+        style="cursor: pointer;">
         <!-- Product Image -->
         <div class="product-avatar-box">
-          <img
-            *ngIf="p.images && p.images.length > 0"
-            [src]="filePath + p.images[0].imageUrl"
-            class="product-img"
-            alt="product"
-            (error)="$any($event.target).src = 'assets/images/placeholder-product.png'"
-          />
-          <img
-            *ngIf="(!p.images || p.images.length === 0) && (p.primaryImageUrl || p.primary_image_url)"
-            [src]="filePath + (p.primaryImageUrl || p.primary_image_url)"
-            class="product-img"
-            alt="product"
-            (error)="$any($event.target).src = 'assets/images/placeholder-product.png'"
-          />
-          <span *ngIf="(!p.images || p.images.length === 0) && !p.primaryImageUrl && !p.primary_image_url" class="product-img-placeholder">
+          <img *ngIf="p.images && p.images.length > 0" [src]="filePath + p.images[0].imageUrl" class="product-img"
+            alt="product" (error)="$any($event.target).src = 'assets/images/placeholder-product.png'" />
+          <img *ngIf="(!p.images || p.images.length === 0) && (p.primaryImageUrl || p.primary_image_url)"
+            [src]="filePath + (p.primaryImageUrl || p.primary_image_url)" class="product-img" alt="product"
+            (error)="$any($event.target).src = 'assets/images/placeholder-product.png'" />
+          <span *ngIf="(!p.images || p.images.length === 0) && !p.primaryImageUrl && !p.primary_image_url"
+            class="product-img-placeholder">
             <span class="material-icons-round">inventory_2</span>
           </span>
         </div>
@@ -134,7 +105,8 @@
             [class.status-active]="p.is_active === 1 || p.active === true || p.isActive === true"
             [class.status-inactive]="p.is_active === 0 || p.active === false || p.isActive === false">
             <span class="status-dot"></span>
-            <span>{{ (p.is_active === 1 || p.active === true || p.isActive === true) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}</span>
+            <span>{{ (p.is_active === 1 || p.active === true || p.isActive === true) ? (currentLang() === 'en' ?
+              'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}</span>
           </span>
         </div>
       </div>
@@ -171,20 +143,25 @@
             [class.status-active]="p.is_active === 1 || p.active === true || p.isActive === true"
             [class.status-inactive]="p.is_active === 0 || p.active === false || p.isActive === false">
             <span class="status-dot"></span>
-            <span>{{ (p.is_active === 1 || p.active === true || p.isActive === true) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}</span>
+            <span>{{ (p.is_active === 1 || p.active === true || p.isActive === true) ? (currentLang() === 'en' ?
+              'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}</span>
           </span>
 
           <div class="item-action-btns">
-            <a [routerLink]="['/admin/products', p.id, 'details']" [state]="{ product: p }" class="btn-item-action btn-item-view" [title]="currentLang() === 'en' ? 'View Details' : 'عرض التفاصيل'">
+            <a [routerLink]="['/admin/products', p.id, 'details']" [state]="{ product: p }"
+              class="btn-item-action btn-item-view" [title]="currentLang() === 'en' ? 'View Details' : 'عرض التفاصيل'">
               <span class="material-icons-round">visibility</span>
             </a>
-            <button class="btn-item-action" (click)="openEditModal(p)" [title]="currentLang() === 'en' ? 'Edit Product' : 'تعديل المنتج'">
+            <button class="btn-item-action" (click)="openEditModal(p)"
+              [title]="currentLang() === 'en' ? 'Edit Product' : 'تعديل المنتج'">
               <span class="material-icons-round">edit</span>
             </button>
-            <a [routerLink]="['/admin/product-specs', p.id, 'details']" class="btn-item-action btn-item-specs" [title]="currentLang() === 'en' ? 'Technical Specs' : 'المواصفات الفنية'">
+            <a [routerLink]="['/admin/product-specs', p.id, 'details']" class="btn-item-action btn-item-specs"
+              [title]="currentLang() === 'en' ? 'Technical Specs' : 'المواصفات الفنية'">
               <span class="material-icons-round">list_alt</span>
             </a>
-            <button class="btn-item-action btn-item-del" (click)="deleteProduct(p.id)" [title]="currentLang() === 'en' ? 'Delete Product' : 'حذف المنتج'">
+            <button class="btn-item-action btn-item-del" (click)="deleteProduct(p.id)"
+              [title]="currentLang() === 'en' ? 'Delete Product' : 'حذف المنتج'">
               <span class="material-icons-round">delete</span>
             </button>
           </div>
@@ -200,7 +177,8 @@
       </div>
       <div class="end-of-catalog-pill" *ngIf="!loading() && !hasMore() && products().length > 0">
         <span class="material-icons-round tiny-check">check_circle</span>
-        <span>{{ currentLang() === 'en' ? 'All ' + totalElements() + ' products loaded' : 'تم عرض كافة المنتجات (' + totalElements() + ')' }}</span>
+        <span>{{ currentLang() === 'en' ? 'All ' + totalElements() + ' products loaded' : 'تم عرض كافة المنتجات (' +
+          totalElements() + ')' }}</span>
       </div>
     </div>
   </div>
@@ -209,15 +187,18 @@
   <div class="empty-card" *ngIf="!loading() && products().length === 0">
     <span class="material-icons-round empty-icon">inventory_2</span>
     <h4>{{ currentLang() === 'en' ? 'No Products Found' : 'لا توجد منتجات' }}</h4>
-    <p>{{ currentLang() === 'en' ? 'No products match your search or filters.' : 'لا توجد منتجات مطابقة لعملية البحث أو التصفية الحالية.' }}</p>
-    <button class="btn-empty-reset" (click)="clearAllFilters()" *ngIf="searchQuery || filterCategoryId() !== null || filterBrandId() !== null">
+    <p>{{ currentLang() === 'en' ? 'No products match your search or filters.' : 'لا توجد منتجات مطابقة لعملية البحث أو
+      التصفية الحالية.' }}</p>
+    <button class="btn-empty-reset" (click)="clearAllFilters()"
+      *ngIf="searchQuery || filterCategoryId() !== null || filterBrandId() !== null">
       <span class="material-icons-round">refresh</span>
       <span>{{ currentLang() === 'en' ? 'Reset Filters' : 'إعادة ضبط التصفية' }}</span>
     </button>
   </div>
 
   <!-- Floating Scroll To Top -->
-  <button type="button" class="btn-floating-scroll-top" *ngIf="showScrollTop()" (click)="scrollToTop()" [title]="currentLang() === 'en' ? 'Scroll to top' : 'العودة للأعلى'">
+  <button type="button" class="btn-floating-scroll-top" *ngIf="showScrollTop()" (click)="scrollToTop()"
+    [title]="currentLang() === 'en' ? 'Scroll to top' : 'العودة للأعلى'">
     <span class="material-icons-round">arrow_upward</span>
   </button>
 
@@ -230,8 +211,10 @@
             <span class="material-icons-round">{{ editingProductId ? 'edit_note' : 'add_box' }}</span>
           </div>
           <div>
-            <h3>{{ editingProductId ? (currentLang() === 'en' ? 'Edit Product' : 'تعديل المنتج') : (currentLang() === 'en' ? 'Add New Product' : 'إضافة منتج جديد') }}</h3>
-            <p class="modal-subtitle">{{ currentLang() === 'en' ? 'Fill in product details, category, and specs' : 'أدخل تفاصيل المنتج والقسم والمواصفات' }}</p>
+            <h3>{{ editingProductId ? (currentLang() === 'en' ? 'Edit Product' : 'تعديل المنتج') : (currentLang() ===
+              'en' ? 'Add New Product' : 'إضافة منتج جديد') }}</h3>
+            <p class="modal-subtitle">{{ currentLang() === 'en' ? 'Fill in product details, category, and specs' : 'أدخل
+              تفاصيل المنتج والقسم والمواصفات' }}</p>
           </div>
         </div>
         <button class="btn-close" (click)="closeModal()">
@@ -250,15 +233,10 @@
             </h4>
             <div class="form-group">
               <label class="form-label required">{{ currentLang() === 'en' ? 'Brand *' : 'الماركة *' }}</label>
-              <app-custom-select
-                formControlName="brandId"
-                [options]="brands()"
-                valueKey="id"
-                labelEnKey="nameEn"
-                labelArKey="nameAr"
+              <app-custom-select formControlName="brandId" [options]="brands()" valueKey="id" labelEnKey="nameEn"
+                labelArKey="nameAr" [searchable]="true" (searchChange)="onBrandSearch($event)" [loading]="loadingBrands()"
                 [placeholder]="currentLang() === 'en' ? '-- Select Brand --' : '-- اختر الماركة --'"
-                [filePath]="filePath"
-              ></app-custom-select>
+                [filePath]="filePath"></app-custom-select>
               <div class="error-msg" *ngIf="productForm.get('brandId')?.touched && productForm.get('brandId')?.invalid">
                 {{ currentLang() === 'en' ? 'Brand is required.' : 'الماركة مطلوبة.' }}
               </div>
@@ -273,16 +251,22 @@
             </h4>
             <div class="form-grid-2">
               <div class="form-group">
-                <label class="form-label required">{{ currentLang() === 'en' ? 'Name (English) *' : 'الاسم (الإنجليزية) *' }}</label>
-                <input type="text" formControlName="name_en" class="form-control" placeholder="e.g. Almarai Fresh Milk 2L">
-                <div class="error-msg" *ngIf="productForm.get('name_en')?.touched && productForm.get('name_en')?.invalid">
+                <label class="form-label required">{{ currentLang() === 'en' ? 'Name (English) *' : 'الاسم (الإنجليزية)
+                  *' }}</label>
+                <input type="text" formControlName="name_en" class="form-control"
+                  placeholder="e.g. Almarai Fresh Milk 2L">
+                <div class="error-msg"
+                  *ngIf="productForm.get('name_en')?.touched && productForm.get('name_en')?.invalid">
                   {{ currentLang() === 'en' ? 'English name is required.' : 'الاسم بالإنجليزية مطلوب.' }}
                 </div>
               </div>
               <div class="form-group">
-                <label class="form-label required">{{ currentLang() === 'en' ? 'Name (Arabic) *' : 'الاسم (العربية) *' }}</label>
-                <input type="text" formControlName="name_ar" class="form-control" placeholder="مثال: حليب المراعي طازج 2 لتر">
-                <div class="error-msg" *ngIf="productForm.get('name_ar')?.touched && productForm.get('name_ar')?.invalid">
+                <label class="form-label required">{{ currentLang() === 'en' ? 'Name (Arabic) *' : 'الاسم (العربية) *'
+                  }}</label>
+                <input type="text" formControlName="name_ar" class="form-control"
+                  placeholder="مثال: حليب المراعي طازج 2 لتر">
+                <div class="error-msg"
+                  *ngIf="productForm.get('name_ar')?.touched && productForm.get('name_ar')?.invalid">
                   {{ currentLang() === 'en' ? 'Arabic name is required.' : 'الاسم بالعربية مطلوب.' }}
                 </div>
               </div>
@@ -301,16 +285,10 @@
                   <span class="step-badge">1</span>
                   {{ currentLang() === 'en' ? 'Main Category *' : 'القسم الرئيسي *' }}
                 </label>
-                <app-custom-select
-                  [options]="mainCategories()"
-                  [ngModel]="selectedMainCategoryId"
-                  [ngModelOptions]="{standalone: true}"
-                  (ngModelChange)="onMainCategoryChange($event)"
-                  valueKey="id"
-                  labelEnKey="nameEn"
-                  labelArKey="nameAr"
-                  [placeholder]="currentLang() === 'en' ? '-- Select Main Category --' : '-- اختر القسم الرئيسي --'"
-                ></app-custom-select>
+                <app-custom-select [options]="mainCategories()" [ngModel]="selectedMainCategoryId"
+                  [ngModelOptions]="{standalone: true}" (ngModelChange)="onMainCategoryChange($event)" valueKey="id"
+                  labelEnKey="nameEn" labelArKey="nameAr"
+                  [placeholder]="currentLang() === 'en' ? '-- Select Main Category --' : '-- اختر القسم الرئيسي --'"></app-custom-select>
               </div>
               <div class="form-group">
                 <label class="form-label">
@@ -318,17 +296,11 @@
                   {{ currentLang() === 'en' ? 'Subcategory' : 'القسم الفرعي' }}
                   <span class="count-pill" *ngIf="selectedMainCategoryId">{{ availableSubcategories().length }}</span>
                 </label>
-                <app-custom-select
-                  [options]="availableSubcategories()"
-                  [ngModel]="selectedSubCategoryId"
-                  [ngModelOptions]="{standalone: true}"
-                  (ngModelChange)="onSubCategoryChange($event)"
-                  valueKey="id"
-                  labelEnKey="nameEn"
-                  labelArKey="nameAr"
+                <app-custom-select [options]="availableSubcategories()" [ngModel]="selectedSubCategoryId"
+                  [ngModelOptions]="{standalone: true}" (ngModelChange)="onSubCategoryChange($event)" valueKey="id"
+                  labelEnKey="nameEn" labelArKey="nameAr"
                   [placeholder]="availableSubcategories().length === 0 ? (currentLang() === 'en' ? '-- No Subcategories --' : '-- لا توجد أقسام فرعية --') : (currentLang() === 'en' ? '-- Optional Subcategory --' : '-- قسم فرعي اختياري --')"
-                  [disabled]="!selectedMainCategoryId || availableSubcategories().length === 0"
-                ></app-custom-select>
+                  [disabled]="!selectedMainCategoryId || availableSubcategories().length === 0"></app-custom-select>
               </div>
             </div>
 
@@ -337,7 +309,8 @@
               <span class="banner-title">{{ currentLang() === 'en' ? 'Assigned:' : 'القسم:' }}</span>
               <span class="banner-badge">{{ getSelectedCategoryPath() }}</span>
             </div>
-            <div class="error-msg" *ngIf="productForm.get('category_id')?.touched && productForm.get('category_id')?.invalid">
+            <div class="error-msg"
+              *ngIf="productForm.get('category_id')?.touched && productForm.get('category_id')?.invalid">
               {{ currentLang() === 'en' ? 'Please select a main category.' : 'يرجى اختيار القسم الرئيسي.' }}
             </div>
           </div>
@@ -355,21 +328,18 @@
               </div>
               <div class="form-group">
                 <label class="form-label">{{ currentLang() === 'en' ? 'Barcode (EAN/UPC)' : 'الباركود' }}</label>
-                <input type="text" formControlName="barcode" class="form-control font-mono" placeholder="e.g. 6281007010012">
+                <input type="text" formControlName="barcode" class="form-control font-mono"
+                  placeholder="e.g. 6281007010012">
               </div>
               <div class="form-group">
                 <label class="form-label">{{ currentLang() === 'en' ? 'Measurement Unit' : 'وحدة القياس' }}</label>
-                <app-custom-select
-                  formControlName="unit"
-                  [options]="unitOptions"
-                  valueKey="id"
-                  labelEnKey="nameEn"
+                <app-custom-select formControlName="unit" [options]="unitOptions" valueKey="id" labelEnKey="nameEn"
                   labelArKey="nameAr"
-                  [placeholder]="currentLang() === 'en' ? '-- Select Unit --' : '-- اختر الوحدة --'"
-                ></app-custom-select>
+                  [placeholder]="currentLang() === 'en' ? '-- Select Unit --' : '-- اختر الوحدة --'"></app-custom-select>
               </div>
               <div class="form-group">
-                <label class="form-label">{{ currentLang() === 'en' ? 'Unit Size / Capacity' : 'حجم / سعة الوحدة' }}</label>
+                <label class="form-label">{{ currentLang() === 'en' ? 'Unit Size / Capacity' : 'حجم / سعة الوحدة'
+                  }}</label>
                 <input type="number" step="0.01" formControlName="unit_size" class="form-control" placeholder="1">
               </div>
             </div>
@@ -392,7 +362,8 @@
                     <span class="material-icons-round">cloud_upload</span>
                   </div>
                   <div class="dropzone-text">
-                    <span class="dropzone-title">{{ previewUrl ? (currentLang() === 'en' ? 'Change Image' : 'تغيير الصورة') : (currentLang() === 'en' ? 'Upload Product Image' : 'رفع صورة المنتج') }}</span>
+                    <span class="dropzone-title">{{ previewUrl ? (currentLang() === 'en' ? 'Change Image' : 'تغيير
+                      الصورة') : (currentLang() === 'en' ? 'Upload Product Image' : 'رفع صورة المنتج') }}</span>
                     <span class="dropzone-hint">PNG, JPG, WEBP (Max 5MB)</span>
                   </div>
                 </div>
@@ -408,12 +379,15 @@
             </h4>
             <div class="form-grid-2">
               <div class="form-group">
-                <label class="form-label">{{ currentLang() === 'en' ? 'Description (EN)' : 'الوصف بالإنجليزية' }}</label>
-                <textarea formControlName="description_en" class="form-control" rows="3" placeholder="Product details in English..."></textarea>
+                <label class="form-label">{{ currentLang() === 'en' ? 'Description (EN)' : 'الوصف بالإنجليزية'
+                  }}</label>
+                <textarea formControlName="description_en" class="form-control" rows="3"
+                  placeholder="Product details in English..."></textarea>
               </div>
               <div class="form-group">
                 <label class="form-label">{{ currentLang() === 'en' ? 'Description (AR)' : 'الوصف بالعربية' }}</label>
-                <textarea formControlName="description_ar" class="form-control" rows="3" placeholder="تفاصيل المنتج بالعربية..."></textarea>
+                <textarea formControlName="description_ar" class="form-control" rows="3"
+                  placeholder="تفاصيل المنتج بالعربية..."></textarea>
               </div>
             </div>
           </div>
@@ -434,7 +408,8 @@
                   <span class="material-icons-round text-emerald icon-xs">check_circle</span>
                   {{ currentLang() === 'en' ? 'Active Product' : 'منتج نشط' }}
                 </span>
-                <span class="toggle-desc">{{ currentLang() === 'en' ? 'Product will be visible and available in the catalogue' : 'سيكون المنتج ظاهراً ومتاحاً في الدليل' }}</span>
+                <span class="toggle-desc">{{ currentLang() === 'en' ? 'Product will be visible and available in the
+                  catalogue' : 'سيكون المنتج ظاهراً ومتاحاً في الدليل' }}</span>
               </div>
             </div>
           </div>

@@ -258,13 +258,37 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  loadingBrands = signal<boolean>(false);
+
   fetchBrands(): void {
-    this.brandService.getBrands().subscribe({
-      next: (res: any[]) => {
-        this.brands.set(res || []);
+    this.loadingBrands.set(true);
+    this.brandService.searchBrands('', 0, 50).subscribe({
+      next: (res: any) => {
+        const items = res?.content || (Array.isArray(res) ? res : []);
+        this.brands.set(items);
+        this.loadingBrands.set(false);
         this.cd.detectChanges();
       },
-      error: (err) => console.error('Failed to load brands:', err)
+      error: (err) => {
+        console.error('Failed to load brands:', err);
+        this.loadingBrands.set(false);
+      }
+    });
+  }
+
+  onBrandSearch(value: string): void {
+    this.loadingBrands.set(true);
+    this.brandService.searchBrands(value, 0, 100).subscribe({
+      next: (res: any) => {
+        const items = res?.content || (Array.isArray(res) ? res : []);
+        this.brands.set(items);
+        this.loadingBrands.set(false);
+        this.cd.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to search brands:', err);
+        this.loadingBrands.set(false);
+      }
     });
   }
 
@@ -312,10 +336,25 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
       this.availableSubcategories.set([]);
     }
 
+    const brandIdVal = p.brandId ?? p.brand_id ?? (p.brand && typeof p.brand === 'object' ? p.brand.id : null);
+    if (brandIdVal) {
+      const numId = Number(brandIdVal);
+      const exists = this.brands().some((b: any) => Number(b.id) === numId);
+      if (!exists) {
+        const brandObj = {
+          id: numId,
+          nameEn: p.brandNameEn || p.brand || `Brand #${numId}`,
+          nameAr: p.brandNameAr || p.brand || `ماركة #${numId}`,
+          logoUrl: p.brandImage || p.brand_image
+        };
+        this.brands.update(prev => [brandObj, ...prev]);
+      }
+    }
+
     this.productForm.patchValue({
       name_en: p.nameEn || p.name_en || '',
       name_ar: p.nameAr || p.name_ar || '',
-      brandId: p.brandId ?? (p.brand ? p.brand.id : null),
+      brandId: brandIdVal ? Number(brandIdVal) : null,
       sku: p.sku || '',
       barcode: p.barcode || '',
       category_id: catId || '',

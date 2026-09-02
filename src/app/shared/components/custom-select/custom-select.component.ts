@@ -123,47 +123,55 @@ export interface CustomSelectOption {
 
         <!-- Options Scrollable List -->
         <ul class="dropdown-options-list">
-          <!-- Reset / Unset Choice if allowed -->
-          <li
-            class="dropdown-option-item unset-option"
-            *ngIf="allowUnset && selectedValue !== null"
-            (click)="selectOption(null, $event)"
-          >
-            <span class="option-label text-muted">{{ unsetLabel || (currentLang() === 'en' ? '-- None --' : '-- بدون --') }}</span>
+          <!-- Loading State -->
+          <li class="dropdown-loading-state" *ngIf="loading">
+            <div class="spinner-tiny"></div>
+            <span>{{ currentLang() === 'en' ? 'Searching options...' : 'جاري البحث...' }}</span>
           </li>
 
-          <!-- Render Filtered Options -->
-          <li
-            *ngFor="let opt of filteredOptions(); let i = index"
-            class="dropdown-option-item"
-            [class.selected]="isOptionSelected(opt)"
-            [class.disabled]="opt.disabled"
-            (click)="selectOption(opt, $event)"
-          >
-            <div class="option-left">
-              <img
-                *ngIf="opt?.logoUrl || opt?.image || opt?.brandImage"
-                [src]="getOptionImage(opt)"
-                class="option-thumb"
-                alt="thumb"
-              />
-              <span
-                *ngIf="opt?.icon && !opt?.logoUrl && !opt?.image"
-                class="material-icons-round option-icon"
-              >
-                {{ opt.icon }}
-              </span>
-              <span class="option-label">{{ getOptionLabel(opt) }}</span>
-            </div>
+          <ng-container *ngIf="!loading">
+            <!-- Reset / Unset Choice if allowed -->
+            <li
+              class="dropdown-option-item unset-option"
+              *ngIf="allowUnset && selectedValue !== null"
+              (click)="selectOption(null, $event)"
+            >
+              <span class="option-label text-muted">{{ unsetLabel || (currentLang() === 'en' ? '-- None --' : '-- بدون --') }}</span>
+            </li>
 
-            <span class="material-icons-round check-icon" *ngIf="isOptionSelected(opt)">check</span>
-          </li>
+            <!-- Render Filtered Options -->
+            <li
+              *ngFor="let opt of filteredOptions(); let i = index"
+              class="dropdown-option-item"
+              [class.selected]="isOptionSelected(opt)"
+              [class.disabled]="opt.disabled"
+              (click)="selectOption(opt, $event)"
+            >
+              <div class="option-left">
+                <img
+                  *ngIf="opt?.logoUrl || opt?.image || opt?.brandImage"
+                  [src]="getOptionImage(opt)"
+                  class="option-thumb"
+                  alt="thumb"
+                />
+                <span
+                  *ngIf="opt?.icon && !opt?.logoUrl && !opt?.image"
+                  class="material-icons-round option-icon"
+                >
+                  {{ opt.icon }}
+                </span>
+                <span class="option-label">{{ getOptionLabel(opt) }}</span>
+              </div>
 
-          <!-- Empty State -->
-          <li class="dropdown-empty-state" *ngIf="filteredOptions().length === 0">
-            <span class="material-icons-round empty-icon">search_off</span>
-            <span>{{ currentLang() === 'en' ? 'No matching options' : 'لا توجد خيارات مطابقة' }}</span>
-          </li>
+              <span class="material-icons-round check-icon" *ngIf="isOptionSelected(opt)">check</span>
+            </li>
+
+            <!-- Empty State -->
+            <li class="dropdown-empty-state" *ngIf="filteredOptions().length === 0">
+              <span class="material-icons-round empty-icon">search_off</span>
+              <span>{{ currentLang() === 'en' ? 'No matching options' : 'لا توجد خيارات مطابقة' }}</span>
+            </li>
+          </ng-container>
         </ul>
       </div>
     </div>
@@ -444,6 +452,30 @@ export interface CustomSelectOption {
     .empty-icon {
       font-size: 24px;
     }
+
+    .dropdown-loading-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 1rem;
+      gap: 0.5rem;
+      color: var(--primary, #10b981);
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    .spinner-tiny {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(16, 185, 129, 0.2);
+      border-top-color: var(--primary, #10b981);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   `]
 })
 export class CustomSelectComponent implements ControlValueAccessor {
@@ -471,8 +503,10 @@ export class CustomSelectComponent implements ControlValueAccessor {
   @Input() allowUnset = false;
   @Input() unsetLabel = '';
   @Input() filePath = '';
+  @Input() loading = false;
 
   @Output() selectionChange = new EventEmitter<any>();
+  @Output() searchChange = new EventEmitter<string>();
 
   isOpen = signal<boolean>(false);
   disabled = false;
@@ -602,12 +636,15 @@ export class CustomSelectComponent implements ControlValueAccessor {
   }
 
   onSearchInput(query: string): void {
-    this.searchQuery.set(query || '');
+    const q = query || '';
+    this.searchQuery.set(q);
+    this.searchChange.emit(q);
   }
 
   clearSearch(event: Event): void {
     event.stopPropagation();
     this.searchQuery.set('');
+    this.searchChange.emit('');
   }
 
   selectOption(opt: any, event: Event): void {

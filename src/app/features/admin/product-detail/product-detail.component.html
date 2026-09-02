@@ -10,7 +10,8 @@
     <div class="header-breadcrumbs" *ngIf="product()">
       <span class="crumb">{{ currentLang() === 'en' ? 'Catalogue' : 'الدليل' }}</span>
       <span class="crumb-separator">/</span>
-      <span class="crumb active">{{ currentLang() === 'en' ? product()?.nameEn : (product()?.nameAr || product()?.nameEn) }}</span>
+      <span class="crumb active">{{ currentLang() === 'en' ? product()?.nameEn : (product()?.nameAr ||
+        product()?.nameEn) }}</span>
     </div>
 
     <div class="header-actions">
@@ -45,13 +46,8 @@
     <!-- Hero / Main Header Card -->
     <div class="hero-card">
       <div class="hero-image-wrap">
-        <img
-          *ngIf="previewUrl"
-          [src]="previewUrl"
-          class="hero-img"
-          alt="Product Image"
-          (error)="$any($event.target).src = 'assets/images/placeholder-product.png'"
-        />
+        <img *ngIf="previewUrl" [src]="previewUrl" class="hero-img" alt="Product Image"
+          (error)="$any($event.target).src = 'assets/images/placeholder-product.png'" />
         <div *ngIf="!previewUrl" class="hero-img-placeholder">
           <span class="material-icons-round">inventory_2</span>
         </div>
@@ -69,10 +65,10 @@
             [class.status-active]="product().is_active === 1 || product().active === true || product().isActive === true"
             [class.status-inactive]="product().is_active === 0 || product().active === false || product().isActive === false"
             (click)="quickToggleActive()"
-            [title]="currentLang() === 'en' ? 'Click to toggle status' : 'انقر لتغيير الحالة'"
-          >
+            [title]="currentLang() === 'en' ? 'Click to toggle status' : 'انقر لتغيير الحالة'">
             <span class="status-dot"></span>
-            <span>{{ (product().is_active === 1 || product().active === true || product().isActive === true) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}</span>
+            <span>{{ (product().is_active === 1 || product().active === true || product().isActive === true) ?
+              (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}</span>
           </span>
 
           <span class="id-pill">#{{ product().id }}</span>
@@ -89,7 +85,8 @@
         </div>
 
         <h1 class="hero-title-en">{{ product().nameEn || product().name_en }}</h1>
-        <h2 class="hero-title-ar" *ngIf="product().nameAr || product().name_ar">{{ product().nameAr || product().name_ar }}</h2>
+        <h2 class="hero-title-ar" *ngIf="product().nameAr || product().name_ar">{{ product().nameAr || product().name_ar
+          }}</h2>
 
         <div class="hero-meta-chips">
           <div class="chip-item" *ngIf="product().sku">
@@ -120,23 +117,20 @@
           </div>
           <button type="submit" [disabled]="productForm.invalid || isSaving()" class="btn btn-primary">
             <span class="material-icons-round">save</span>
-            <span>{{ isSaving() ? (currentLang() === 'en' ? 'Saving...' : 'جاري الحفظ...') : (currentLang() === 'en' ? 'Save Changes' : 'حفظ التغييرات') }}</span>
+            <span>{{ isSaving() ? (currentLang() === 'en' ? 'Saving...' : 'جاري الحفظ...') : (currentLang() === 'en' ?
+              'Save Changes' : 'حفظ التغييرات') }}</span>
           </button>
         </div>
 
         <div class="form-body-grid">
           <!-- Searchable & Paginated Brand Selector -->
           <div class="form-group full-width">
-            <label class="form-label required">{{ currentLang() === 'en' ? 'Brand Partner *' : 'الماركة التجارية *' }}</label>
-            <app-custom-select
-              formControlName="brandId"
-              [options]="brands()"
-              valueKey="id"
-              labelEnKey="nameEn"
-              labelArKey="nameAr"
+            <label class="form-label required">{{ currentLang() === 'en' ? 'Brand Partner *' : 'الماركة التجارية *'
+              }}</label>
+            <app-custom-select formControlName="brandId" [options]="brands()" valueKey="id" labelEnKey="nameEn"
+              labelArKey="nameAr" [searchable]="true" (searchChange)="onBrandSearch($event)" [loading]="loadingBrands()"
               [placeholder]="currentLang() === 'en' ? '-- Select Brand --' : '-- اختر الماركة --'"
-              [filePath]="filePath"
-            ></app-custom-select>
+              [filePath]="filePath"></app-custom-select>
             <div class="error-msg" *ngIf="productForm.get('brandId')?.touched && productForm.get('brandId')?.invalid">
               {{ currentLang() === 'en' ? 'Brand is required.' : 'الماركة مطلوبة.' }}
             </div>
@@ -144,7 +138,8 @@
 
           <!-- Product Names -->
           <div class="form-group">
-            <label class="form-label required">{{ currentLang() === 'en' ? 'Name (English) *' : 'الاسم بالإنجليزية *' }}</label>
+            <label class="form-label required">{{ currentLang() === 'en' ? 'Name (English) *' : 'الاسم بالإنجليزية *'
+              }}</label>
             <input type="text" formControlName="name_en" class="form-control" placeholder="e.g. Almarai Fresh Milk 2L">
             <div class="error-msg" *ngIf="productForm.get('name_en')?.touched && productForm.get('name_en')?.invalid">
               {{ currentLang() === 'en' ? 'English name is required.' : 'الاسم بالإنجليزية مطلوب.' }}
@@ -152,8 +147,10 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label required">{{ currentLang() === 'en' ? 'Name (Arabic) *' : 'الاسم بالعربية *' }}</label>
-            <input type="text" formControlName="name_ar" class="form-control" placeholder="مثال: حليب المراعي طازج 2 لتر">
+            <label class="form-label required">{{ currentLang() === 'en' ? 'Name (Arabic) *' : 'الاسم بالعربية *'
+              }}</label>
+            <input type="text" formControlName="name_ar" class="form-control"
+              placeholder="مثال: حليب المراعي طازج 2 لتر">
             <div class="error-msg" *ngIf="productForm.get('name_ar')?.touched && productForm.get('name_ar')?.invalid">
               {{ currentLang() === 'en' ? 'Arabic name is required.' : 'الاسم بالعربية مطلوب.' }}
             </div>
@@ -165,16 +162,10 @@
               <span class="step-badge">1</span>
               {{ currentLang() === 'en' ? 'Main Category *' : 'القسم الرئيسي *' }}
             </label>
-            <app-custom-select
-              [options]="mainCategories()"
-              [ngModel]="selectedMainCategoryId"
-              [ngModelOptions]="{standalone: true}"
-              (ngModelChange)="onMainCategoryChange($event)"
-              valueKey="id"
-              labelEnKey="nameEn"
-              labelArKey="nameAr"
-              [placeholder]="currentLang() === 'en' ? '-- Select Main Category --' : '-- اختر القسم الرئيسي --'"
-            ></app-custom-select>
+            <app-custom-select [options]="mainCategories()" [ngModel]="selectedMainCategoryId"
+              [ngModelOptions]="{standalone: true}" (ngModelChange)="onMainCategoryChange($event)" valueKey="id"
+              labelEnKey="nameEn" labelArKey="nameAr"
+              [placeholder]="currentLang() === 'en' ? '-- Select Main Category --' : '-- اختر القسم الرئيسي --'"></app-custom-select>
           </div>
 
           <div class="form-group">
@@ -183,17 +174,11 @@
               {{ currentLang() === 'en' ? 'Subcategory' : 'القسم الفرعي' }}
               <span class="count-pill" *ngIf="selectedMainCategoryId">{{ availableSubcategories().length }}</span>
             </label>
-            <app-custom-select
-              [options]="availableSubcategories()"
-              [ngModel]="selectedSubCategoryId"
-              [ngModelOptions]="{standalone: true}"
-              (ngModelChange)="onSubCategoryChange($event)"
-              valueKey="id"
-              labelEnKey="nameEn"
-              labelArKey="nameAr"
+            <app-custom-select [options]="availableSubcategories()" [ngModel]="selectedSubCategoryId"
+              [ngModelOptions]="{standalone: true}" (ngModelChange)="onSubCategoryChange($event)" valueKey="id"
+              labelEnKey="nameEn" labelArKey="nameAr"
               [placeholder]="availableSubcategories().length === 0 ? (currentLang() === 'en' ? '-- No Subcategories --' : '-- لا توجد أقسام فرعية --') : (currentLang() === 'en' ? '-- Optional Subcategory --' : '-- قسم فرعي اختياري --')"
-              [disabled]="!selectedMainCategoryId || availableSubcategories().length === 0"
-            ></app-custom-select>
+              [disabled]="!selectedMainCategoryId || availableSubcategories().length === 0"></app-custom-select>
           </div>
 
           <!-- SKU & Barcode -->
@@ -210,14 +195,9 @@
           <!-- Unit & Unit Size -->
           <div class="form-group">
             <label class="form-label">{{ currentLang() === 'en' ? 'Measurement Unit' : 'وحدة القياس' }}</label>
-            <app-custom-select
-              formControlName="unit"
-              [options]="unitOptions"
-              valueKey="id"
-              labelEnKey="nameEn"
+            <app-custom-select formControlName="unit" [options]="unitOptions" valueKey="id" labelEnKey="nameEn"
               labelArKey="nameAr"
-              [placeholder]="currentLang() === 'en' ? '-- Select Unit --' : '-- اختر الوحدة --'"
-            ></app-custom-select>
+              [placeholder]="currentLang() === 'en' ? '-- Select Unit --' : '-- اختر الوحدة --'"></app-custom-select>
           </div>
 
           <div class="form-group">
@@ -233,21 +213,26 @@
                 <span class="slider"></span>
               </label>
               <div class="toggle-info">
-                <span class="toggle-title">{{ currentLang() === 'en' ? 'Active Product Status' : 'حالة تفعيل المنتج' }}</span>
-                <span class="toggle-desc">{{ currentLang() === 'en' ? 'Make product visible across public app & deal catalogues' : 'إظهار المنتج في دليل العروض والمنتجات العامة' }}</span>
+                <span class="toggle-title">{{ currentLang() === 'en' ? 'Active Product Status' : 'حالة تفعيل المنتج'
+                  }}</span>
+                <span class="toggle-desc">{{ currentLang() === 'en' ? 'Make product visible across public app & deal
+                  catalogues' : 'إظهار المنتج في دليل العروض والمنتجات العامة' }}</span>
               </div>
             </div>
           </div>
 
           <!-- Descriptions -->
           <div class="form-group full-width">
-            <label class="form-label">{{ currentLang() === 'en' ? 'Description (English)' : 'الوصف بالإنجليزية' }}</label>
-            <textarea formControlName="description_en" class="form-control" rows="3" placeholder="Enter product description in English..."></textarea>
+            <label class="form-label">{{ currentLang() === 'en' ? 'Description (English)' : 'الوصف بالإنجليزية'
+              }}</label>
+            <textarea formControlName="description_en" class="form-control" rows="3"
+              placeholder="Enter product description in English..."></textarea>
           </div>
 
           <div class="form-group full-width">
             <label class="form-label">{{ currentLang() === 'en' ? 'Description (Arabic)' : 'الوصف بالعربية' }}</label>
-            <textarea formControlName="description_ar" class="form-control" rows="3" placeholder="أدخل وصف ومميزات المنتج بالعربية..."></textarea>
+            <textarea formControlName="description_ar" class="form-control" rows="3"
+              placeholder="أدخل وصف ومميزات المنتج بالعربية..."></textarea>
           </div>
 
         </div>
@@ -258,7 +243,8 @@
           </button>
           <button type="submit" [disabled]="productForm.invalid || isSaving()" class="btn btn-primary">
             <span class="material-icons-round">save</span>
-            <span>{{ isSaving() ? (currentLang() === 'en' ? 'Saving...' : 'جاري الحفظ...') : (currentLang() === 'en' ? 'Save Product Details' : 'حفظ بيانات المنتج') }}</span>
+            <span>{{ isSaving() ? (currentLang() === 'en' ? 'Saving...' : 'جاري الحفظ...') : (currentLang() === 'en' ?
+              'Save Product Details' : 'حفظ بيانات المنتج') }}</span>
           </button>
         </div>
       </div>
@@ -273,7 +259,8 @@
             <span class="material-icons-round header-icon">info</span>
             <h3>{{ currentLang() === 'en' ? 'General Product Information' : 'المعلومات العامة للمنتج' }}</h3>
           </div>
-          <button class="btn btn-icon-sm" (click)="toggleEditMode()" [title]="currentLang() === 'en' ? 'Edit Details' : 'تعديل التفاصيل'">
+          <button class="btn btn-icon-sm" (click)="toggleEditMode()"
+            [title]="currentLang() === 'en' ? 'Edit Details' : 'تعديل التفاصيل'">
             <span class="material-icons-round">edit</span>
           </button>
         </div>
@@ -332,12 +319,14 @@
         <div class="desc-box-container">
           <div class="desc-block">
             <span class="desc-lang-tag">English Description</span>
-            <p class="desc-text">{{ product().descriptionEn || product().description_en || (currentLang() === 'en' ? 'No description provided in English.' : 'لا يوجد وصف بالإنجليزية.') }}</p>
+            <p class="desc-text">{{ product().descriptionEn || product().description_en || (currentLang() === 'en' ? 'No
+              description provided in English.' : 'لا يوجد وصف بالإنجليزية.') }}</p>
           </div>
 
           <div class="desc-block">
             <span class="desc-lang-tag">الوصف بالعربية</span>
-            <p class="desc-text">{{ product().descriptionAr || product().description_ar || (currentLang() === 'en' ? 'No description provided in Arabic.' : 'لا يوجد وصف بالعربية.') }}</p>
+            <p class="desc-text">{{ product().descriptionAr || product().description_ar || (currentLang() === 'en' ? 'No
+              description provided in Arabic.' : 'لا يوجد وصف بالعربية.') }}</p>
           </div>
         </div>
       </div>
@@ -361,22 +350,25 @@
               <div class="spec-key">
                 <span class="spec-icon material-icons-round">check_circle_outline</span>
                 <span>
-                  {{ currentLang() === 'en' 
-                    ? (s.attrKeyEn || s.attr_key_en || s.keyEn || s.specKey || 'Specification') 
-                    : (s.attrKeyAr || s.attr_key_ar || s.attrKeyEn || s.attr_key_en || s.keyAr || s.specKey || 'المواصفة') }}
+                  {{ currentLang() === 'en'
+                  ? (s.attrKeyEn || s.attr_key_en || s.keyEn || s.specKey || 'Specification')
+                  : (s.attrKeyAr || s.attr_key_ar || s.attrKeyEn || s.attr_key_en || s.keyAr || s.specKey || 'المواصفة')
+                  }}
                 </span>
               </div>
               <div class="spec-val font-semibold">
-                {{ currentLang() === 'en' 
-                  ? (s.attrValueEn || s.attr_value_en || s.valueEn || s.specValue || '-') 
-                  : (s.attrValueAr || s.attr_value_ar || s.attrValueEn || s.attr_value_en || s.valueAr || s.specValue || '-') }}
+                {{ currentLang() === 'en'
+                ? (s.attrValueEn || s.attr_value_en || s.valueEn || s.specValue || '-')
+                : (s.attrValueAr || s.attr_value_ar || s.attrValueEn || s.attr_value_en || s.valueAr || s.specValue ||
+                '-') }}
               </div>
             </div>
           </div>
 
           <div class="specs-empty" *ngIf="specs().length === 0">
             <span class="material-icons-round empty-specs-icon">tune</span>
-            <p>{{ currentLang() === 'en' ? 'No technical specifications added for this product yet.' : 'لم يتم إضافة مواصفات فنية لهذا المنتج بعد.' }}</p>
+            <p>{{ currentLang() === 'en' ? 'No technical specifications added for this product yet.' : 'لم يتم إضافة
+              مواصفات فنية لهذا المنتج بعد.' }}</p>
             <a [routerLink]="['/admin/product-specs', productId, 'details']" class="btn btn-secondary btn-sm">
               <span class="material-icons-round">add</span>
               <span>{{ currentLang() === 'en' ? 'Add Specs' : 'إضافة مواصفات' }}</span>

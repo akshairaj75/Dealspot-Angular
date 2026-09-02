@@ -76,6 +76,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.initForm();
     this.loadCategories();
+    this.loadBrands();
 
     // Instant state hydration from router state if available
     const navState = history.state;
@@ -96,7 +97,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     });
 
     this.brandSearchSub = this.brandSearchSubject.pipe(
-      debounceTime(300),
+      debounceTime(150),
       distinctUntilChanged()
     ).subscribe(query => {
       this.brandSearchQuery = query;
@@ -184,18 +185,45 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       this.loadingBrands.set(true);
     }
 
-    this.brandService.searchBrands(query, page, 20).subscribe({
+    this.brandService.searchBrands(query, page, 100).subscribe({
       next: (res: any) => {
-        const items = res?.content || (Array.isArray(res) ? res : []);
+        const pageItems = res?.content || (Array.isArray(res) ? res : []);
+        let items = [...pageItems];
+        const p = this.product();
+
         if (isAppend) {
           this.brands.update(prev => [...prev, ...items]);
         } else {
+          if (page === 0 && (!query || query.trim() === '') && p) {
+            const bId = p.brandId ?? p.brand_id ?? (p.brand && typeof p.brand === 'object' ? p.brand.id : null);
+            if (bId) {
+              const numId = Number(bId);
+              const exists = items.some((b: any) => Number(b.id) === numId);
+              if (!exists) {
+                items = [
+                  {
+                    id: numId,
+                    nameEn: p.brandNameEn || p.brand || `Brand #${numId}`,
+                    nameAr: p.brandNameAr || p.brand || `ماركة #${numId}`,
+                    logoUrl: p.brandImage || p.brand_image
+                  },
+                  ...items
+                ];
+              }
+            }
+          }
           this.brands.set(items);
         }
+
         this.brandsCurrentPage = res?.number ?? page;
         this.hasMoreBrands.set((res?.number + 1) < (res?.totalPages || 0));
         this.loadingBrands.set(false);
         this.loadingMoreBrands.set(false);
+
+        if (this.product()) {
+          this.populateForm(this.product());
+        }
+        this.cd.detectChanges();
       },
       error: (err) => {
         console.error('Failed to load paged brands:', err);
@@ -257,12 +285,12 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   populateForm(p: any): void {
     if (!p) return;
     const catId = p.categoryId || p.category_id;
-    const brandIdVal = p.brandId || p.brand_id || p.brand?.id;
+    const brandIdVal = p.brandId ?? p.brand_id ?? (p.brand && typeof p.brand === 'object' ? p.brand.id : null);
 
     this.productForm.patchValue({
       name_en: p.nameEn || p.name_en || '',
       name_ar: p.nameAr || p.name_ar || '',
-      brandId: brandIdVal || null,
+      brandId: brandIdVal ? Number(brandIdVal) : null,
       sku: p.sku || '',
       barcode: p.barcode || '',
       category_id: catId || null,
@@ -407,20 +435,20 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     const formData = new FormData();
 
     const productPayload = {
-      name_en: formVal.name_en,
-      name_ar: formVal.name_ar,
-      brand_id: Number(formVal.brandId),
-      sku: formVal.sku || '',
-      barcode: formVal.barcode || '',
-      category_id: Number(formVal.category_id),
+      nameEn: formVal.name_en,
+      nameAr: formVal.name_ar,
+      brandId: Number(formVal.brandId),
+      sku: formVal.sku ? formVal.sku.trim() : null,
+      barcode: formVal.barcode ? formVal.barcode.trim() : null,
+      categoryId: Number(formVal.category_id),
       unit: formVal.unit,
-      unit_size: Number(formVal.unit_size),
-      description_en: formVal.description_en || '',
-      description_ar: formVal.description_ar || '',
-      is_active: formVal.is_active ? 1 : 0
+      unitSize: Number(formVal.unit_size),
+      descriptionEn: formVal.description_en || '',
+      descriptionAr: formVal.description_ar || '',
+      active: formVal.is_active
     };
 
-    formData.append('product', new Blob([JSON.stringify(productPayload)], { type: 'application/json' }));
+    formData.append('data', new Blob([JSON.stringify(productPayload)], { type: 'application/json' }));
     if (this.selectedFile) {
       formData.append('file', this.selectedFile);
     }
@@ -458,20 +486,20 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
     const formData = new FormData();
     const productPayload = {
-      name_en: this.product().nameEn || this.product().name_en,
-      name_ar: this.product().nameAr || this.product().name_ar,
-      brand_id: Number(this.product().brandId || this.product().brand_id || this.product().brand?.id),
+      nameEn: this.product().nameEn || this.product().name_en,
+      nameAr: this.product().nameAr || this.product().name_ar,
+      brandId: Number(this.product().brandId || this.product().brand_id || this.product().brand?.id),
       sku: this.product().sku || '',
       barcode: this.product().barcode || '',
-      category_id: Number(this.product().categoryId || this.product().category_id),
+      categoryId: Number(this.product().categoryId || this.product().category_id),
       unit: this.product().unit || 'EACH',
-      unit_size: Number(this.product().unitSize || this.product().unit_size || 1),
-      description_en: this.product().descriptionEn || this.product().description_en || '',
-      description_ar: this.product().descriptionAr || this.product().description_ar || '',
-      is_active: newActiveState ? 1 : 0
+      unitSize: Number(this.product().unitSize || this.product().unit_size || 1),
+      descriptionEn: this.product().descriptionEn || this.product().description_en || '',
+      descriptionAr: this.product().descriptionAr || this.product().description_ar || '',
+      active: newActiveState
     };
 
-    formData.append('product', new Blob([JSON.stringify(productPayload)], { type: 'application/json' }));
+    formData.append('data', new Blob([JSON.stringify(productPayload)], { type: 'application/json' }));
 
     this.productService.updateProduct(this.productId, formData).subscribe({
       next: () => {

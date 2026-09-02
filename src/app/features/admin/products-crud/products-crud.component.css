@@ -86,7 +86,9 @@
   box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
 }
 
-.btn-primary .material-icons-round { font-size: 1.15rem; }
+.btn-primary .material-icons-round {
+  font-size: 1.15rem;
+}
 
 .btn-secondary {
   display: inline-flex;
@@ -302,7 +304,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-card {
@@ -353,7 +357,9 @@
   transition: all 0.12s;
 }
 
-.btn-empty-reset:hover { background: var(--border); }
+.btn-empty-reset:hover {
+  background: var(--border);
+}
 
 /* ============================================================
    4. UNIFIED RESPONSIVE PRODUCT LIST
@@ -406,7 +412,7 @@
   justify-content: center;
   overflow: hidden;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .product-img {
@@ -573,14 +579,20 @@
   color: #15803d;
   border: 1px solid #bbf7d0;
 }
-.status-active .status-dot { background: #22c55e; }
+
+.status-active .status-dot {
+  background: #22c55e;
+}
 
 .status-inactive {
   background: var(--surface-hover);
   color: var(--text-muted);
   border: 1px solid var(--border);
 }
-.status-inactive .status-dot { background: var(--text-muted); }
+
+.status-inactive .status-dot {
+  background: var(--text-muted);
+}
 
 /* Action Buttons */
 .btn-item-action {
@@ -666,7 +678,9 @@
   font-weight: 600;
 }
 
-.tiny-check { font-size: 14px; }
+.tiny-check {
+  font-size: 14px;
+}
 
 /* Floating scroll top */
 .btn-floating-scroll-top {
@@ -753,7 +767,9 @@
   flex-shrink: 0;
 }
 
-.modal-header-icon .material-icons-round { font-size: 1.25rem; }
+.modal-header-icon .material-icons-round {
+  font-size: 1.25rem;
+}
 
 .modal-header h3 {
   font-size: 1rem;
@@ -785,7 +801,9 @@
   color: var(--text-primary);
 }
 
-.btn-close .material-icons-round { font-size: 1.15rem; }
+.btn-close .material-icons-round {
+  font-size: 1.15rem;
+}
 
 .modal-form {
   display: flex;
@@ -886,7 +904,9 @@ textarea.form-control {
   min-height: 80px;
 }
 
-.font-mono { font-family: monospace; }
+.font-mono {
+  font-family: monospace;
+}
 
 .error-msg {
   font-size: 0.72rem;
@@ -936,8 +956,16 @@ textarea.form-control {
   border-color: rgba(74, 222, 128, 0.2);
 }
 
-.banner-icon { font-size: 16px; color: #15803d; }
-.banner-title { font-weight: 700; color: var(--text-primary); }
+.banner-icon {
+  font-size: 16px;
+  color: #15803d;
+}
+
+.banner-title {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
 .banner-badge {
   font-weight: 600;
   color: #15803d;
@@ -995,7 +1023,9 @@ textarea.form-control {
   background: var(--primary-light);
 }
 
-.file-input-hidden { display: none; }
+.file-input-hidden {
+  display: none;
+}
 
 .dropzone-content {
   display: flex;
@@ -1017,7 +1047,9 @@ textarea.form-control {
   flex-shrink: 0;
 }
 
-.dropzone-icon-circle .material-icons-round { font-size: 1.15rem; }
+.dropzone-icon-circle .material-icons-round {
+  font-size: 1.15rem;
+}
 
 .dropzone-text {
   display: flex;
@@ -1092,17 +1124,24 @@ textarea.form-control {
 }
 
 :host-context([dir="rtl"]) .slider::before,
-[dir="rtl"] .slider::before { left: auto; right: 2px; }
+[dir="rtl"] .slider::before {
+  left: auto;
+  right: 2px;
+}
 
-.toggle-switch input:checked + .slider {
+.toggle-switch input:checked+.slider {
   background-color: var(--primary);
   border-color: var(--primary);
 }
 
-.toggle-switch input:checked + .slider::before { transform: translateX(20px); }
+.toggle-switch input:checked+.slider::before {
+  transform: translateX(20px);
+}
 
-:host-context([dir="rtl"]) .toggle-switch input:checked + .slider::before,
-[dir="rtl"] .toggle-switch input:checked + .slider::before { transform: translateX(-20px); }
+:host-context([dir="rtl"]) .toggle-switch input:checked+.slider::before,
+[dir="rtl"] .toggle-switch input:checked+.slider::before {
+  transform: translateX(-20px);
+}
 
 .toggle-info {
   display: flex;
@@ -1126,8 +1165,13 @@ textarea.form-control {
   line-height: 1.35;
 }
 
-.text-emerald { color: #059669; }
-.icon-xs { font-size: 16px; }
+.text-emerald {
+  color: #059669;
+}
+
+.icon-xs {
+  font-size: 16px;
+}
 
 /* Modal Footer */
 .modal-footer {
@@ -1141,13 +1185,25 @@ textarea.form-control {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(10px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* ============================================================
