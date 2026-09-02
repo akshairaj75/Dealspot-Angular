@@ -6,6 +6,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  overflow: visible !important;
 }
 
 /* Header */
@@ -106,6 +107,9 @@
   gap: 1rem;
   padding: 1rem 1.25rem;
   flex-wrap: wrap;
+  overflow: visible !important;
+  position: relative;
+  z-index: 20;
 }
 
 .search-input-wrap {
@@ -156,6 +160,9 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  overflow: visible !important;
+  position: relative;
+  z-index: 20;
 }
 
 .filter-label {

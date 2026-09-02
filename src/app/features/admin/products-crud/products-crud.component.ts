@@ -77,7 +77,8 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
     { id: 'PACK', nameEn: 'Pack', nameAr: 'عبوة / باقة' },
     { id: 'BOX', nameEn: 'Box', nameAr: 'صندوق / كرتون' },
     { id: 'PAIR', nameEn: 'Pair', nameAr: 'زوج' },
-    { id: 'SET', nameEn: 'Set', nameAr: 'طقم / مجموعة' }
+    { id: 'SET', nameEn: 'Set', nameAr: 'طقم / مجموعة' },
+    { id: 'BUNCH', nameEn: 'Bunch', nameAr: 'عنقود' }
   ];
 
   // Category selection in modal

@@ -65,17 +65,20 @@
 
                 <div class="suggestion-info">
                   <div class="suggestion-main-row">
-                    <span class="suggestion-title">{{ currentLang() === 'en' ? (p.nameEn || p.name_en) : (p.nameAr || p.name_ar || p.nameEn) }}</span>
+                    <span class="suggestion-title">{{ currentLang() === 'en' ? (p.nameEn || p.name_en) : (p.nameAr ||
+                      p.name_ar || p.nameEn) }}</span>
                     <span class="suggestion-brand-pill" *ngIf="p.brandNameEn || p.brandNameAr || p.brand">
                       <span class="material-icons-round pill-ico">storefront</span>
-                      {{ currentLang() === 'en' ? (p.brandNameEn || p.brand) : (p.brandNameAr || p.brandNameEn || p.brand) }}
+                      {{ currentLang() === 'en' ? (p.brandNameEn || p.brand) : (p.brandNameAr || p.brandNameEn ||
+                      p.brand) }}
                     </span>
                   </div>
 
                   <div class="suggestion-sub-row">
                     <span class="suggestion-cat" *ngIf="p.categoryNameEn || p.categoryNameAr || p.category">
                       <span class="material-icons-round sub-ico">category</span>
-                      {{ currentLang() === 'en' ? (p.categoryNameEn || p.category?.nameEn || p.category) : (p.categoryNameAr || p.category?.nameAr || p.categoryNameEn || p.category) }}
+                      {{ currentLang() === 'en' ? (p.categoryNameEn || p.category?.nameEn || p.category) :
+                      (p.categoryNameAr || p.category?.nameAr || p.categoryNameEn || p.category) }}
                     </span>
                     <span class="suggestion-sku" *ngIf="p.sku || p.barcode">
                       <span class="material-icons-round sub-ico">qr_code</span>

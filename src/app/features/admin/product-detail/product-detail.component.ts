@@ -31,7 +31,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     { id: 'PACK', nameEn: 'Pack', nameAr: 'عبوة / باقة' },
     { id: 'BOX', nameEn: 'Box', nameAr: 'صندوق / كرتون' },
     { id: 'PAIR', nameEn: 'Pair', nameAr: 'زوج' },
-    { id: 'SET', nameEn: 'Set', nameAr: 'طقم / مجموعة' }
+    { id: 'SET', nameEn: 'Set', nameAr: 'طقم / مجموعة' },
+    { id: 'BUNCH', nameEn: 'Bunch', nameAr: 'عنقود' }
   ];
   private router = inject(Router);
   private fb = inject(FormBuilder);
