@@ -8,13 +8,13 @@
         {{ currentLang() === 'en' ? 'Notification Delivery & Broadcast' : 'إدارة وبث الإشعارات' }}
       </h1>
       <p class="page-subtitle">
-        {{ currentLang() === 'en' ? 'Send push/SMS/email announcements to users and inspect delivery logs.' : 'إرسال التنبيهات الفورية والرسائل للمستخدمين ومتابعة سجلات الوصول.' }}
+        {{ currentLang() === 'en' ? 'Send contextual deal alerts, flyer releases, and announcements to customers.' : 'إرسال تنبيهات العروض المباشرة والمجلات والرسائل للمستخدمين ومتابعة سجلات الوصول.' }}
       </p>
     </div>
 
     <button type="button" class="btn btn-primary btn-broadcast" (click)="openBroadcastModal()">
       <span class="material-icons-round">send</span>
-      <span>{{ currentLang() === 'en' ? 'Broadcast Notification' : 'بث إشعار جديد' }}</span>
+      <span>{{ currentLang() === 'en' ? 'Compose & Broadcast Notification' : 'صياغة وبث إشعار جديد' }}</span>
     </button>
   </div>
 
@@ -26,7 +26,7 @@
       </div>
       <div class="stat-content">
         <span class="stat-num">{{ totalCount() }}</span>
-        <span class="stat-label">{{ currentLang() === 'en' ? 'Total Delivered' : 'إجمالي الإشعارات' }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Delivered Alerts' : 'إجمالي الإشعارات المسلمة' }}</span>
       </div>
     </div>
 
@@ -35,18 +35,18 @@
         <span class="material-icons-round">notifications_active</span>
       </div>
       <div class="stat-content">
-        <span class="stat-num">PUSH</span>
-        <span class="stat-label">{{ currentLang() === 'en' ? 'Default Channel' : 'القناة الافتراضية' }}</span>
+        <span class="stat-num">{{ offersList().length }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Linkable Active Offers' : 'العروض النشطة المتاحة للربط' }}</span>
       </div>
     </div>
 
     <div class="stat-card">
       <div class="stat-icon bg-amber-light text-amber">
-        <span class="material-icons-round">flash_on</span>
+        <span class="material-icons-round">menu_book</span>
       </div>
       <div class="stat-content">
-        <span class="stat-num">Live</span>
-        <span class="stat-label">{{ currentLang() === 'en' ? 'Real-time System' : 'نظام فوري متزامن' }}</span>
+        <span class="stat-num">{{ flyersList().length }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Linkable Active Flyers' : 'المجلات المتاحة للربط' }}</span>
       </div>
     </div>
   </div>
@@ -115,7 +115,7 @@
       <table class="data-table" *ngIf="notifications().length > 0; else emptyTpl">
         <thead>
           <tr>
-            <th>{{ currentLang() === 'en' ? 'Recipient / User' : 'المستلم' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Recipient Target' : 'المستلم / الفئة' }}</th>
             <th>{{ currentLang() === 'en' ? 'Notification Details' : 'تفاصيل الإشعار' }}</th>
             <th>{{ currentLang() === 'en' ? 'Type & Channel' : 'النوع والقناة' }}</th>
             <th>{{ currentLang() === 'en' ? 'Read Status' : 'حالة القراءة' }}</th>
@@ -127,8 +127,9 @@
           <tr *ngFor="let notif of notifications()">
             <td>
               <div class="recipient-cell">
-                <div class="recipient-avatar">
-                  {{ (notif.userFullName || 'U').charAt(0).toUpperCase() }}
+                <div class="recipient-avatar" [class.broadcast-avatar]="!notif.userFullName">
+                  <span class="material-icons-round icon-avatar" *ngIf="!notif.userFullName">public</span>
+                  <span *ngIf="notif.userFullName">{{ notif.userFullName.charAt(0).toUpperCase() }}</span>
                 </div>
                 <div class="recipient-info">
                   <span class="recipient-name">{{ notif.userFullName || ('User #' + notif.userId) }}</span>
@@ -226,7 +227,7 @@
       <div class="empty-state">
         <span class="material-icons-round empty-icon">notifications_off</span>
         <h3>{{ currentLang() === 'en' ? 'No Notifications Found' : 'لم يتم العثور على إشعارات' }}</h3>
-        <p>{{ currentLang() === 'en' ? 'Broadcast a new notification announcement to users.' : 'قم بإرسال إشعار جديد للمستخدمين.' }}</p>
+        <p>{{ currentLang() === 'en' ? 'Compose and broadcast a contextual deal or flyer notification to users.' : 'قم بصياغة وإرسال إشعار جديد للمستخدمين.' }}</p>
         <button type="button" class="btn btn-primary mt-3" (click)="openBroadcastModal()">
           <span class="material-icons-round">send</span>
           <span>{{ currentLang() === 'en' ? 'Broadcast First Notification' : 'إرسال أول إشعار' }}</span>
@@ -235,17 +236,17 @@
     </ng-template>
   </div>
 
-  <!-- BROADCAST MODAL -->
+  <!-- ENHANCED BROADCAST MODAL -->
   <div class="modal-backdrop" *ngIf="isBroadcastModalOpen()" (click)="closeBroadcastModal()">
-    <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-card modal-wide" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <div class="modal-title-group">
           <div class="modal-header-icon">
             <span class="material-icons-round">campaign</span>
           </div>
           <div>
-            <h3>{{ currentLang() === 'en' ? 'Broadcast Notification' : 'بث إشعار للمستخدمين' }}</h3>
-            <p class="modal-sub">{{ currentLang() === 'en' ? 'Compose announcement and target all users or specific recipient.' : 'صياغة الإشعار وإرساله لكافة المستخدمين أو مستخدم محدد.' }}</p>
+            <h3>{{ currentLang() === 'en' ? 'Compose & Broadcast Notification' : 'صياغة وبث إشعار للمستخدمين' }}</h3>
+            <p class="modal-sub">{{ currentLang() === 'en' ? 'Link contextual offers/flyers/products and deliver real-time notifications.' : 'ربط العروض والمجلات والمنتجات وإرسال التنبيهات الفورية للمستخدمين.' }}</p>
           </div>
         </div>
         <button type="button" class="btn-close-modal" (click)="closeBroadcastModal()">
@@ -255,103 +256,255 @@
 
       <form [formGroup]="broadcastForm" (submit)="onSubmitBroadcast()" class="modal-body">
         
-        <div class="form-grid-2">
-          <!-- Notification Type -->
-          <div class="form-group">
-            <label class="form-label required">{{ currentLang() === 'en' ? 'Notification Type *' : 'نوع الإشعار *' }}</label>
-            <app-custom-select
-              formControlName="type"
-              [options]="typeOptions"
-              valueKey="value"
-              labelEnKey="labelEn"
-              labelArKey="labelAr"
-            ></app-custom-select>
+        <div class="modal-content-grid">
+          <!-- Left Column: Form Fields -->
+          <div class="modal-form-fields">
+            
+            <!-- Reference Entity Link Box -->
+            <div class="entity-reference-box">
+              <div class="box-header">
+                <span class="material-icons-round box-icon">link</span>
+                <span class="box-title">{{ currentLang() === 'en' ? 'Link Related Deal / Entity' : 'ربط عرض أو عنصر ذي صلة' }}</span>
+              </div>
+
+              <div class="form-grid-2">
+                <!-- Reference Type -->
+                <div class="form-group">
+                  <label class="form-label">{{ currentLang() === 'en' ? 'Item Type' : 'نوع العنصر' }}</label>
+                  <app-custom-select
+                    formControlName="refType"
+                    [options]="refTypeOptions"
+                    (ngModelChange)="onRefTypeChange($event)"
+                    valueKey="value"
+                    labelEnKey="labelEn"
+                    labelArKey="labelAr"
+                  ></app-custom-select>
+                </div>
+
+                <!-- Entity Picker based on refType -->
+                <div class="form-group" *ngIf="broadcastForm.get('refType')?.value === 'OFFER'">
+                  <label class="form-label required">{{ currentLang() === 'en' ? 'Select Offer *' : 'اختر العرض *' }}</label>
+                  <app-custom-select
+                    formControlName="refId"
+                    [options]="offersList()"
+                    (ngModelChange)="onEntitySelect($event)"
+                    [searchable]="true"
+                    valueKey="id"
+                    labelEnKey="nameEn"
+                    labelArKey="nameAr"
+                    [placeholder]="currentLang() === 'en' ? '-- Select Offer --' : '-- اختر العرض --'"
+                  ></app-custom-select>
+                </div>
+
+                <div class="form-group" *ngIf="broadcastForm.get('refType')?.value === 'FLYER'">
+                  <label class="form-label required">{{ currentLang() === 'en' ? 'Select Flyer *' : 'اختر مجلة العروض *' }}</label>
+                  <app-custom-select
+                    formControlName="refId"
+                    [options]="flyersList()"
+                    (ngModelChange)="onEntitySelect($event)"
+                    [searchable]="true"
+                    valueKey="id"
+                    labelEnKey="nameEn"
+                    labelArKey="nameAr"
+                    [placeholder]="currentLang() === 'en' ? '-- Select Flyer --' : '-- اختر المجلة --'"
+                  ></app-custom-select>
+                </div>
+
+                <div class="form-group" *ngIf="broadcastForm.get('refType')?.value === 'PRODUCT'">
+                  <label class="form-label required">{{ currentLang() === 'en' ? 'Select Product *' : 'اختر المنتج *' }}</label>
+                  <app-custom-select
+                    formControlName="refId"
+                    [options]="productsList()"
+                    (ngModelChange)="onEntitySelect($event)"
+                    [searchable]="true"
+                    valueKey="id"
+                    labelEnKey="nameEn"
+                    labelArKey="nameAr"
+                    [placeholder]="currentLang() === 'en' ? '-- Select Product --' : '-- اختر المنتج --'"
+                  ></app-custom-select>
+                </div>
+
+                <div class="form-group" *ngIf="broadcastForm.get('refType')?.value === 'COUPON'">
+                  <label class="form-label required">{{ currentLang() === 'en' ? 'Select Coupon *' : 'اختر الكوبون *' }}</label>
+                  <app-custom-select
+                    formControlName="refId"
+                    [options]="couponsList()"
+                    (ngModelChange)="onEntitySelect($event)"
+                    [searchable]="true"
+                    valueKey="id"
+                    labelEnKey="nameEn"
+                    labelArKey="nameAr"
+                    [placeholder]="currentLang() === 'en' ? '-- Select Coupon --' : '-- اختر الكوبون --'"
+                  ></app-custom-select>
+                </div>
+              </div>
+
+              <!-- Quick Auto-Fill Action -->
+              <div class="auto-fill-action-row" *ngIf="broadcastForm.get('refId')?.value">
+                <button type="button" class="btn-auto-fill" (click)="autoFillFromEntity()">
+                  <span class="material-icons-round">auto_awesome</span>
+                  <span>{{ currentLang() === 'en' ? 'Auto-Fill Title & Message from Selected Item' : 'تعبئة العنوان والنص تلقائياً من العنصر المختار' }}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Type & Channel -->
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label required">{{ currentLang() === 'en' ? 'Notification Type *' : 'نوع الإشعار *' }}</label>
+                <app-custom-select
+                  formControlName="type"
+                  [options]="typeOptions"
+                  valueKey="value"
+                  labelEnKey="labelEn"
+                  labelArKey="labelAr"
+                ></app-custom-select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label required">{{ currentLang() === 'en' ? 'Delivery Channel *' : 'قناة الوصول *' }}</label>
+                <app-custom-select
+                  formControlName="channel"
+                  [options]="channelOptions"
+                  valueKey="value"
+                  labelEnKey="labelEn"
+                  labelArKey="labelAr"
+                ></app-custom-select>
+              </div>
+            </div>
+
+            <!-- Titles -->
+            <div class="form-group">
+              <label class="form-label required">{{ currentLang() === 'en' ? 'Title (English) *' : 'العنوان (الإنجليزية) *' }}</label>
+              <input
+                type="text"
+                formControlName="titleEn"
+                class="form-control"
+                placeholder="e.g. Flash 50% Off on Fresh Produce!"
+              >
+              <span class="error-msg" *ngIf="broadcastForm.get('titleEn')?.touched && broadcastForm.get('titleEn')?.invalid">
+                {{ currentLang() === 'en' ? 'English title is required.' : 'العنوان بالإنجليزية مطلوب.' }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label required">{{ currentLang() === 'en' ? 'Title (Arabic) *' : 'العنوان (العربية) *' }}</label>
+              <input
+                type="text"
+                formControlName="titleAr"
+                class="form-control"
+                placeholder="مثال: خصم 50% على المنتجات الطازجة لفترة محدودة!"
+              >
+              <span class="error-msg" *ngIf="broadcastForm.get('titleAr')?.touched && broadcastForm.get('titleAr')?.invalid">
+                {{ currentLang() === 'en' ? 'Arabic title is required.' : 'العنوان بالعربية مطلوب.' }}
+              </span>
+            </div>
+
+            <!-- Message Bodies -->
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">{{ currentLang() === 'en' ? 'Message Body (English)' : 'نص الرسالة (الإنجليزية)' }}</label>
+                <textarea
+                  formControlName="bodyEn"
+                  rows="2"
+                  class="form-control"
+                  placeholder="Detailed notification message in English..."
+                ></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">{{ currentLang() === 'en' ? 'Message Body (Arabic)' : 'نص الرسالة (العربية)' }}</label>
+                <textarea
+                  formControlName="bodyAr"
+                  rows="2"
+                  class="form-control"
+                  placeholder="نص الإشعار التفصيلي بالعربية..."
+                ></textarea>
+              </div>
+            </div>
+
+            <!-- Deep Link & Target Audience -->
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">{{ currentLang() === 'en' ? 'In-App Deep Link URL' : 'رابط التوجيه المباشر' }}</label>
+                <input
+                  type="text"
+                  formControlName="deepLink"
+                  class="form-control"
+                  placeholder="/offers/123 or /flyers/45"
+                >
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">{{ currentLang() === 'en' ? 'Target Audience' : 'الجمهور المستهدف' }}</label>
+                <app-custom-select
+                  formControlName="targetAudience"
+                  [options]="targetAudienceOptions"
+                  valueKey="value"
+                  labelEnKey="labelEn"
+                  labelArKey="labelAr"
+                ></app-custom-select>
+              </div>
+            </div>
+
+            <div class="form-group" *ngIf="broadcastForm.get('targetAudience')?.value === 'USER'">
+              <label class="form-label required">{{ currentLang() === 'en' ? 'Target User ID *' : 'معرف المستخدم المستهدف *' }}</label>
+              <input
+                type="number"
+                formControlName="targetUserId"
+                class="form-control"
+                placeholder="e.g. 15"
+              >
+            </div>
+
           </div>
 
-          <!-- Channel -->
-          <div class="form-group">
-            <label class="form-label required">{{ currentLang() === 'en' ? 'Delivery Channel *' : 'قناة الوصول *' }}</label>
-            <app-custom-select
-              formControlName="channel"
-              [options]="channelOptions"
-              valueKey="value"
-              labelEnKey="labelEn"
-              labelArKey="labelAr"
-            ></app-custom-select>
-          </div>
-        </div>
+          <!-- Right Column: Real-Time Live Notification Preview -->
+          <div class="modal-preview-column">
+            <div class="preview-card-wrapper">
+              <div class="preview-header">
+                <span class="material-icons-round preview-icon">devices</span>
+                <span>{{ currentLang() === 'en' ? 'Live Alert Preview' : 'معاينة الإشعار الفوري' }}</span>
+              </div>
 
-        <!-- Title English -->
-        <div class="form-group">
-          <label class="form-label required">{{ currentLang() === 'en' ? 'Title (English) *' : 'العنوان (الإنجليزية) *' }}</label>
-          <input
-            type="text"
-            formControlName="titleEn"
-            class="form-control"
-            placeholder="e.g. Flash 50% Off on Fresh Produce!"
-          >
-          <span class="error-msg" *ngIf="broadcastForm.get('titleEn')?.touched && broadcastForm.get('titleEn')?.invalid">
-            {{ currentLang() === 'en' ? 'English title is required.' : 'العنوان بالإنجليزية مطلوب.' }}
-          </span>
-        </div>
+              <!-- Push Notification Preview Banner -->
+              <div class="mobile-push-preview">
+                <div class="push-top-row">
+                  <div class="push-brand-group">
+                    <span class="material-icons-round push-app-icon">campaign</span>
+                    <span class="push-app-name">DealSpot</span>
+                    <span class="push-type-badge">{{ broadcastForm.get('type')?.value || 'ALERT' }}</span>
+                  </div>
+                  <span class="push-time">now</span>
+                </div>
 
-        <!-- Title Arabic -->
-        <div class="form-group">
-          <label class="form-label required">{{ currentLang() === 'en' ? 'Title (Arabic) *' : 'العنوان (العربية) *' }}</label>
-          <input
-            type="text"
-            formControlName="titleAr"
-            class="form-control"
-            placeholder="مثال: خصم 50% على المنتجات الطازجة لفترة محدودة!"
-          >
-          <span class="error-msg" *ngIf="broadcastForm.get('titleAr')?.touched && broadcastForm.get('titleAr')?.invalid">
-            {{ currentLang() === 'en' ? 'Arabic title is required.' : 'العنوان بالعربية مطلوب.' }}
-          </span>
-        </div>
+                <div class="push-content">
+                  <h5 class="push-title">
+                    {{ (currentLang() === 'en' ? broadcastForm.get('titleEn')?.value : broadcastForm.get('titleAr')?.value) || (currentLang() === 'en' ? 'Flash Deal Notification' : 'إشعار عرض خاص') }}
+                  </h5>
+                  <p class="push-body">
+                    {{ (currentLang() === 'en' ? broadcastForm.get('bodyEn')?.value : broadcastForm.get('bodyAr')?.value) || (currentLang() === 'en' ? 'Tap to explore exclusive discounts available now on DealSpot!' : 'اضغط لاستكشاف الخصومات الحصرية المتاحة الآن على ديل سبوت!') }}
+                  </p>
+                </div>
 
-        <!-- Body English & Arabic -->
-        <div class="form-grid-2">
-          <div class="form-group">
-            <label class="form-label">{{ currentLang() === 'en' ? 'Message Body (EN)' : 'نص الرسالة (الإنجليزية)' }}</label>
-            <textarea
-              formControlName="bodyEn"
-              rows="3"
-              class="form-control"
-              placeholder="Detailed notification message in English..."
-            ></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label">{{ currentLang() === 'en' ? 'Message Body (AR)' : 'نص الرسالة (العربية)' }}</label>
-            <textarea
-              formControlName="bodyAr"
-              rows="3"
-              class="form-control"
-              placeholder="نص الإشعار التفصيلي بالعربية..."
-            ></textarea>
-          </div>
-        </div>
+                <div class="push-footer" *ngIf="broadcastForm.get('deepLink')?.value">
+                  <span class="material-icons-round icon-xs">open_in_new</span>
+                  <span>{{ broadcastForm.get('deepLink')?.value }}</span>
+                </div>
+              </div>
 
-        <div class="form-grid-2">
-          <!-- Deep Link -->
-          <div class="form-group">
-            <label class="form-label">{{ currentLang() === 'en' ? 'In-App Deep Link' : 'رابط التوجيه المباشر' }}</label>
-            <input
-              type="text"
-              formControlName="deepLink"
-              class="form-control"
-              placeholder="dealspot://offers/123 or /offers/123"
-            >
-          </div>
-
-          <!-- Target User ID (Optional) -->
-          <div class="form-group">
-            <label class="form-label">{{ currentLang() === 'en' ? 'Target User ID (Optional)' : 'معرف مستخدم محدد (اختياري)' }}</label>
-            <input
-              type="number"
-              formControlName="targetUserId"
-              class="form-control"
-              placeholder="Leave empty to send to ALL users"
-            >
+              <!-- Targeting Summary Chip -->
+              <div class="targeting-summary-card">
+                <span class="material-icons-round summary-icon">group</span>
+                <div class="summary-text">
+                  <span class="summary-title">{{ currentLang() === 'en' ? 'Audience Coverage' : 'نطاق الجمهور' }}</span>
+                  <span class="summary-val">
+                    {{ broadcastForm.get('targetAudience')?.value === 'ALL'
+                        ? (currentLang() === 'en' ? 'All Registered DealSpot Customers' : 'كافة مستخدمي ديل سبوت المسجلين')
+                        : (currentLang() === 'en' ? ('Single User #' + (broadcastForm.get('targetUserId')?.value || '-')) : ('مستخدم محدد #' + (broadcastForm.get('targetUserId')?.value || '-'))) }}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

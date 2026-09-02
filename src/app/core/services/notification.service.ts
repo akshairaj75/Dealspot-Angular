@@ -6,17 +6,17 @@ import { environment } from '../../environment/environment';
 export interface NotificationItem {
   id: number;
   userId: number;
-  userFullName?: string;
-  userEmail?: string;
+  userFullName?: string | null;
+  userEmail?: string | null;
   type: string;
   channel: string;
   titleEn: string;
   titleAr: string;
-  bodyEn?: string;
-  bodyAr?: string;
-  refId?: number;
-  refType?: string;
-  deepLink?: string;
+  bodyEn?: string | null;
+  bodyAr?: string | null;
+  refId?: number | null;
+  refType?: string | null;
+  deepLink?: string | null;
   read: boolean;
   sentAt: string;
   createdAt: string;
@@ -25,14 +25,14 @@ export interface NotificationItem {
 export interface BroadcastNotificationPayload {
   titleEn: string;
   titleAr: string;
-  bodyEn?: string;
-  bodyAr?: string;
+  bodyEn?: string | null;
+  bodyAr?: string | null;
   type?: string;
   channel?: string;
-  refId?: number;
-  refType?: string;
-  deepLink?: string;
-  targetUserId?: number;
+  refId?: number | null;
+  refType?: string | null;
+  deepLink?: string | null;
+  targetUserId?: number | null;
 }
 
 @Injectable({

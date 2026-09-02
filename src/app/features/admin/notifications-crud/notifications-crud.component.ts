@@ -1,8 +1,13 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { NotificationService, NotificationItem } from '../../../core/services/notification.service';
+import { NotificationService, NotificationItem, BroadcastNotificationPayload } from '../../../core/services/notification.service';
 import { TranslationService } from '../../../core/services/translation.service';
+import { OfferService } from '../../../core/services/offer.service';
+import { FlyerService } from '../../../core/services/flyer.service';
+import { ProductService } from '../../../core/services/product.service';
+import { CouponService } from '../../../core/services/coupon.service';
+import { StoreService } from '../../../core/services/store.service';
 import { CustomSelectComponent } from '../../../shared/components/custom-select/custom-select.component';
 import Swal from 'sweetalert2';
 
@@ -15,6 +20,11 @@ import Swal from 'sweetalert2';
 })
 export class NotificationsCrudComponent implements OnInit {
   private notificationService = inject(NotificationService);
+  private offerService = inject(OfferService);
+  private flyerService = inject(FlyerService);
+  private productService = inject(ProductService);
+  private couponService = inject(CouponService);
+  private storeService = inject(StoreService);
   private fb = inject(FormBuilder);
   public translationService = inject(TranslationService);
 
@@ -24,6 +34,14 @@ export class NotificationsCrudComponent implements OnInit {
   totalCount = signal<number>(0);
   loading = signal<boolean>(false);
   sending = signal<boolean>(false);
+
+  // Dynamic entities for pickers
+  offersList = signal<any[]>([]);
+  flyersList = signal<any[]>([]);
+  productsList = signal<any[]>([]);
+  couponsList = signal<any[]>([]);
+  storesList = signal<any[]>([]);
+  loadingEntities = signal<boolean>(false);
 
   // Filters
   searchQuery = '';
@@ -41,7 +59,7 @@ export class NotificationsCrudComponent implements OnInit {
   // Enums for dropdowns
   typeOptions = [
     { value: 'OFFER_EXPIRY', labelEn: 'Offer Expiry Alert', labelAr: 'تنبيه انتهاء العرض' },
-    { value: 'PRICE_DROP', labelEn: 'Price Drop', labelAr: 'تخفيض في السعر' },
+    { value: 'PRICE_DROP', labelEn: 'Price Drop Alert', labelAr: 'تخفيض في السعر' },
     { value: 'NEW_FLYER', labelEn: 'New Flyer Release', labelAr: 'مجلة عروض جديدة' },
     { value: 'FLASH_DEAL', labelEn: 'Flash Deal Announcement', labelAr: 'عرض خاص محدود' },
     { value: 'STORE_OFFER', labelEn: 'Store New Offer', labelAr: 'عرض جديد من متجر' },
@@ -51,22 +69,28 @@ export class NotificationsCrudComponent implements OnInit {
   ];
 
   channelOptions = [
-    { value: 'PUSH', labelEn: 'Push Notification', labelAr: 'إشعار فوري (Push)' },
+    { value: 'PUSH', labelEn: 'Push Notification (App & Web)', labelAr: 'إشعار فوري (تطبيق وموقع)' },
     { value: 'EMAIL', labelEn: 'Email Notification', labelAr: 'بريد إلكتروني' },
     { value: 'SMS', labelEn: 'SMS Text Message', labelAr: 'رسالة نصية SMS' }
   ];
 
   refTypeOptions = [
-    { value: 'OFFER', labelEn: 'Offer Reference', labelAr: 'عرض' },
-    { value: 'FLYER', labelEn: 'Flyer Reference', labelAr: 'مجلة عروض' },
-    { value: 'COUPON', labelEn: 'Coupon Reference', labelAr: 'كوبون' },
-    { value: 'PRODUCT', labelEn: 'Product Reference', labelAr: 'منتج' },
-    { value: 'SYSTEM', labelEn: 'General System', labelAr: 'عام' }
+    { value: 'OFFER', labelEn: 'Related Offer', labelAr: 'عرض مرتبط' },
+    { value: 'FLYER', labelEn: 'Related Flyer', labelAr: 'مجلة عروض مرتبطة' },
+    { value: 'PRODUCT', labelEn: 'Related Product', labelAr: 'منتج مرتبط' },
+    { value: 'COUPON', labelEn: 'Related Coupon', labelAr: 'كوبون مرتبط' },
+    { value: 'SYSTEM', labelEn: 'General / No Entity', labelAr: 'عام / بدون ارتباط' }
+  ];
+
+  targetAudienceOptions = [
+    { value: 'ALL', labelEn: 'All Registered Customers (Broadcast)', labelAr: 'كافة العملاء المسجلين (بث عام)' },
+    { value: 'USER', labelEn: 'Specific User by ID', labelAr: 'مستخدم محدد بالمعرف' }
   ];
 
   ngOnInit(): void {
     this.initForm();
     this.loadNotifications();
+    this.loadEntityOptions();
   }
 
   initForm(): void {
@@ -80,8 +104,71 @@ export class NotificationsCrudComponent implements OnInit {
       refType: ['OFFER'],
       refId: [null],
       deepLink: [''],
+      targetAudience: ['ALL'],
       targetUserId: [null]
     });
+  }
+
+  loadEntityOptions(): void {
+    this.loadingEntities.set(true);
+
+    // Offers
+    this.offerService.getAllOffers().subscribe({
+      next: (res) => {
+        const formatted = (res || []).map((o: any) => ({
+          id: o.id,
+          nameEn: `${o.titleEn || o.title || 'Offer #' + o.id} ${o.discountPercentage ? '(' + o.discountPercentage + '% Off)' : ''}`,
+          nameAr: `${o.titleAr || o.title || 'عرض #' + o.id} ${o.discountPercentage ? '(خصم ' + o.discountPercentage + '%)' : ''}`,
+          raw: o
+        }));
+        this.offersList.set(formatted);
+      },
+      error: () => {}
+    });
+
+    // Flyers
+    this.flyerService.getAllFlyers().subscribe({
+      next: (res) => {
+        const formatted = (res || []).map((f: any) => ({
+          id: f.id,
+          nameEn: f.titleEn || f.title || `Flyer #${f.id}`,
+          nameAr: f.titleAr || f.title || `مجلة #${f.id}`,
+          raw: f
+        }));
+        this.flyersList.set(formatted);
+      },
+      error: () => {}
+    });
+
+    // Products
+    this.productService.getProducts().subscribe({
+      next: (res) => {
+        const formatted = (res || []).map((p: any) => ({
+          id: p.id,
+          nameEn: `${p.nameEn || p.name_en || 'Product #' + p.id} ${p.brand ? '[' + p.brand + ']' : ''}`,
+          nameAr: `${p.nameAr || p.name_ar || 'منتج #' + p.id} ${p.brand ? '[' + p.brand + ']' : ''}`,
+          raw: p
+        }));
+        this.productsList.set(formatted);
+      },
+      error: () => {}
+    });
+
+    // Coupons
+    this.couponService.getAllCoupons().subscribe({
+      next: (res) => {
+        const formatted = (res || []).map((c: any) => ({
+          id: c.id,
+          nameEn: `${c.code || 'COUPON'} - ${c.titleEn || c.nameEn || c.discountValue + '% Off'}`,
+          nameAr: `${c.code || 'كوبون'} - ${c.titleAr || c.nameAr || 'خصم ' + c.discountValue + '%'}`,
+          raw: c
+        }));
+        this.couponsList.set(formatted);
+      },
+      error: () => {}
+    });
+
+    this.loadingEntities.set(false);
   }
 
   loadNotifications(page: number = 0): void {
@@ -127,13 +214,118 @@ export class NotificationsCrudComponent implements OnInit {
     this.broadcastForm.reset({
       type: 'FLASH_DEAL',
       channel: 'PUSH',
-      refType: 'OFFER'
+      refType: 'OFFER',
+      refId: null,
+      deepLink: '',
+      targetAudience: 'ALL',
+      targetUserId: null
     });
     this.isBroadcastModalOpen.set(true);
   }
 
   closeBroadcastModal(): void {
     this.isBroadcastModalOpen.set(false);
+  }
+
+  onRefTypeChange(refType: any): void {
+    this.broadcastForm.patchValue({ refId: null });
+    switch (refType) {
+      case 'OFFER':
+        this.broadcastForm.patchValue({ type: 'FLASH_DEAL', deepLink: '/offers' });
+        break;
+      case 'FLYER':
+        this.broadcastForm.patchValue({ type: 'NEW_FLYER', deepLink: '/flyers' });
+        break;
+      case 'PRODUCT':
+        this.broadcastForm.patchValue({ type: 'PRODUCT_ALERT', deepLink: '/products' });
+        break;
+      case 'COUPON':
+        this.broadcastForm.patchValue({ type: 'COUPON_ALERT', deepLink: '/coupons' });
+        break;
+      default:
+        this.broadcastForm.patchValue({ type: 'SYSTEM', deepLink: '' });
+        break;
+    }
+  }
+
+  onEntitySelect(entityId: any): void {
+    if (!entityId) return;
+    const refType = this.broadcastForm.get('refType')?.value;
+
+    if (refType === 'OFFER') {
+      this.broadcastForm.patchValue({ deepLink: `/offers/${entityId}` });
+    } else if (refType === 'FLYER') {
+      this.broadcastForm.patchValue({ deepLink: `/flyers/${entityId}` });
+    } else if (refType === 'PRODUCT') {
+      this.broadcastForm.patchValue({ deepLink: `/products/${entityId}` });
+    } else if (refType === 'COUPON') {
+      this.broadcastForm.patchValue({ deepLink: `/coupons` });
+    }
+  }
+
+  autoFillFromEntity(): void {
+    const refType = this.broadcastForm.get('refType')?.value;
+    const refId = this.broadcastForm.get('refId')?.value;
+
+    if (!refId) {
+      Swal.fire({
+        icon: 'info',
+        title: this.currentLang() === 'en' ? 'Select an item first' : 'اختر عنصراً أولاً',
+        text: this.currentLang() === 'en' ? 'Please choose a specific item from the dropdown to auto-generate content.' : 'يرجى اختيار عنصر محدد من القائمة لإنشاء النص تلقائياً.'
+      });
+      return;
+    }
+
+    if (refType === 'OFFER') {
+      const found = this.offersList().find(o => o.id === Number(refId));
+      if (found?.raw) {
+        const o = found.raw;
+        const titleEn = `🔥 Hot Deal: ${o.titleEn || o.title || 'Special Promotion'}`;
+        const titleAr = `🔥 عرض خاص: ${o.titleAr || o.title || 'تخفيض حصري'}`;
+        const bodyEn = `Exclusive price of ${o.offerPrice || o.price || ''} SAR on ${o.titleEn || 'this item'}! Limited time deal, tap to explore.`;
+        const bodyAr = `سعر مميز يبدأ من ${o.offerPrice || o.price || ''} ريال على ${o.titleAr || o.titleEn || 'هذا المنتج'}! لفترة محدودة، اضغط للتفاصيل.`;
+        this.broadcastForm.patchValue({ titleEn, titleAr, bodyEn, bodyAr, deepLink: `/offers/${refId}` });
+      }
+    } else if (refType === 'FLYER') {
+      const found = this.flyersList().find(f => f.id === Number(refId));
+      if (found?.raw) {
+        const f = found.raw;
+        const titleEn = `📰 New Flyer: ${f.titleEn || f.title || 'Latest Catalog'}`;
+        const titleAr = `📰 مجلة عروض جديدة: ${f.titleAr || f.title || 'أحدث مجلة عروض'}`;
+        const bodyEn = `Explore the latest promotion flyer and save big on your weekly groceries!`;
+        const bodyAr = `تصفح أحدث مجلات العروض ووفر في مشترياتك اليومية والأسبوعية!`;
+        this.broadcastForm.patchValue({ titleEn, titleAr, bodyEn, bodyAr, deepLink: `/flyers/${refId}` });
+      }
+    } else if (refType === 'PRODUCT') {
+      const found = this.productsList().find(p => p.id === Number(refId));
+      if (found?.raw) {
+        const p = found.raw;
+        const titleEn = `⭐ Price Alert: ${p.nameEn || p.name_en || 'Featured Product'}`;
+        const titleAr = `⭐ تنبيه سعر: ${p.nameAr || p.name_ar || 'منتج مميز'}`;
+        const bodyEn = `Check out the best available deals for ${p.nameEn || 'this product'} across stores near you.`;
+        const bodyAr = `اكتشف أفضل العروض والأسعار لمنتج ${p.nameAr || p.nameEn || ''} في المتاجر القريبة منك.`;
+        this.broadcastForm.patchValue({ titleEn, titleAr, bodyEn, bodyAr, deepLink: `/products/${refId}` });
+      }
+    } else if (refType === 'COUPON') {
+      const found = this.couponsList().find(c => c.id === Number(refId));
+      if (found?.raw) {
+        const c = found.raw;
+        const titleEn = `🎟️ Promo Code: ${c.code || 'SAVE'}`;
+        const titleAr = `🎟️ كود خصم جديد: ${c.code || 'توفير'}`;
+        const bodyEn = `Use discount coupon code ${c.code} for instant extra savings at checkout!`;
+        const bodyAr = `استخدم كود الخصم ${c.code} للحصول على توفير فوري إضافي عند الدفع!`;
+        this.broadcastForm.patchValue({ titleEn, titleAr, bodyEn, bodyAr, deepLink: `/coupons` });
+      }
+    }
+
+    Swal.fire({
+      icon: 'success',
+      title: this.currentLang() === 'en' ? 'Auto-Filled!' : 'تم التعبئة التلقائية!',
+      toast: true,
+      position: 'top-end',
+      timer: 1500,
+      showConfirmButton: false
+    });
   }
 
   onSubmitBroadcast(): void {
@@ -145,16 +337,29 @@ export class NotificationsCrudComponent implements OnInit {
     this.sending.set(true);
     const val = this.broadcastForm.value;
 
-    this.notificationService.broadcastNotification(val).subscribe({
+    const payload: BroadcastNotificationPayload = {
+      titleEn: val.titleEn,
+      titleAr: val.titleAr,
+      bodyEn: val.bodyEn || null,
+      bodyAr: val.bodyAr || null,
+      type: val.type,
+      channel: val.channel,
+      refType: val.refType || null,
+      refId: val.refId ? Number(val.refId) : null,
+      deepLink: val.deepLink || null,
+      targetUserId: val.targetAudience === 'USER' && val.targetUserId ? Number(val.targetUserId) : null
+    };
+
+    this.notificationService.broadcastNotification(payload).subscribe({
       next: (res) => {
         this.sending.set(false);
         this.closeBroadcastModal();
         Swal.fire({
           icon: 'success',
-          title: this.currentLang() === 'en' ? 'Broadcast Sent!' : 'تم إرسال الإشعار!',
+          title: this.currentLang() === 'en' ? 'Notification Sent!' : 'تم إرسال الإشعار!',
           text: this.currentLang() === 'en'
-            ? `Successfully delivered notification to ${res?.sentCount || 'all'} user(s).`
-            : `تم إرسال الإشعار بنجاح إلى ${res?.sentCount || 'جميع'} مستخدم.`,
+            ? `Successfully delivered to ${res?.sentCount || 'all'} recipient(s).`
+            : `تم إرسال الإشعار بنجاح إلى ${res?.sentCount || 'كافة'} المستلمين.`,
           timer: 2500,
           showConfirmButton: false
         });
@@ -165,7 +370,7 @@ export class NotificationsCrudComponent implements OnInit {
         console.error('Broadcast failed:', err);
         Swal.fire({
           icon: 'error',
-          title: this.currentLang() === 'en' ? 'Broadcast Failed' : 'فشل إرسال الإشعار',
+          title: this.currentLang() === 'en' ? 'Send Failed' : 'فشل الإرسال',
           text: err?.error?.message || (this.currentLang() === 'en' ? 'Something went wrong.' : 'حدث خطأ أثناء الإرسال.')
         });
       }
