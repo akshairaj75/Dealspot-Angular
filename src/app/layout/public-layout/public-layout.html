@@ -55,6 +55,67 @@
           <span class="admin-pill-text">{{ currentLang() === 'en' ? 'Admin Panel' : 'لوحة الإدارة' }}</span>
         </a>
 
+        <!-- User Notification Bell (When Logged In) -->
+        <div class="notif-dropdown-wrapper" *ngIf="isLoggedIn()">
+          <button
+            type="button"
+            class="btn-icon btn-user-notif"
+            (click)="toggleNotificationDropdown($event)"
+            [title]="currentLang() === 'en' ? 'Notifications' : 'الإشعارات'"
+          >
+            <span class="material-icons-round">notifications</span>
+            <span class="notif-badge-pill" *ngIf="unreadNotificationsCount() > 0">
+              {{ unreadNotificationsCount() > 99 ? '99+' : unreadNotificationsCount() }}
+            </span>
+          </button>
+
+          <!-- Notification Dropdown Menu -->
+          <div class="user-notif-popover" *ngIf="isNotificationOpen" (click)="$event.stopPropagation()">
+            <div class="notif-popover-header">
+              <div class="popover-title-row">
+                <span class="material-icons-round notif-popover-icon">notifications_active</span>
+                <span class="popover-title">{{ currentLang() === 'en' ? 'My Alerts & Deals' : 'التنبيهات والعروض' }}</span>
+                <span class="unread-count-pill" *ngIf="unreadNotificationsCount() > 0">
+                  {{ unreadNotificationsCount() }} {{ currentLang() === 'en' ? 'New' : 'جديد' }}
+                </span>
+              </div>
+              <button type="button" class="btn-text-mark-read" *ngIf="unreadNotificationsCount() > 0" (click)="onMarkAllRead($event)">
+                {{ currentLang() === 'en' ? 'Mark all as read' : 'تعليم الكل كمقروء' }}
+              </button>
+            </div>
+
+            <div class="notif-popover-body">
+              <div class="notif-popover-empty" *ngIf="recentNotifications().length === 0">
+                <span class="material-icons-round icon-empty-bell">notifications_none</span>
+                <p>{{ currentLang() === 'en' ? 'No notifications yet' : 'لا توجد إشعارات حالياً' }}</p>
+              </div>
+
+              <div
+                class="notif-popover-item"
+                *ngFor="let item of recentNotifications()"
+                [class.unread]="!item.read"
+                (click)="onNotificationClick(item)"
+              >
+                <div class="item-icon-box" [ngClass]="item.channel.toLowerCase()">
+                  <span class="material-icons-round">
+                    {{ item.type === 'PRICE_DROP' ? 'trending_down' : (item.type === 'FLASH_DEAL' ? 'bolt' : (item.type === 'OFFER_EXPIRY' ? 'timer' : 'local_offer')) }}
+                  </span>
+                </div>
+                <div class="item-content-box">
+                  <div class="item-title-row">
+                    <span class="item-title">{{ currentLang() === 'en' ? item.titleEn : (item.titleAr || item.titleEn) }}</span>
+                    <span class="unread-dot" *ngIf="!item.read"></span>
+                  </div>
+                  <p class="item-body" *ngIf="item.bodyEn || item.bodyAr">
+                    {{ currentLang() === 'en' ? (item.bodyEn || item.bodyAr) : (item.bodyAr || item.bodyEn) }}
+                  </p>
+                  <span class="item-time">{{ item.sentAt | date:'shortTime' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- User Menu Dropdown -->
         <div class="profile-dropdown-wrapper">
           <button 

@@ -23,6 +23,7 @@ import { StoreListComponent } from './features/store/store-list/store-list.compo
 import { StoreDetailComponent } from './features/store/store-detail/store-detail.component';
 import { FlyerListComponent } from './features/flyers/flyer-list/flyer-list.component';
 import { FlyerViewerComponent } from './features/flyers/flyer-viewer/flyer-viewer.component';
+import { NotificationsCrudComponent } from './features/admin/notifications-crud/notifications-crud.component';
 import { UsersCrudComponent } from './features/admin/users-crud/users-crud';
 import { PartnerApplyComponent } from './features/partner/partner-apply/partner-apply';
 import { PartnerRequestsComponent } from './features/admin/partner-requests/partner-requests';
@@ -99,6 +100,7 @@ export const routes: Routes = [
             { path: 'flyers', component: FlyersCrudComponent },
             { path: 'flyers/:id/pages', component: FlyerPagesCrudComponent },
             { path: 'users', component: UsersCrudComponent },
+            { path: 'notifications', component: NotificationsCrudComponent },
             {
                 path: 'product-specs/:productId/details',
                 component: ProductSpecsCrudComponent

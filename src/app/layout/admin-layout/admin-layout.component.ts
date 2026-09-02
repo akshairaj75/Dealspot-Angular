@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { TranslationService } from '../../core/services/translation.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { APP_CONFIG } from '../../core/config/app-config';
 import { filter, Subscription } from 'rxjs';
 
@@ -23,11 +24,17 @@ interface AdminMenuItem {
 export class AdminLayoutComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
   translationService = inject(TranslationService);
+  notificationService = inject(NotificationService);
   router = inject(Router);
 
   currentLang = this.translationService.currentLang;
   appConfig = APP_CONFIG;
   adminUser = this.authService.currentUser;
+
+  // Notification state
+  unreadCount = this.notificationService.unreadCount;
+  recentNotifications = this.notificationService.recentNotifications;
+  isNotificationMenuOpen = signal<boolean>(false);
 
   // Offcanvas Hamburger Drawer state on mobile
   isSidebarOpen = signal(false);
@@ -55,7 +62,40 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
         this.closeSidebar();
+        this.closeNotificationMenu();
       });
+
+    this.refreshNotifications();
+  }
+
+  refreshNotifications(): void {
+    this.notificationService.fetchUnreadCount().subscribe();
+    this.notificationService.getMyNotifications(0, 5).subscribe();
+  }
+
+  toggleNotificationMenu(): void {
+    this.isNotificationMenuOpen.update(v => !v);
+    if (this.isNotificationMenuOpen()) {
+      this.refreshNotifications();
+    }
+  }
+
+  closeNotificationMenu(): void {
+    this.isNotificationMenuOpen.set(false);
+  }
+
+  onNotificationClick(item: any): void {
+    if (!item.read) {
+      this.notificationService.markAsRead(item.id).subscribe();
+    }
+    this.closeNotificationMenu();
+    if (item.deepLink) {
+      this.router.navigateByUrl(item.deepLink);
+    }
+  }
+
+  onMarkAllRead(): void {
+    this.notificationService.markAllAsRead().subscribe();
   }
 
   ngOnDestroy(): void {
