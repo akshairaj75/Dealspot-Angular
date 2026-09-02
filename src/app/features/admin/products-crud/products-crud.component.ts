@@ -49,6 +49,19 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
   filterCategoryId = signal<number | null>(null);
   filterBrandId = signal<number | null>(null);
 
+  // Search suggestions state
+  searchSuggestions = signal<any[]>([]);
+  showSuggestions = signal<boolean>(false);
+  loadingSuggestions = signal<boolean>(false);
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.search-input-wrapper')) {
+      this.showSuggestions.set(false);
+    }
+  }
+
   // Categories & Brands
   allCategories = signal<any[]>([]);
   mainCategories = signal<any[]>([]);
@@ -98,11 +111,18 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
     this.resetAndLoadProducts();
 
     this.searchSub = this.searchSubject.pipe(
-      debounceTime(350),
+      debounceTime(250),
       distinctUntilChanged()
     ).subscribe(query => {
       this.searchQuery = query;
       this.resetAndLoadProducts();
+
+      if (query && query.trim().length > 0) {
+        this.fetchSearchSuggestions(query.trim());
+      } else {
+        this.showSuggestions.set(false);
+        this.searchSuggestions.set([]);
+      }
     });
   }
 
@@ -174,6 +194,54 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onSearchChange(value: string): void {
     this.searchSubject.next(value);
+  }
+
+  onSearchFocus(): void {
+    if (this.searchQuery && this.searchQuery.trim().length > 0) {
+      if (this.searchSuggestions().length > 0) {
+        this.showSuggestions.set(true);
+      } else {
+        this.fetchSearchSuggestions(this.searchQuery.trim());
+      }
+    }
+  }
+
+  fetchSearchSuggestions(query: string): void {
+    this.loadingSuggestions.set(true);
+    this.showSuggestions.set(true);
+
+    this.productService.getPagedProducts(
+      0,
+      6,
+      query,
+      this.filterCategoryId(),
+      this.filterBrandId(),
+      'nameEn',
+      'asc'
+    ).subscribe({
+      next: (res) => {
+        const items = res?.content || [];
+        this.searchSuggestions.set(items);
+        this.loadingSuggestions.set(false);
+        this.cd.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error fetching search suggestions:', err);
+        this.loadingSuggestions.set(false);
+        this.cd.detectChanges();
+      }
+    });
+  }
+
+  selectSuggestion(p: any): void {
+    const name = p.nameEn || p.name_en || p.nameAr || p.name_ar || String(p.id);
+    this.searchQuery = name;
+    this.showSuggestions.set(false);
+    this.resetAndLoadProducts();
+  }
+
+  closeSuggestions(): void {
+    this.showSuggestions.set(false);
   }
 
   onFilterCategoryChange(catId: any): void {

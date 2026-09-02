@@ -93,6 +93,8 @@ export const routes: Routes = [
             { path: 'brands/:id/details', component: BrandDetailComponent },
             { path: 'brands/:id', component: BrandDetailComponent },
             { path: 'offers', component: OffersCrudComponent },
+            { path: 'offers/:id/details', component: OfferDetailComponent },
+            { path: 'offers/:id', component: OfferDetailComponent },
             { path: 'coupons', component: CouponsCrudComponent },
             { path: 'flyers', component: FlyersCrudComponent },
             { path: 'flyers/:id/pages', component: FlyerPagesCrudComponent },

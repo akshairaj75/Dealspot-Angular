@@ -23,13 +23,83 @@
     <div class="filter-row">
       <div class="search-input-wrapper">
         <span class="material-icons-round search-icon">search</span>
-        <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange($event)"
+        <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange($event)" (focus)="onSearchFocus()"
           [placeholder]="currentLang() === 'en' ? 'Search by name, brand, SKU, barcode, ID...' : 'ابحث بالاسم، الماركة، SKU، الباركود أو الرقم...'"
           class="search-input" />
         <button type="button" class="clear-search-btn" *ngIf="searchQuery"
           (click)="searchQuery = ''; onSearchChange('')">
           <span class="material-icons-round">close</span>
         </button>
+
+        <!-- Live Search Suggestions Dropdown Overlay -->
+        <div class="search-suggestions-dropdown" *ngIf="showSuggestions() && searchQuery.trim().length > 0">
+          <!-- Loading State -->
+          <div class="suggestions-loading" *ngIf="loadingSuggestions()">
+            <div class="spinner-tiny"></div>
+            <span>{{ currentLang() === 'en' ? 'Searching matching products...' : 'جاري البحث في المنتجات...' }}</span>
+          </div>
+
+          <ng-container *ngIf="!loadingSuggestions()">
+            <!-- Suggested Items Header -->
+            <div class="suggestions-header" *ngIf="searchSuggestions().length > 0">
+              <span class="material-icons-round header-icon">lightbulb</span>
+              <span>{{ currentLang() === 'en' ? 'Suggested Products' : 'المنتجات المقترحة' }}</span>
+              <span class="suggestions-count">({{ searchSuggestions().length }})</span>
+            </div>
+
+            <!-- List of Suggestions -->
+            <div class="suggestions-list" *ngIf="searchSuggestions().length > 0">
+              <div class="suggestion-item" *ngFor="let p of searchSuggestions()" (click)="selectSuggestion(p)">
+                <div class="suggestion-thumb-wrap">
+                  <img *ngIf="p.images && p.images.length > 0" [src]="filePath + p.images[0].imageUrl"
+                    class="suggestion-thumb" alt="product"
+                    (error)="$any($event.target).src = 'assets/images/placeholder-product.png'">
+                  <img *ngIf="(!p.images || p.images.length === 0) && (p.primaryImageUrl || p.primary_image_url)"
+                    [src]="filePath + (p.primaryImageUrl || p.primary_image_url)" class="suggestion-thumb" alt="product"
+                    (error)="$any($event.target).src = 'assets/images/placeholder-product.png'">
+                  <span *ngIf="(!p.images || p.images.length === 0) && !p.primaryImageUrl && !p.primary_image_url"
+                    class="suggestion-thumb-placeholder">
+                    <span class="material-icons-round">inventory_2</span>
+                  </span>
+                </div>
+
+                <div class="suggestion-info">
+                  <div class="suggestion-main-row">
+                    <span class="suggestion-title">{{ currentLang() === 'en' ? (p.nameEn || p.name_en) : (p.nameAr || p.name_ar || p.nameEn) }}</span>
+                    <span class="suggestion-brand-pill" *ngIf="p.brandNameEn || p.brandNameAr || p.brand">
+                      <span class="material-icons-round pill-ico">storefront</span>
+                      {{ currentLang() === 'en' ? (p.brandNameEn || p.brand) : (p.brandNameAr || p.brandNameEn || p.brand) }}
+                    </span>
+                  </div>
+
+                  <div class="suggestion-sub-row">
+                    <span class="suggestion-cat" *ngIf="p.categoryNameEn || p.categoryNameAr || p.category">
+                      <span class="material-icons-round sub-ico">category</span>
+                      {{ currentLang() === 'en' ? (p.categoryNameEn || p.category?.nameEn || p.category) : (p.categoryNameAr || p.category?.nameAr || p.categoryNameEn || p.category) }}
+                    </span>
+                    <span class="suggestion-sku" *ngIf="p.sku || p.barcode">
+                      <span class="material-icons-round sub-ico">qr_code</span>
+                      {{ p.sku || p.barcode }}
+                    </span>
+                    <span class="suggestion-id-tag">#{{ p.id }}</span>
+                  </div>
+                </div>
+
+                <a [routerLink]="['/admin/products', p.id, 'details']" class="btn-suggestion-detail"
+                  (click)="$event.stopPropagation(); closeSuggestions()"
+                  [title]="currentLang() === 'en' ? 'Open Product Details' : 'فتح تفاصيل المنتج'">
+                  <span class="material-icons-round">open_in_new</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Empty Suggestions State -->
+            <div class="suggestions-empty" *ngIf="searchSuggestions().length === 0">
+              <span class="material-icons-round empty-ico">search_off</span>
+              <span>{{ currentLang() === 'en' ? 'No matching products found' : 'لا توجد منتجات مطابقة' }}</span>
+            </div>
+          </ng-container>
+        </div>
       </div>
 
       <div class="filters-group">
@@ -234,7 +304,8 @@
             <div class="form-group">
               <label class="form-label required">{{ currentLang() === 'en' ? 'Brand *' : 'الماركة *' }}</label>
               <app-custom-select formControlName="brandId" [options]="brands()" valueKey="id" labelEnKey="nameEn"
-                labelArKey="nameAr" [searchable]="true" (searchChange)="onBrandSearch($event)" [loading]="loadingBrands()"
+                labelArKey="nameAr" [searchable]="true" (searchChange)="onBrandSearch($event)"
+                [loading]="loadingBrands()"
                 [placeholder]="currentLang() === 'en' ? '-- Select Brand --' : '-- اختر الماركة --'"
                 [filePath]="filePath"></app-custom-select>
               <div class="error-msg" *ngIf="productForm.get('brandId')?.touched && productForm.get('brandId')?.invalid">

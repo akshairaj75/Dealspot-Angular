@@ -1,3 +1,4 @@
+import { RouterLink } from '@angular/router';
 import { Component, inject, OnInit, OnDestroy, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -17,7 +18,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-offers-crud',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, CustomSelectComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, CustomSelectComponent, RouterLink],
   templateUrl: './offers-crud.component.html',
   styleUrl: './offers-crud.component.css'
 })
