@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../environment/environment';
 import { Observable } from 'rxjs';
@@ -28,6 +28,34 @@ export class OfferService {
 
   getOffers(cityId?: number): Observable<any[]> {
     return this.getAllOffers();
+  }
+
+  getPagedOffers(
+    page: number = 0,
+    size: number = 20,
+    search: string = '',
+    storeId: number | null = null,
+    badgeType: string | null = null,
+    active: boolean | null = null
+  ): Observable<any> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    if (search && search.trim() !== '') {
+      params = params.set('search', search.trim());
+    }
+    if (storeId !== null && storeId !== undefined) {
+      params = params.set('storeId', storeId.toString());
+    }
+    if (badgeType && badgeType !== 'ALL' && badgeType !== '') {
+      params = params.set('badgeType', badgeType);
+    }
+    if (active !== null && active !== undefined) {
+      params = params.set('active', active.toString());
+    }
+
+    return this.http.get<any>(`${this.apiUrl}/paged`, { params });
   }
 
 

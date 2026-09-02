@@ -1751,3 +1751,126 @@
     justify-content: center;
   }
 }
+
+/* ── Infinite Scroll & Pagination Controls ────────────────────────── */
+.btn-clear-filters {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.45rem 0.75rem;
+  background: var(--surface-hover, #f1f5f9);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: var(--radius-sm, 8px);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary, #64748b);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-clear-filters:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+.btn-clear-filters .material-icons-round {
+  font-size: 1rem;
+}
+
+.results-stats-chip {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--primary, #10b981);
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.3rem 0.65rem;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.scroll-sentinel {
+  height: 20px;
+  width: 100%;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.loading-more-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1.25rem 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary, #64748b);
+}
+
+.spinner-tiny {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(16, 185, 129, 0.2);
+  border-top-color: var(--primary, #10b981);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.end-of-catalog-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin: 1.5rem auto 0.5rem;
+  padding: 0.45rem 1.2rem;
+  width: fit-content;
+  background: var(--surface-hover, #f8fafc);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted, #94a3b8);
+}
+
+.tiny-check {
+  font-size: 1.05rem;
+  color: var(--primary, #10b981);
+}
+
+.btn-floating-scroll-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--primary, #10b981);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 999;
+  transition: all 0.2s ease;
+}
+
+:host-context([dir="rtl"]) .btn-floating-scroll-top,
+[dir="rtl"] .btn-floating-scroll-top {
+  right: auto;
+  left: 2rem;
+}
+
+.btn-floating-scroll-top:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.5);
+  background: var(--primary-hover, #059669);
+}
+
+.btn-floating-scroll-top .material-icons-round {
+  font-size: 1.6rem;
+}

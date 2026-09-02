@@ -1,5 +1,5 @@
 import { RouterLink } from '@angular/router';
-import { Component, inject, OnInit, OnDestroy, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, AfterViewInit, OnDestroy, signal, ChangeDetectorRef, ElementRef, ViewChild, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Subject, Subscription } from 'rxjs';
@@ -22,7 +22,9 @@ import Swal from 'sweetalert2';
   templateUrl: './offers-crud.component.html',
   styleUrl: './offers-crud.component.css'
 })
-export class OffersCrudComponent implements OnInit, OnDestroy {
+export class OffersCrudComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('scrollSentinel') scrollSentinel?: ElementRef<HTMLDivElement>;
+
   private fb = inject(FormBuilder);
 
   badgeTypeOptions = [
@@ -69,6 +71,20 @@ export class OffersCrudComponent implements OnInit, OnDestroy {
   categories = signal<any[]>([]);
   cities = signal<any[]>([]);
 
+  // Pagination & Infinite Scroll State
+  loading = signal<boolean>(false);
+  loadingMore = signal<boolean>(false);
+  currentPage = signal<number>(0);
+  pageSize = 20;
+  totalElements = signal<number>(0);
+  totalPages = signal<number>(0);
+  hasMore = signal<boolean>(false);
+  showScrollTop = signal<boolean>(false);
+
+  private mainSearchSubject = new Subject<string>();
+  private mainSearchSub?: Subscription;
+  private observer?: IntersectionObserver;
+
   // Product Selection & Live Search State
   selectedProduct = signal<any | null>(null);
   productOptions = signal<any[]>([]);
@@ -78,8 +94,6 @@ export class OffersCrudComponent implements OnInit, OnDestroy {
   private productSearchSubject = new Subject<string>();
   private productSearchSub?: Subscription;
 
-  filteredOffers = signal<any[]>([]);
-
   searchQuery = '';
   selectedStoreFilter: number | string = '';
   selectedBadgeFilter: string = '';
@@ -88,20 +102,37 @@ export class OffersCrudComponent implements OnInit, OnDestroy {
   offerForm!: FormGroup;
   isModalOpen = false;
   editingOfferId: number | null = null;
-  loading = false;
 
   // Image upload
   selectedImageFiles: File[] = [];
   imagePreviewUrls: string[] = [];
   existingImageUrl: string | null = null;
 
+  @HostListener('window:scroll', [])
+  onWindowScroll(): void {
+    const yOffset = window.pageYOffset || document.documentElement.scrollTop;
+    this.showScrollTop.set(yOffset > 400);
+  }
+
+  scrollToTop(): void {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   ngOnInit(): void {
     if (this.authService.isStoreManager() && this.authService.currentUser()?.storeId) {
       this.selectedStoreFilter = this.authService.currentUser()?.storeId!;
     }
     this.initForm();
-    this.loadOffers();
+    this.resetAndLoadOffers();
     this.loadDropdowns();
+
+    this.mainSearchSub = this.mainSearchSubject.pipe(
+      debounceTime(350),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      this.searchQuery = query;
+      this.resetAndLoadOffers();
+    });
 
     this.productSearchSub = this.productSearchSubject.pipe(
       debounceTime(250),
@@ -111,8 +142,148 @@ export class OffersCrudComponent implements OnInit, OnDestroy {
     });
   }
 
+  ngAfterViewInit(): void {
+    this.setupIntersectionObserver();
+  }
+
   ngOnDestroy(): void {
+    this.mainSearchSub?.unsubscribe();
     this.productSearchSub?.unsubscribe();
+    this.observer?.disconnect();
+  }
+
+  private setupIntersectionObserver(): void {
+    if (typeof IntersectionObserver === 'undefined') return;
+
+    this.observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (entry && entry.isIntersecting) {
+        if (!this.loading() && !this.loadingMore() && this.hasMore()) {
+          this.loadNextPage();
+        }
+      }
+    }, {
+      rootMargin: '250px'
+    });
+
+    if (this.scrollSentinel?.nativeElement) {
+      this.observer.observe(this.scrollSentinel.nativeElement);
+    }
+  }
+
+  private reobserveSentinel(): void {
+    setTimeout(() => {
+      if (this.observer && this.scrollSentinel?.nativeElement) {
+        this.observer.disconnect();
+        this.observer.observe(this.scrollSentinel.nativeElement);
+      }
+    }, 100);
+  }
+
+  onSearchChange(value: string): void {
+    this.mainSearchSubject.next(value);
+  }
+
+  onFilterStoreChange(storeId: any): void {
+    this.selectedStoreFilter = storeId;
+    this.resetAndLoadOffers();
+  }
+
+  onFilterBadgeChange(badgeType: any): void {
+    this.selectedBadgeFilter = badgeType;
+    this.resetAndLoadOffers();
+  }
+
+  onFilterStatusChange(status: any): void {
+    this.selectedStatusFilter = status;
+    this.resetAndLoadOffers();
+  }
+
+  clearAllFilters(): void {
+    this.searchQuery = '';
+    if (!this.authService.isStoreManager()) {
+      this.selectedStoreFilter = '';
+    }
+    this.selectedBadgeFilter = '';
+    this.selectedStatusFilter = '';
+    this.resetAndLoadOffers();
+  }
+
+  resetAndLoadOffers(): void {
+    this.currentPage.set(0);
+    this.loading.set(true);
+    this.loadingMore.set(false);
+
+    const storeIdVal = this.authService.isStoreManager() && this.authService.currentUser()?.storeId
+      ? Number(this.authService.currentUser()?.storeId)
+      : (this.selectedStoreFilter ? Number(this.selectedStoreFilter) : null);
+
+    const activeVal = this.selectedStatusFilter === 'ACTIVE' ? true :
+                     (this.selectedStatusFilter === 'DISABLED' ? false : null);
+
+    this.offerService.getPagedOffers(
+      0,
+      this.pageSize,
+      this.searchQuery,
+      storeIdVal,
+      this.selectedBadgeFilter,
+      activeVal
+    ).subscribe({
+      next: (res) => {
+        const items = res?.content || [];
+        this.offers.set(items);
+        this.totalElements.set(res?.totalElements || 0);
+        this.totalPages.set(res?.totalPages || 0);
+        this.hasMore.set((res?.number + 1) < (res?.totalPages || 0));
+        this.loading.set(false);
+        this.cd.detectChanges();
+        this.reobserveSentinel();
+      },
+      error: (err) => {
+        console.error('Failed to load paged offers:', err);
+        this.loading.set(false);
+        this.cd.detectChanges();
+      }
+    });
+  }
+
+  loadNextPage(): void {
+    if (this.loadingMore() || !this.hasMore()) return;
+
+    const nextPage = this.currentPage() + 1;
+    this.loadingMore.set(true);
+
+    const storeIdVal = this.authService.isStoreManager() && this.authService.currentUser()?.storeId
+      ? Number(this.authService.currentUser()?.storeId)
+      : (this.selectedStoreFilter ? Number(this.selectedStoreFilter) : null);
+
+    const activeVal = this.selectedStatusFilter === 'ACTIVE' ? true :
+                     (this.selectedStatusFilter === 'DISABLED' ? false : null);
+
+    this.offerService.getPagedOffers(
+      nextPage,
+      this.pageSize,
+      this.searchQuery,
+      storeIdVal,
+      this.selectedBadgeFilter,
+      activeVal
+    ).subscribe({
+      next: (res) => {
+        const newItems = res?.content || [];
+        this.offers.update(prev => [...prev, ...newItems]);
+        this.currentPage.set(res?.number ?? nextPage);
+        this.totalElements.set(res?.totalElements || this.totalElements());
+        this.totalPages.set(res?.totalPages || this.totalPages());
+        this.hasMore.set((res?.number + 1) < (res?.totalPages || 0));
+        this.loadingMore.set(false);
+        this.cd.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load next page of offers:', err);
+        this.loadingMore.set(false);
+        this.cd.detectChanges();
+      }
+    });
   }
 
   initForm(): void {
@@ -153,27 +324,6 @@ export class OffersCrudComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadOffers(): void {
-    this.loading = true;
-    const storeId = this.authService.isStoreManager() && this.authService.currentUser()?.storeId
-      ? Number(this.authService.currentUser()?.storeId)
-      : (this.selectedStoreFilter ? Number(this.selectedStoreFilter) : undefined);
-
-    this.offerService.getAllOffers(storeId, true).subscribe({
-      next: (res) => {
-        this.offers.set(res || []);
-        this.applyFilter();
-        this.loading = false;
-        this.cd.detectChanges();
-      },
-      error: (err) => {
-        console.error('Failed to load offers:', err);
-        this.loading = false;
-        this.cd.detectChanges();
-      }
-    });
-  }
-
   loadDropdowns(): void {
     this.storeService.getStores().subscribe({
       next: (res) => {
@@ -203,116 +353,6 @@ export class OffersCrudComponent implements OnInit, OnDestroy {
     this.searchProducts('');
   }
 
-  onProductSearchInput(query: string): void {
-    this.productSearchText = query;
-    this.isProductDropdownOpen.set(true);
-    this.productSearchSubject.next(query);
-  }
-
-  openProductDropdown(): void {
-    this.isProductDropdownOpen.set(true);
-    if (this.productOptions().length === 0) {
-      this.searchProducts(this.productSearchText);
-    }
-  }
-
-  closeProductDropdown(): void {
-    setTimeout(() => {
-      this.isProductDropdownOpen.set(false);
-      this.cd.detectChanges();
-    }, 250);
-  }
-
-  selectProduct(product: any | null): void {
-    this.selectedProduct.set(product);
-    this.offerForm.patchValue({ product_id: product ? product.id : null });
-    this.isProductDropdownOpen.set(false);
-    this.productSearchText = '';
-    this.cd.detectChanges();
-  }
-
-  clearSelectedProduct(): void {
-    this.selectProduct(null);
-  }
-
-  getProductImageUrl(product: any): string {
-    if (!product) return 'assets/images/placeholder-product.png';
-    const raw = product.primaryImageUrl || product.primary_image_url || product.imageUrl || product.image_url;
-    if (raw && typeof raw === 'string' && raw.trim() !== '') {
-      if (raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('data:')) {
-        return raw;
-      }
-      return this.filePath + raw;
-    }
-    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-      const first = product.images[0];
-      const img = typeof first === 'string' ? first : (first.imageUrl || first.image_url);
-      if (img) {
-        if (img.startsWith('http://') || img.startsWith('https://') || img.startsWith('data:')) {
-          return img;
-        }
-        return this.filePath + img;
-      }
-    }
-    return 'assets/images/placeholder-product.png';
-  }
-
-  searchProducts(query: string = ''): void {
-    this.productSearchLoading.set(true);
-    this.productService.getPagedProducts(0, 30, query).subscribe({
-      next: (res) => {
-        const items = res?.content || [];
-        this.productOptions.set(items);
-        this.productSearchLoading.set(false);
-        this.cd.detectChanges();
-      },
-      error: (err) => {
-        console.error('Failed to query products for offers:', err);
-        this.productSearchLoading.set(false);
-        this.cd.detectChanges();
-      }
-    });
-  }
-
-  applyFilter(): void {
-    const query = this.searchQuery.toLowerCase().trim();
-    let list = this.offers();
-
-    if (query) {
-      list = list.filter(o =>
-        (o.titleEn && o.titleEn.toLowerCase().includes(query)) ||
-        (o.titleAr && o.titleAr.toLowerCase().includes(query)) ||
-        (o.storeNameEn && o.storeNameEn.toLowerCase().includes(query)) ||
-        (o.storeNameAr && o.storeNameAr.toLowerCase().includes(query)) ||
-        (o.categoryNameEn && o.categoryNameEn.toLowerCase().includes(query)) ||
-        (o.id && o.id.toString().includes(query))
-      );
-    }
-
-    if (this.selectedStoreFilter) {
-      list = list.filter(o => o.storeId === Number(this.selectedStoreFilter) || o.store_id === Number(this.selectedStoreFilter));
-    }
-
-    if (this.selectedBadgeFilter) {
-      list = list.filter(o => o.badgeType === this.selectedBadgeFilter || o.badge_type === this.selectedBadgeFilter);
-    }
-
-    if (this.selectedStatusFilter) {
-      const today = new Date().toISOString().split('T')[0];
-      if (this.selectedStatusFilter === 'ACTIVE') {
-        list = list.filter(o => (o.active === true || o.active === 1 || o.isActive === true) && !(o.validUntil && o.validUntil < today));
-      } else if (this.selectedStatusFilter === 'EXPIRED') {
-        list = list.filter(o => o.isExpired || o.status === 'EXPIRED' || (o.validUntil && o.validUntil < today));
-      } else if (this.selectedStatusFilter === 'UPCOMING') {
-        list = list.filter(o => o.isUpcoming || o.status === 'UPCOMING' || (o.validFrom && o.validFrom > today));
-      } else if (this.selectedStatusFilter === 'DISABLED') {
-        list = list.filter(o => o.active === false || o.active === 0 || o.isActive === false || o.status === 'DISABLED');
-      }
-    }
-
-    this.filteredOffers.set(list);
-  }
-
   extendOffer(id: number, days: number = 7): void {
     Swal.fire({
       title: this.currentLang() === 'en' ? 'Extend Offer Expiration?' : 'تمديد فترة العرض؟',
@@ -334,7 +374,7 @@ export class OffersCrudComponent implements OnInit, OnDestroy {
               timer: 1800,
               showConfirmButton: false
             });
-            this.loadOffers();
+            this.resetAndLoadOffers();
           },
           error: (err) => {
             console.error('Failed to extend offer:', err);
@@ -518,6 +558,77 @@ export class OffersCrudComponent implements OnInit, OnDestroy {
     return this.filePath + url;
   }
 
+  onProductSearchInput(query: string): void {
+    this.productSearchText = query;
+    this.isProductDropdownOpen.set(true);
+    this.productSearchSubject.next(query);
+  }
+
+  openProductDropdown(): void {
+    this.isProductDropdownOpen.set(true);
+    if (this.productOptions().length === 0) {
+      this.searchProducts(this.productSearchText);
+    }
+  }
+
+  closeProductDropdown(): void {
+    setTimeout(() => {
+      this.isProductDropdownOpen.set(false);
+      this.cd.detectChanges();
+    }, 250);
+  }
+
+  selectProduct(product: any | null): void {
+    this.selectedProduct.set(product);
+    this.offerForm.patchValue({ product_id: product ? product.id : null });
+    this.isProductDropdownOpen.set(false);
+    this.productSearchText = '';
+    this.cd.detectChanges();
+  }
+
+  clearSelectedProduct(): void {
+    this.selectProduct(null);
+  }
+
+  getProductImageUrl(product: any): string {
+    if (!product) return 'assets/images/placeholder-product.png';
+    const raw = product.primaryImageUrl || product.primary_image_url || product.imageUrl || product.image_url;
+    if (raw && typeof raw === 'string' && raw.trim() !== '') {
+      if (raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('data:')) {
+        return raw;
+      }
+      return this.filePath + raw;
+    }
+    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+      const first = product.images[0];
+      const img = typeof first === 'string' ? first : (first.imageUrl || first.image_url);
+      if (img) {
+        if (img.startsWith('http://') || img.startsWith('https://') || img.startsWith('data:')) {
+          return img;
+        }
+        return this.filePath + img;
+      }
+    }
+    return 'assets/images/placeholder-product.png';
+  }
+
+  searchProducts(query: string = ''): void {
+    this.productSearchLoading.set(true);
+    this.productService.getPagedProducts(0, 30, query).subscribe({
+      next: (res) => {
+        const items = res?.content || [];
+        this.productOptions.set(items);
+        this.productSearchLoading.set(false);
+        this.cd.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to query products for offers:', err);
+        this.productSearchLoading.set(false);
+        this.cd.detectChanges();
+      }
+    });
+  }
+
   onSubmit(): void {
     if (this.offerForm.invalid) {
       this.offerForm.markAllAsTouched();
@@ -525,64 +636,56 @@ export class OffersCrudComponent implements OnInit, OnDestroy {
     }
 
     const val = this.offerForm.getRawValue();
-    const offerData = {
-      storeId: Number(val.store_id),
-      cityId: Number(val.city_id),
-      categoryId: Number(val.category_id),
-      productId: val.product_id ? Number(val.product_id) : null,
+    const formData = new FormData();
+
+    const offerDto = {
       titleEn: val.title_en,
       titleAr: val.title_ar,
-      descriptionEn: val.description_en || '',
-      descriptionAr: val.description_ar || '',
-      termsEn: val.terms_en || '',
-      termsAr: val.terms_ar || '',
+      storeId: Number(val.store_id),
+      categoryId: Number(val.category_id),
+      cityId: Number(val.city_id),
+      productId: val.product_id ? Number(val.product_id) : null,
       originalPrice: Number(val.original_price),
       offerPrice: Number(val.offer_price),
       discountPct: Number(val.discount_pct),
       badgeType: val.badge_type,
       validFrom: val.valid_from,
       validUntil: val.valid_until,
-      featured: !!val.is_featured,
-      flash: !!val.is_flash,
-      online: !!val.is_online,
-      inStore: !!val.is_in_store,
-      active: !!val.is_active
+      descriptionEn: val.description_en,
+      descriptionAr: val.description_ar,
+      termsEn: val.terms_en,
+      termsAr: val.terms_ar,
+      featured: val.is_featured,
+      flash: val.is_flash,
+      online: val.is_online,
+      inStore: val.is_in_store,
+      active: val.is_active
     };
 
-    let request;
+    formData.append('data', new Blob([JSON.stringify(offerDto)], { type: 'application/json' }));
 
-    if (this.selectedImageFiles.length > 0) {
-      const formData = new FormData();
-      formData.append(
-        'data',
-        new Blob([JSON.stringify(offerData)], { type: 'application/json' })
-      );
-      for (const img of this.selectedImageFiles) {
-        formData.append('files', img);
-      }
-
-      request = this.editingOfferId
-        ? this.offerService.updateOffer(this.editingOfferId, formData)
-        : this.offerService.createOffer(formData);
-    } else {
-      // JSON submission
-      request = this.editingOfferId
-        ? this.offerService.updateOffer(this.editingOfferId, offerData)
-        : this.offerService.createOffer(offerData);
+    if (this.selectedImageFiles && this.selectedImageFiles.length > 0) {
+      this.selectedImageFiles.forEach(file => {
+        formData.append('files', file);
+      });
     }
 
-    request.subscribe({
+    const req$ = this.editingOfferId
+      ? this.offerService.updateOffer(this.editingOfferId, formData)
+      : this.offerService.createOffer(formData);
+
+    req$.subscribe({
       next: () => {
         Swal.fire({
           icon: 'success',
-          title: this.currentLang() === 'en' ? (this.editingOfferId ? 'Updated!' : 'Created!') : (this.editingOfferId ? 'تم التحديث!' : 'تمت الإضافة!'),
+          title: this.currentLang() === 'en' ? 'Success!' : 'تمت العملية بنجاح!',
           text: this.currentLang() === 'en'
             ? (this.editingOfferId ? 'Offer updated successfully.' : 'Offer created successfully.')
             : (this.editingOfferId ? 'تم تحديث العرض بنجاح.' : 'تم إنشاء العرض بنجاح.'),
           timer: 2000,
           showConfirmButton: false
         });
-        this.loadOffers();
+        this.resetAndLoadOffers();
         this.closeModal();
       },
       error: (err) => {
@@ -617,7 +720,7 @@ export class OffersCrudComponent implements OnInit, OnDestroy {
               this.currentLang() === 'en' ? 'Offer has been deleted.' : 'تم حذف العرض بنجاح.',
               'success'
             );
-            this.loadOffers();
+            this.resetAndLoadOffers();
           },
           error: (err) => {
             console.error(err);

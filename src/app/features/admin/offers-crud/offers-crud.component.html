@@ -16,20 +16,20 @@
   <div class="card filters-toolbar">
     <div class="search-input-wrapper">
       <span class="material-icons-round search-icon">search</span>
-      <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="applyFilter()"
+      <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange($event)"
         [placeholder]="currentLang() === 'en' ? 'Search by title, store, or category...' : 'ابحث بالعنوان، المتجر، أو القسم...'"
         class="form-control">
-      <button class="clear-search-btn" *ngIf="searchQuery" (click)="searchQuery = ''; applyFilter()">
+      <button class="clear-search-btn" *ngIf="searchQuery" (click)="searchQuery = ''; onSearchChange('')">
         <span class="material-icons-round">close</span>
       </button>
     </div>
 
-    <div class="filter-dropdowns" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <div class="filter-dropdowns" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
       <div style="min-width: 170px;">
         <app-custom-select
           [options]="stores()"
           [(ngModel)]="selectedStoreFilter"
-          (ngModelChange)="applyFilter()"
+          (ngModelChange)="onFilterStoreChange($event)"
           valueKey="id"
           labelEnKey="nameEn"
           labelArKey="nameAr"
@@ -44,7 +44,7 @@
         <app-custom-select
           [options]="badgeFilterOptions"
           [(ngModel)]="selectedBadgeFilter"
-          (ngModelChange)="applyFilter()"
+          (ngModelChange)="onFilterBadgeChange($event)"
           valueKey="id"
           labelEnKey="nameEn"
           labelArKey="nameAr"
@@ -58,7 +58,7 @@
         <app-custom-select
           [options]="statusFilterOptions"
           [(ngModel)]="selectedStatusFilter"
-          (ngModelChange)="applyFilter()"
+          (ngModelChange)="onFilterStatusChange($event)"
           valueKey="id"
           labelEnKey="nameEn"
           labelArKey="nameAr"
@@ -67,17 +67,26 @@
           [unsetLabel]="currentLang() === 'en' ? 'All Statuses' : 'جميع الحالات'"
         ></app-custom-select>
       </div>
+
+      <button class="btn-clear-filters" *ngIf="searchQuery || selectedBadgeFilter || selectedStatusFilter || selectedStoreFilter" (click)="clearAllFilters()">
+        <span class="material-icons-round">filter_alt_off</span>
+        <span>{{ currentLang() === 'en' ? 'Reset' : 'إعادة ضبط' }}</span>
+      </button>
+
+      <span class="results-stats-chip" *ngIf="totalElements() > 0">
+        {{ currentLang() === 'en' ? 'Showing ' + offers().length + ' of ' + totalElements() + ' offers' : 'عرض ' + offers().length + ' من ' + totalElements() + ' عرض' }}
+      </span>
     </div>
   </div>
 
   <!-- Loading Spinner -->
-  <div class="spinner-container" *ngIf="loading">
+  <div class="spinner-container" *ngIf="loading()">
     <div class="spinner"></div>
   </div>
 
   <!-- Unified Responsive Card List View -->
-  <div class="offers-list-view" *ngIf="!loading && filteredOffers().length > 0; else noOffers">
-    <div class="offer-card-item card" *ngFor="let o of filteredOffers()">
+  <div class="offers-list-view" *ngIf="!loading() && offers().length > 0; else noOffers">
+    <div class="offer-card-item card" *ngFor="let o of offers()">
       <!-- Left: Thumbnail & Brand -->
       <div class="item-left-group" [routerLink]="['/offers', o.id]" style="cursor: pointer;">
         <div class="offer-thumb-box">
@@ -164,10 +173,30 @@
         </div>
       </div>
     </div>
+
+    <!-- Infinite Scroll Sentinel -->
+    <div #scrollSentinel class="scroll-sentinel"></div>
+
+    <!-- Loading More Spinner -->
+    <div class="loading-more-spinner" *ngIf="loadingMore()">
+      <div class="spinner-tiny"></div>
+      <span>{{ currentLang() === 'en' ? 'Loading more offers...' : 'جاري تحميل المزيد من العروض...' }}</span>
+    </div>
+
+    <!-- End of Offers Indicator -->
+    <div class="end-of-catalog-pill" *ngIf="!loading() && !hasMore() && offers().length > 0">
+      <span class="material-icons-round tiny-check">check_circle</span>
+      <span>{{ currentLang() === 'en' ? 'All ' + totalElements() + ' offers loaded' : 'تم عرض كافة العروض (' + totalElements() + ')' }}</span>
+    </div>
   </div>
 
+  <!-- Scroll To Top Button -->
+  <button type="button" class="btn-floating-scroll-top" *ngIf="showScrollTop()" (click)="scrollToTop()" [title]="currentLang() === 'en' ? 'Scroll to top' : 'للأعلى'">
+    <span class="material-icons-round">keyboard_arrow_up</span>
+  </button>
+
   <ng-template #noOffers>
-    <div class="empty-state" *ngIf="!loading">
+    <div class="empty-state" *ngIf="!loading()">
       <span class="material-icons-round empty-state-icon">local_offer</span>
       <h3 class="empty-state-title">{{ currentLang() === 'en' ? 'No offers registered' : 'لا توجد عروض مسجلة' }}</h3>
       <p class="empty-state-desc">{{ currentLang() === 'en' ? 'Click "Create Offer" to publish your first retail promotion.' : 'انقر على "إنشاء عرض جديد" لنشر أول عرض ترويجي في النظام.' }}</p>
