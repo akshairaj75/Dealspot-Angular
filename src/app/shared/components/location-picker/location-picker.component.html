@@ -1,0 +1,122 @@
+<div class="location-picker-container" [dir]="currentLang() === 'ar' ? 'rtl' : 'ltr'">
+  <!-- Toolbar Header: Search & GPS Button -->
+  <div class="picker-toolbar">
+    <div class="search-box" #searchBoxRef>
+      <span class="material-icons-round search-icon">search</span>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput()"
+        (focus)="onSearchFocus()"
+        (keydown)="onSearchKeyDown($event)"
+        [placeholder]="currentLang() === 'en' ? 'Search place, mall, street, city...' : 'ابحث عن مكان، مول، شارع، أو مدينة...'"
+        class="search-input"
+        autocomplete="off"
+      />
+
+      <!-- Loading Spinner in Search -->
+      <div class="search-spinner" *ngIf="isSearching">
+        <span class="material-icons-round spinning">sync</span>
+      </div>
+
+      <!-- Clear Query Button -->
+      <button
+        type="button"
+        class="btn-clear-query"
+        *ngIf="searchQuery && !isSearching"
+        (click)="clearQuery($event)"
+        [title]="currentLang() === 'en' ? 'Clear' : 'مسح'"
+      >
+        <span class="material-icons-round">close</span>
+      </button>
+
+      <!-- Search / Enter Button -->
+      <button
+        type="button"
+        class="btn-search"
+        (click)="onSearchSubmit($event)"
+        [title]="currentLang() === 'en' ? 'Search location' : 'بحث'"
+      >
+        <span class="material-icons-round">arrow_forward</span>
+      </button>
+
+      <!-- Floating Autocomplete Suggestions Dropdown -->
+      <div class="suggestions-dropdown" *ngIf="showSuggestions && (suggestions.length > 0 || (searchQuery.trim().length >= 2 && !isSearching && hasSearched))">
+        <ul class="suggestions-list" *ngIf="suggestions.length > 0">
+          <li
+            *ngFor="let item of suggestions; let i = index"
+            class="suggestion-item"
+            [class.selected]="i === selectedSuggestionIndex"
+            (mousedown)="selectSuggestion(item, $event)"
+          >
+            <div class="suggestion-icon">
+              <span class="material-icons-round">{{ getPlaceIcon(item) }}</span>
+            </div>
+            <div class="suggestion-details">
+              <span class="place-main-title">{{ getPlaceMainTitle(item) }}</span>
+              <span class="place-sub-title">{{ getPlaceSubTitle(item) }}</span>
+            </div>
+            <span class="material-icons-round select-arrow">north_west</span>
+          </li>
+        </ul>
+
+        <!-- No Results State -->
+        <div class="suggestions-empty" *ngIf="suggestions.length === 0 && searchQuery.trim().length >= 2 && !isSearching">
+          <span class="material-icons-round">search_off</span>
+          <span>{{ currentLang() === 'en' ? 'No places found for this search' : 'لم يتم العثور على أماكن مطابقة' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="btn-gps"
+      (click)="locateMe($event)"
+      [disabled]="isLocating"
+      [title]="currentLang() === 'en' ? 'Use My Current GPS Location' : 'استخدم موقعي الحالي'"
+    >
+      <span class="material-icons-round" [class.spinning]="isLocating">my_location</span>
+      <span>{{ currentLang() === 'en' ? 'My Location' : 'موقعي' }}</span>
+    </button>
+  </div>
+
+  <!-- Map Render Container -->
+  <div class="map-wrapper" [style.height]="height">
+    <div #mapElement class="leaflet-map-container"></div>
+
+    <div class="map-hint">
+      <span class="material-icons-round">touch_app</span>
+      <span>{{ currentLang() === 'en' ? 'Click map or drag pin to select coordinates' : 'انقر على الخريطة أو اسحب الدبوس لتعديل الإحداثيات' }}</span>
+    </div>
+  </div>
+
+  <!-- Coordinates Display & Manual Adjustment Bar -->
+  <div class="coords-bar">
+    <div class="coord-field">
+      <label class="coord-label">{{ currentLang() === 'en' ? 'Latitude' : 'خط العرض' }}</label>
+      <input
+        type="number"
+        step="0.000001"
+        [ngModel]="lat"
+        (ngModelChange)="onManualLatChange($event)"
+        class="coord-input"
+      />
+    </div>
+
+    <div class="coord-field">
+      <label class="coord-label">{{ currentLang() === 'en' ? 'Longitude' : 'خط الطول' }}</label>
+      <input
+        type="number"
+        step="0.000001"
+        [ngModel]="lng"
+        (ngModelChange)="onManualLngChange($event)"
+        class="coord-input"
+      />
+    </div>
+
+    <div class="coord-status">
+      <span class="material-icons-round text-primary-color">location_on</span>
+      <span>{{ lat | number:'1.2-5' }}, {{ lng | number:'1.2-5' }}</span>
+    </div>
+  </div>
+</div>
