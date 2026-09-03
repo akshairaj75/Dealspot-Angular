@@ -1874,3 +1874,45 @@
 .btn-floating-scroll-top .material-icons-round {
   font-size: 1.6rem;
 }
+
+/* Store Locked Box for Store Managers */
+.store-locked-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--surface-hover, #f8fafc);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: var(--radius-sm, 6px);
+  min-height: 42px;
+}
+
+.store-locked-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.store-locked-icon {
+  color: var(--primary, #10b981);
+  font-size: 20px;
+}
+
+.store-locked-name {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--text-primary, #0f172a);
+}
+
+.store-locked-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--primary-light, #ecfdf5);
+  color: var(--primary, #10b981);
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}

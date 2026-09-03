@@ -25,7 +25,7 @@
     </div>
 
     <div class="filter-dropdowns" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-      <div style="min-width: 170px;">
+      <div style="min-width: 170px;" *ngIf="!authService.isStoreManager()">
         <app-custom-select
           [options]="stores()"
           [(ngModel)]="selectedStoreFilter"
@@ -244,7 +244,7 @@
 
           <!-- Store, Category, City Selection -->
           <div class="form-row-3">
-            <div class="form-group">
+            <div class="form-group" *ngIf="!authService.isStoreManager()">
               <label class="form-label">{{ currentLang() === 'en' ? 'Retail Partner Store *' : 'المتجر الشريك *' }}</label>
               <app-custom-select
                 formControlName="store_id"
@@ -258,6 +258,20 @@
               <span class="field-error"
                 *ngIf="offerForm.get('store_id')?.touched && offerForm.get('store_id')?.invalid">{{ currentLang() ===
                 'en' ? 'Store is required' : 'المتجر مطلوب' }}</span>
+            </div>
+
+            <div class="form-group" *ngIf="authService.isStoreManager()">
+              <label class="form-label">{{ currentLang() === 'en' ? 'Store & Branches' : 'المتجر والفروع التابعة' }}</label>
+              <div class="store-locked-box">
+                <div class="store-locked-left">
+                  <span class="material-icons-round store-locked-icon">store</span>
+                  <span class="store-locked-name">{{ getStoreName(authService.currentUser()?.storeId) }}</span>
+                </div>
+                <span class="store-locked-badge">
+                  <span class="material-icons-round icon-xs">verified_user</span>
+                  <span>{{ currentLang() === 'en' ? 'Your Store' : 'متجرك' }}</span>
+                </span>
+              </div>
             </div>
 
             <div class="form-group">

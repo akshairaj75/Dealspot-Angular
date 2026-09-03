@@ -109,112 +109,114 @@
     </div>
   </div>
 
-  <!-- Notifications Table -->
-  <div class="table-card card">
-    <div class="table-responsive" *ngIf="!loading(); else loadingTpl">
-      <table class="data-table" *ngIf="notifications().length > 0; else emptyTpl">
-        <thead>
-          <tr>
-            <th>{{ currentLang() === 'en' ? 'Recipient Target' : 'المستلم / الفئة' }}</th>
-            <th>{{ currentLang() === 'en' ? 'Notification Details' : 'تفاصيل الإشعار' }}</th>
-            <th>{{ currentLang() === 'en' ? 'Type & Channel' : 'النوع والقناة' }}</th>
-            <th>{{ currentLang() === 'en' ? 'Read Status' : 'حالة القراءة' }}</th>
-            <th>{{ currentLang() === 'en' ? 'Sent Date' : 'تاريخ الإرسال' }}</th>
-            <th class="text-end">{{ currentLang() === 'en' ? 'Actions' : 'إجراءات' }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let notif of notifications()">
-            <td>
-              <div class="recipient-cell">
-                <div class="recipient-avatar" [class.broadcast-avatar]="!notif.userFullName">
-                  <span class="material-icons-round icon-avatar" *ngIf="!notif.userFullName">public</span>
-                  <span *ngIf="notif.userFullName">{{ notif.userFullName.charAt(0).toUpperCase() }}</span>
-                </div>
-                <div class="recipient-info">
-                  <span class="recipient-name">{{ notif.userFullName || ('User #' + notif.userId) }}</span>
-                  <span class="recipient-email">{{ notif.userEmail || '-' }}</span>
-                </div>
-              </div>
-            </td>
+  <!-- ============================================================ -->
+  <!-- 4. UNIFIED RESPONSIVE NOTIFICATIONS LIST VIEW (ALL SCREENS)   -->
+  <!-- ============================================================ -->
+  <div class="notifications-section" *ngIf="!loading(); else loadingTpl">
+    <div class="notifs-list-view" *ngIf="notifications().length > 0; else emptyTpl">
+      <div class="notif-list-item" *ngFor="let notif of notifications()">
 
-            <td>
-              <div class="notif-content-cell">
-                <span class="notif-title-main">{{ currentLang() === 'en' ? notif.titleEn : (notif.titleAr || notif.titleEn) }}</span>
-                <span class="notif-body-preview" *ngIf="notif.bodyEn || notif.bodyAr">
-                  {{ currentLang() === 'en' ? (notif.bodyEn || notif.bodyAr) : (notif.bodyAr || notif.bodyEn) }}
-                </span>
-                <span class="notif-deeplink" *ngIf="notif.deepLink">
-                  <span class="material-icons-round icon-xs">link</span>
-                  {{ notif.deepLink }}
-                </span>
-              </div>
-            </td>
+        <!-- Left: Avatar Icon Badge -->
+        <div class="notif-avatar-box" [class.broadcast-avatar]="!notif.userFullName">
+          <span class="material-icons-round notif-avatar-ico" *ngIf="!notif.userFullName">campaign</span>
+          <span class="notif-avatar-letter" *ngIf="notif.userFullName">{{ notif.userFullName.charAt(0).toUpperCase() }}</span>
+        </div>
 
-            <td>
-              <div class="type-channel-stack">
-                <span class="type-pill" [ngClass]="getTypeBadge(notif.type)">
-                  {{ notif.type }}
-                </span>
-                <span class="channel-chip">
-                  <span class="material-icons-round icon-xs">{{ getChannelIcon(notif.channel) }}</span>
-                  {{ notif.channel }}
-                </span>
-              </div>
-            </td>
+        <!-- Middle: Information & Details -->
+        <div class="notif-info-wrap">
+          <!-- Top Row: Title + ID + Badges -->
+          <div class="notif-title-row">
+            <h3 class="notif-name-title">
+              {{ currentLang() === 'en' ? notif.titleEn : (notif.titleAr || notif.titleEn) }}
+            </h3>
+            <span class="notif-id-pill">#{{ notif.id }}</span>
+            <span class="type-pill" [ngClass]="getTypeBadge(notif.type)">{{ notif.type }}</span>
+            <span class="channel-chip">
+              <span class="material-icons-round icon-xs">{{ getChannelIcon(notif.channel) }}</span>
+              <span>{{ notif.channel }}</span>
+            </span>
+          </div>
 
-            <td>
-              <span class="read-badge" [class.is-read]="notif.read">
-                <span class="dot"></span>
-                <span>{{ notif.read ? (currentLang() === 'en' ? 'Read' : 'مقروء') : (currentLang() === 'en' ? 'Unread' : 'غير مقروء') }}</span>
-              </span>
-            </td>
+          <!-- Body Preview -->
+          <p class="notif-body-text" *ngIf="notif.bodyEn || notif.bodyAr">
+            {{ currentLang() === 'en' ? (notif.bodyEn || notif.bodyAr) : (notif.bodyAr || notif.bodyEn) }}
+          </p>
 
-            <td>
-              <span class="date-text">
-                {{ notif.sentAt ? (notif.sentAt | date:'medium') : '-' }}
-              </span>
-            </td>
+          <!-- Meta Row: Recipient Target + DeepLink + Timestamp -->
+          <div class="notif-meta-row">
+            <!-- Recipient Target -->
+            <div class="notif-recipient-meta">
+              <span class="material-icons-round icon-xs">person</span>
+              <span class="meta-user-name">{{ notif.userFullName || ('User #' + notif.userId) }}</span>
+              <span class="meta-user-email" *ngIf="notif.userEmail">({{ notif.userEmail }})</span>
+            </div>
 
-            <td class="text-end">
-              <button
-                type="button"
-                class="btn-icon-action btn-delete"
-                (click)="onDelete(notif.id)"
-                [title]="currentLang() === 'en' ? 'Delete notification log' : 'حذف سجل الإشعار'"
-              >
-                <span class="material-icons-round">delete_outline</span>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+            <!-- Deep Link -->
+            <div class="notif-link-meta" *ngIf="notif.deepLink">
+              <span class="material-icons-round icon-xs">link</span>
+              <span>{{ notif.deepLink }}</span>
+            </div>
 
-    <!-- Pagination Footer -->
-    <div class="pagination-footer" *ngIf="totalPages > 1">
-      <span class="page-info">
-        {{ currentLang() === 'en' ? ('Page ' + (currentPage + 1) + ' of ' + totalPages) : ('الصفحة ' + (currentPage + 1) + ' من ' + totalPages) }}
-      </span>
-      <div class="pagination-buttons">
-        <button
-          type="button"
-          class="btn-page-nav"
-          [disabled]="currentPage === 0"
-          (click)="loadNotifications(currentPage - 1)"
-        >
-          <span class="material-icons-round">{{ currentLang() === 'en' ? 'chevron_left' : 'chevron_right' }}</span>
-        </button>
-        <button
-          type="button"
-          class="btn-page-nav"
-          [disabled]="currentPage >= totalPages - 1"
-          (click)="loadNotifications(currentPage + 1)"
-        >
-          <span class="material-icons-round">{{ currentLang() === 'en' ? 'chevron_right' : 'chevron_left' }}</span>
-        </button>
+            <!-- Sent Date -->
+            <div class="notif-date-meta">
+              <span class="material-icons-round icon-xs">schedule</span>
+              <span>{{ notif.sentAt ? (notif.sentAt | date:'medium') : '-' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Status Pill & Action Buttons -->
+        <div class="item-right-group">
+          <span 
+            class="status-pill"
+            [class.status-active]="notif.read"
+            [class.status-inactive]="!notif.read"
+          >
+            <span class="status-dot"></span>
+            <span>{{ notif.read ? (currentLang() === 'en' ? 'Read' : 'مقروء') : (currentLang() === 'en' ? 'Unread' : 'غير مقروء') }}</span>
+          </span>
+
+          <div class="item-action-btns">
+            <button
+              type="button"
+              class="btn-item-action btn-item-del"
+              (click)="onDelete(notif.id)"
+              [title]="currentLang() === 'en' ? 'Delete notification log' : 'حذف سجل الإشعار'"
+            >
+              <span class="material-icons-round">delete_outline</span>
+            </button>
+          </div>
+        </div>
+
       </div>
+
+      <!-- Pagination Footer -->
+      <div class="pagination-footer" *ngIf="totalPages > 1">
+        <span class="page-info">
+          {{ currentLang() === 'en' ? ('Page ' + (currentPage + 1) + ' of ' + totalPages) : ('الصفحة ' + (currentPage + 1) + ' من ' + totalPages) }}
+        </span>
+        <div class="pagination-buttons">
+          <button
+            type="button"
+            class="btn-page-nav"
+            [disabled]="currentPage === 0"
+            (click)="loadNotifications(currentPage - 1)"
+          >
+            <span class="material-icons-round">{{ currentLang() === 'en' ? 'chevron_left' : 'chevron_right' }}</span>
+          </button>
+          <button
+            type="button"
+            class="btn-page-nav"
+            [disabled]="currentPage >= totalPages - 1"
+            (click)="loadNotifications(currentPage + 1)"
+          >
+            <span class="material-icons-round">{{ currentLang() === 'en' ? 'chevron_right' : 'chevron_left' }}</span>
+          </button>
+        </div>
+      </div>
+
     </div>
+  </div>
 
     <ng-template #loadingTpl>
       <div class="loading-state">
@@ -234,7 +236,6 @@
         </button>
       </div>
     </ng-template>
-  </div>
 
   <!-- ENHANCED BROADCAST MODAL -->
   <div class="modal-backdrop" *ngIf="isBroadcastModalOpen()" (click)="closeBroadcastModal()">
@@ -310,18 +311,86 @@
                   ></app-custom-select>
                 </div>
 
-                <div class="form-group" *ngIf="broadcastForm.get('refType')?.value === 'PRODUCT'">
-                  <label class="form-label required">{{ currentLang() === 'en' ? 'Select Product *' : 'اختر المنتج *' }}</label>
-                  <app-custom-select
-                    formControlName="refId"
-                    [options]="productsList()"
-                    (ngModelChange)="onEntitySelect($event)"
-                    [searchable]="true"
-                    valueKey="id"
-                    labelEnKey="nameEn"
-                    labelArKey="nameAr"
-                    [placeholder]="currentLang() === 'en' ? '-- Select Product --' : '-- اختر المنتج --'"
-                  ></app-custom-select>
+                <div class="form-group product-picker-cell" *ngIf="broadcastForm.get('refType')?.value === 'PRODUCT'">
+                  <label class="form-label required">{{ currentLang() === 'en' ? 'Search & Select Product *' : 'بحث واختيار المنتج *' }}</label>
+
+                  <div class="product-picker-box">
+                    <!-- Search Input -->
+                    <div class="product-search-input-wrap">
+                      <span class="material-icons-round input-icon">search</span>
+                      <input
+                        type="text"
+                        [ngModel]="productSearchQuery()"
+                        (ngModelChange)="onProductSearchChange($event)"
+                        [ngModelOptions]="{standalone: true}"
+                        [placeholder]="currentLang() === 'en' ? 'Search products by name or brand...' : 'ابحث عن المنتجات بالاسم أو الماركة...'"
+                        class="form-control form-control-sm"
+                      >
+                      <button
+                        type="button"
+                        *ngIf="productSearchQuery()"
+                        (click)="clearProductSearch()"
+                        class="btn-clear-search-sm"
+                      >
+                        <span class="material-icons-round">close</span>
+                      </button>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div class="product-search-loading" *ngIf="loadingProducts()">
+                      <div class="spinner-small"></div>
+                      <span>{{ currentLang() === 'en' ? 'Searching...' : 'جاري البحث...' }}</span>
+                    </div>
+
+                    <!-- Product Items List -->
+                    <div class="product-options-list" *ngIf="!loadingProducts() && pagedProductsList().length > 0">
+                      <div
+                        class="product-option-row"
+                        *ngFor="let p of pagedProductsList()"
+                        [class.selected]="broadcastForm.get('refId')?.value === p.id"
+                        (click)="selectProduct(p)"
+                      >
+                        <div class="product-name-block">
+                          <span class="p-name">{{ currentLang() === 'en' ? p.nameEn : p.nameAr }}</span>
+                          <span class="p-id">#{{ p.id }}</span>
+                        </div>
+                        <span class="material-icons-round check-icon" *ngIf="broadcastForm.get('refId')?.value === p.id">check_circle</span>
+                      </div>
+                    </div>
+
+                    <!-- Empty Results -->
+                    <div class="product-empty-notice" *ngIf="!loadingProducts() && pagedProductsList().length === 0">
+                      <span class="material-icons-round">inventory_2</span>
+                      <span>{{ currentLang() === 'en' ? 'No products found matching query.' : 'لم يتم العثور على منتجات مطابقة.' }}</span>
+                    </div>
+
+                    <!-- Mini Pagination Controls -->
+                    <div class="product-pagination-bar" *ngIf="productTotalPages() > 1">
+                      <span class="pagination-counter">
+                        {{ currentLang() === 'en' ? ('Page ' + (productPage() + 1) + ' of ' + productTotalPages() + ' (' + productTotalElements() + ' items)') : ('صفحة ' + (productPage() + 1) + ' من ' + productTotalPages() + ' (' + productTotalElements() + ' عنصر)') }}
+                      </span>
+                      <div class="mini-page-btns">
+                        <button
+                          type="button"
+                          class="btn-mini-page"
+                          [disabled]="productPage() === 0"
+                          (click)="searchProducts(productPage() - 1)"
+                          [title]="currentLang() === 'en' ? 'Previous Page' : 'الصفحة السابقة'"
+                        >
+                          <span class="material-icons-round">{{ currentLang() === 'en' ? 'chevron_left' : 'chevron_right' }}</span>
+                        </button>
+                        <button
+                          type="button"
+                          class="btn-mini-page"
+                          [disabled]="productPage() >= productTotalPages() - 1"
+                          (click)="searchProducts(productPage() + 1)"
+                          [title]="currentLang() === 'en' ? 'Next Page' : 'الصفحة التالية'"
+                        >
+                          <span class="material-icons-round">{{ currentLang() === 'en' ? 'chevron_right' : 'chevron_left' }}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="form-group" *ngIf="broadcastForm.get('refType')?.value === 'COUPON'">

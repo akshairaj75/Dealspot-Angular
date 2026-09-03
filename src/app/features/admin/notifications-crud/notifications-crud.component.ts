@@ -43,6 +43,16 @@ export class NotificationsCrudComponent implements OnInit {
   storesList = signal<any[]>([]);
   loadingEntities = signal<boolean>(false);
 
+  // Paginated Product Search (Loaded only when needed)
+  productSearchQuery = signal<string>('');
+  productPage = signal<number>(0);
+  productTotalPages = signal<number>(0);
+  productTotalElements = signal<number>(0);
+  loadingProducts = signal<boolean>(false);
+  pagedProductsList = signal<any[]>([]);
+  selectedProductRaw = signal<any | null>(null);
+  private productSearchDebounceTimer: any = null;
+
   // Filters
   searchQuery = '';
   typeFilter = '';
@@ -90,7 +100,6 @@ export class NotificationsCrudComponent implements OnInit {
   ngOnInit(): void {
     this.initForm();
     this.loadNotifications();
-    this.loadEntityOptions();
   }
 
   initForm(): void {
@@ -109,10 +118,10 @@ export class NotificationsCrudComponent implements OnInit {
     });
   }
 
-  loadEntityOptions(): void {
+  // ── Lazy Load Entities on Demand ──────────────────────────────────
+  loadOffers(): void {
+    if (this.offersList().length > 0) return;
     this.loadingEntities.set(true);
-
-    // Offers
     this.offerService.getAllOffers().subscribe({
       next: (res) => {
         const formatted = (res || []).map((o: any) => ({
@@ -122,11 +131,15 @@ export class NotificationsCrudComponent implements OnInit {
           raw: o
         }));
         this.offersList.set(formatted);
+        this.loadingEntities.set(false);
       },
-      error: () => {}
+      error: () => { this.loadingEntities.set(false); }
     });
+  }
 
-    // Flyers
+  loadFlyers(): void {
+    if (this.flyersList().length > 0) return;
+    this.loadingEntities.set(true);
     this.flyerService.getAllFlyers().subscribe({
       next: (res) => {
         const formatted = (res || []).map((f: any) => ({
@@ -136,25 +149,15 @@ export class NotificationsCrudComponent implements OnInit {
           raw: f
         }));
         this.flyersList.set(formatted);
+        this.loadingEntities.set(false);
       },
-      error: () => {}
+      error: () => { this.loadingEntities.set(false); }
     });
+  }
 
-    // Products
-    this.productService.getProducts().subscribe({
-      next: (res) => {
-        const formatted = (res || []).map((p: any) => ({
-          id: p.id,
-          nameEn: `${p.nameEn || p.name_en || 'Product #' + p.id} ${p.brand ? '[' + p.brand + ']' : ''}`,
-          nameAr: `${p.nameAr || p.name_ar || 'منتج #' + p.id} ${p.brand ? '[' + p.brand + ']' : ''}`,
-          raw: p
-        }));
-        this.productsList.set(formatted);
-      },
-      error: () => {}
-    });
-
-    // Coupons
+  loadCoupons(): void {
+    if (this.couponsList().length > 0) return;
+    this.loadingEntities.set(true);
     this.couponService.getAllCoupons().subscribe({
       next: (res) => {
         const formatted = (res || []).map((c: any) => ({
@@ -164,11 +167,59 @@ export class NotificationsCrudComponent implements OnInit {
           raw: c
         }));
         this.couponsList.set(formatted);
+        this.loadingEntities.set(false);
       },
-      error: () => {}
+      error: () => { this.loadingEntities.set(false); }
     });
+  }
 
-    this.loadingEntities.set(false);
+  // ── Paginated Product Search Methods ──────────────────────────────
+  onProductSearchChange(query: string): void {
+    this.productSearchQuery.set(query);
+    if (this.productSearchDebounceTimer) {
+      clearTimeout(this.productSearchDebounceTimer);
+    }
+    this.productSearchDebounceTimer = setTimeout(() => {
+      this.searchProducts(0);
+    }, 300);
+  }
+
+  clearProductSearch(): void {
+    this.productSearchQuery.set('');
+    this.searchProducts(0);
+  }
+
+  searchProducts(page: number = 0): void {
+    this.productPage.set(page);
+    this.loadingProducts.set(true);
+    const query = this.productSearchQuery();
+
+    this.productService.getPagedProducts(page, 8, query).subscribe({
+      next: (res) => {
+        const items = res.content || [];
+        const formatted = items.map((p: any) => ({
+          id: p.id,
+          nameEn: `${p.nameEn || p.name_en || 'Product #' + p.id} ${p.brand ? '[' + p.brand + ']' : ''}`,
+          nameAr: `${p.nameAr || p.name_ar || 'منتج #' + p.id} ${p.brand ? '[' + p.brand + ']' : ''}`,
+          raw: p
+        }));
+        this.pagedProductsList.set(formatted);
+        this.productTotalPages.set(res.totalPages || 0);
+        this.productTotalElements.set(res.totalElements || 0);
+        this.loadingProducts.set(false);
+      },
+      error: () => {
+        this.loadingProducts.set(false);
+      }
+    });
+  }
+
+  selectProduct(product: any): void {
+    this.broadcastForm.patchValue({
+      refId: product.id,
+      deepLink: `/products/${product.id}`
+    });
+    this.selectedProductRaw.set(product.raw);
   }
 
   loadNotifications(page: number = 0): void {
@@ -220,7 +271,9 @@ export class NotificationsCrudComponent implements OnInit {
       targetAudience: 'ALL',
       targetUserId: null
     });
+    this.selectedProductRaw.set(null);
     this.isBroadcastModalOpen.set(true);
+    this.loadOffers();
   }
 
   closeBroadcastModal(): void {
@@ -228,19 +281,27 @@ export class NotificationsCrudComponent implements OnInit {
   }
 
   onRefTypeChange(refType: any): void {
-    this.broadcastForm.patchValue({ refId: null });
+    this.broadcastForm.patchValue({ refId: null, deepLink: '' });
+    this.selectedProductRaw.set(null);
+
     switch (refType) {
       case 'OFFER':
         this.broadcastForm.patchValue({ type: 'FLASH_DEAL', deepLink: '/offers' });
+        this.loadOffers();
         break;
       case 'FLYER':
         this.broadcastForm.patchValue({ type: 'NEW_FLYER', deepLink: '/flyers' });
+        this.loadFlyers();
         break;
       case 'PRODUCT':
         this.broadcastForm.patchValue({ type: 'PRODUCT_ALERT', deepLink: '/products' });
+        if (this.pagedProductsList().length === 0) {
+          this.searchProducts(0);
+        }
         break;
       case 'COUPON':
         this.broadcastForm.patchValue({ type: 'COUPON_ALERT', deepLink: '/coupons' });
+        this.loadCoupons();
         break;
       default:
         this.broadcastForm.patchValue({ type: 'SYSTEM', deepLink: '' });
@@ -297,9 +358,8 @@ export class NotificationsCrudComponent implements OnInit {
         this.broadcastForm.patchValue({ titleEn, titleAr, bodyEn, bodyAr, deepLink: `/flyers/${refId}` });
       }
     } else if (refType === 'PRODUCT') {
-      const found = this.productsList().find(p => p.id === Number(refId));
-      if (found?.raw) {
-        const p = found.raw;
+      const p = this.selectedProductRaw() || this.pagedProductsList().find(p => p.id === Number(refId))?.raw;
+      if (p) {
         const titleEn = `⭐ Price Alert: ${p.nameEn || p.name_en || 'Featured Product'}`;
         const titleAr = `⭐ تنبيه سعر: ${p.nameAr || p.name_ar || 'منتج مميز'}`;
         const bodyEn = `Check out the best available deals for ${p.nameEn || 'this product'} across stores near you.`;

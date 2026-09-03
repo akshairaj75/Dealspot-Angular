@@ -389,6 +389,15 @@ export class OffersCrudComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  getStoreName(storeId: any): string {
+    if (!storeId) return this.currentLang() === 'en' ? 'Your Store' : 'متجرك';
+    const found = this.stores().find(s => s.id === Number(storeId));
+    if (found) {
+      return this.currentLang() === 'en' ? (found.nameEn || found.name) : (found.nameAr || found.nameEn || found.name);
+    }
+    return this.currentLang() === 'en' ? `Store #${storeId}` : `متجر #${storeId}`;
+  }
+
   openAddModal(): void {
     this.editingOfferId = null;
     this.selectedImageFiles = [];
@@ -402,8 +411,12 @@ export class OffersCrudComponent implements OnInit, AfterViewInit, OnDestroy {
     const today = new Date().toISOString().split('T')[0];
     const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-    const defaultStoreId = (this.authService.isStoreManager() && this.authService.currentUser()?.storeId)
-      ? this.authService.currentUser()?.storeId
+    const managerStoreId = (this.authService.isStoreManager() && this.authService.currentUser()?.storeId)
+      ? Number(this.authService.currentUser()?.storeId)
+      : null;
+
+    const defaultStoreId = managerStoreId
+      ? managerStoreId
       : (this.stores().length > 0 ? this.stores()[0].id : '');
 
     this.offerForm.reset({
@@ -434,6 +447,21 @@ export class OffersCrudComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
   openEditModal(o: any): void {
+    const storeId = o.storeId ?? o.store_id ?? (o.store ? o.store.id : '');
+    if (this.authService.isStoreManager()) {
+      const managerStoreId = Number(this.authService.currentUser()?.storeId);
+      if (storeId && Number(storeId) !== managerStoreId) {
+        Swal.fire({
+          icon: 'error',
+          title: this.currentLang() === 'en' ? 'Access Denied' : 'غير مصرح',
+          text: this.currentLang() === 'en'
+            ? 'You can only edit offers belonging to your own store.'
+            : 'يمكنك فقط تعديل العروض التابعة لمتجرك وفروعك.'
+        });
+        return;
+      }
+    }
+
     this.editingOfferId = o.id;
     this.selectedImageFiles = [];
     this.imagePreviewUrls = [];
@@ -443,7 +471,6 @@ export class OffersCrudComponent implements OnInit, AfterViewInit, OnDestroy {
     this.searchProducts('');
 
     const pId = o.productId ?? o.product_id ?? (o.product ? o.product.id : null);
-    const storeId = o.storeId ?? o.store_id ?? (o.store ? o.store.id : '');
     const categoryId = o.categoryId ?? o.category_id ?? (o.category ? o.category.id : '');
     const cityId = o.cityId ?? o.city_id ?? (o.city ? o.city.id : '');
 
@@ -700,6 +727,22 @@ export class OffersCrudComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   deleteOffer(id: number): void {
+    if (this.authService.isStoreManager()) {
+      const found = this.offers().find(x => x.id === id);
+      const storeId = found?.storeId ?? found?.store_id ?? (found?.store ? found?.store.id : null);
+      const managerStoreId = Number(this.authService.currentUser()?.storeId);
+      if (storeId && Number(storeId) !== managerStoreId) {
+        Swal.fire({
+          icon: 'error',
+          title: this.currentLang() === 'en' ? 'Access Denied' : 'غير مصرح',
+          text: this.currentLang() === 'en'
+            ? 'You can only delete offers belonging to your own store.'
+            : 'يمكنك فقط حذف العروض التابعة لمتجرك وفروعك.'
+        });
+        return;
+      }
+    }
+
     Swal.fire({
       title: this.currentLang() === 'en' ? 'Are you sure?' : 'هل أنت متأكد؟',
       text: this.currentLang() === 'en'
