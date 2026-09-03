@@ -50,6 +50,13 @@ export class CitiesCrudComponent implements OnInit {
     this.openMenuId.set(null);
   }
 
+  isCityActive(c: any): boolean {
+    if (!c) return false;
+    return c.active === true || c.active === 1 || c.active === 'true' ||
+           c.isActive === true || c.isActive === 1 || c.isActive === 'true' ||
+           c.is_active === true || c.is_active === 1 || c.is_active === 'true';
+  }
+
   copyCoords(lat: number, lng: number, id: number, event?: Event): void {
     if (event) event.stopPropagation();
     const text = `${lat}, ${lng}`;
