@@ -1,127 +1,205 @@
-<div class="dashboard-container" *ngIf="!loading">
+<div class="dashboard-container">
   <!-- Top header -->
   <div class="dash-welcome">
-    <h1>Welcome, Administrator</h1>
-    <p>Here is an overview of active catalogs, retail partners, discount statistics, and audit trails.</p>
-  </div>
-
-  <!-- Stats Grid -->
-  <div class="stats-grid" *ngIf="stats()">
-    <div class="stat-card card">
-      <span class="material-icons-round stat-icon color-green">store</span>
-      <div class="stat-details">
-        <span class="stat-num">{{ stats().stores }}</span>
-        <span class="stat-label">Retail Stores</span>
-      </div>
+    <div class="dash-welcome-text">
+      <h1>
+        {{ currentLang() === 'en' ? 'Welcome, ' + (currentUser()?.fullName || userRoleLabel) : 'مرحباً، ' + (currentUser()?.fullName || userRoleLabel) }}
+      </h1>
+      <p>
+        {{ currentLang() === 'en' ? 'Control panel and quick management center for catalogs, retail partners, promotions, and system operations.' : 'لوحة التحكم ومركز الإدارة السريعة للكتالوجات، والشركاء التجاريين، والعروض، وعمليات النظام.' }}
+      </p>
     </div>
-    <div class="stat-card card">
-      <span class="material-icons-round stat-icon color-blue">local_offer</span>
-      <div class="stat-details">
-        <span class="stat-num">{{ stats().offers }}</span>
-        <span class="stat-label">Active Offers</span>
-      </div>
-    </div>
-    <div class="stat-card card">
-      <span class="material-icons-round stat-icon color-gold">menu_book</span>
-      <div class="stat-details">
-        <span class="stat-num">{{ stats().flyers }}</span>
-        <span class="stat-label">Catalog Flyers</span>
-      </div>
-    </div>
-    <div class="stat-card card">
-      <span class="material-icons-round stat-icon color-red">bookmark</span>
-      <div class="stat-details">
-        <span class="stat-num">{{ stats().saves }}</span>
-        <span class="stat-label">Offer Saves</span>
-      </div>
+    <div class="dash-welcome-badge">
+      <span class="role-badge">
+        <span class="material-icons-round">verified_user</span>
+        <span>{{ userRoleLabel }}</span>
+      </span>
     </div>
   </div>
 
-  <!-- Double column workspace -->
-  <div class="dashboard-workspace">
-    <!-- Left Column: Quick links -->
-    <div class="workspace-panel card">
-      <div class="panel-header">
-        <span class="material-icons-round">edit_note</span>
-        <h3>Quick Catalog Management</h3>
-      </div>
-      <div class="panel-body">
-        <div class="management-shortcuts">
-          <a routerLink="/admin/stores" class="shortcut-item">
-            <span class="material-icons-round icon">store</span>
-            <div>
-              <h4>Manage Retailers</h4>
-              <p>Configure VAT numbers, CR, logos, and verification status.</p>
-            </div>
-          </a>
-          <a routerLink="/admin/brands" class="shortcut-item">
-            <span class="material-icons-round icon">loyalty</span>
-            <div>
-              <h4>Brand Partners</h4>
-              <p>Configure brand names, logos, search tags, and status.</p>
-            </div>
-          </a>
-          <a routerLink="/admin/products" class="shortcut-item">
-            <span class="material-icons-round icon">shopping_bag</span>
-            <div>
-              <h4>Product Catalog</h4>
-              <p>Manage product dimensions, brand details, barcodes, and SKUs.</p>
-            </div>
-          </a>
-          <a routerLink="/admin/offers" class="shortcut-item">
-            <span class="material-icons-round icon">local_offer</span>
-            <div>
-              <h4>Active Promotions</h4>
-              <p>Add featured, flash, and BOGO deals with automatic percentages.</p>
-            </div>
-          </a>
-          <a routerLink="/admin/flyers" class="shortcut-item">
-            <span class="material-icons-round icon">menu_book</span>
-            <div>
-              <h4>Brochures & Flyers</h4>
-              <p>Configure flyer validity periods and scanned flyer pages.</p>
-            </div>
-          </a>
-          <a routerLink="/admin/coupons" class="shortcut-item">
-            <span class="material-icons-round icon">confirmation_number</span>
-            <div>
-              <h4>Coupon Codes</h4>
-              <p>Manage discount values, usage thresholds, and validity states.</p>
-            </div>
-          </a>
+  <!-- Main Management Modules Grid -->
+  <div class="modules-section">
+    <div class="section-header">
+      <span class="material-icons-round">apps</span>
+      <h2>{{ currentLang() === 'en' ? 'System Modules & Catalogs' : 'أقسام وكتالوجات النظام' }}</h2>
+    </div>
+
+    <div class="modules-grid">
+      <!-- Stores -->
+      <a routerLink="/admin/stores" class="module-card card">
+        <div class="module-icon-wrapper color-green">
+          <span class="material-icons-round module-icon">store</span>
         </div>
-      </div>
-    </div>
+        <div class="module-details">
+          <h3>{{ currentLang() === 'en' ? 'Retail Stores' : 'المتاجر والشركاء' }}</h3>
+          <p>{{ currentLang() === 'en' ? 'Manage verified partner stores, CR numbers, branches, and statuses.' : 'إدارة المتاجر الشريكة الموثقة، السجلات التجارية، الفروع، والحالات.' }}</p>
+        </div>
+        <span class="material-icons-round arrow">{{ currentLang() === 'en' ? 'arrow_forward' : 'arrow_back' }}</span>
+      </a>
 
-    <!-- Right Column: Recent Audits -->
-    <div class="workspace-panel card">
-      <div class="panel-header">
-        <span class="material-icons-round">history_edu</span>
-        <h3>Recent Modifications</h3>
-      </div>
-      <div class="panel-body">
-        <!-- <div class="audit-timeline" *ngIf="recentLogs().length > 0; else noLogs">
-          <div class="timeline-item" *ngFor="let log of recentLogs()">
-            <div class="timeline-marker" [ngClass]="log.action.toLowerCase()"></div>
-            <div class="timeline-content">
-              <div class="timeline-title-row">
-                <span class="log-action">{{ log.action }}</span>
-                <span class="log-entity">{{ log.entity_type }} (ID: {{ log.entity_id }})</span>
-                <span class="log-date">{{ log.created_at.slice(11, 19) }}</span>
-              </div>
-              <p class="log-actor">Performed by User ID: {{ log.performed_by }} &bull; IP: {{ log.ip_address }}</p>
-              <pre class="log-payload" *ngIf="log.payload">{{ log.payload | json }}</pre>
-            </div>
-          </div>
-        </div> -->
-        
-        <ng-template #noLogs>
-          <div class="empty-state">
-            <span class="material-icons-round empty-state-icon">history</span>
-            <p class="empty-state-desc">No changes recorded in the system logs yet.</p>
-          </div> 
-        </ng-template> 
-      </div>
-    </div> 
+      <!-- Brands -->
+      <a routerLink="/admin/brands" class="module-card card">
+        <div class="module-icon-wrapper color-purple">
+          <span class="material-icons-round module-icon">loyalty</span>
+        </div>
+        <div class="module-details">
+          <h3>{{ currentLang() === 'en' ? 'Partner Brands' : 'العلامات التجارية' }}</h3>
+          <p>{{ currentLang() === 'en' ? 'Configure official brand logos, search tags, website links, and profiles.' : 'إدارة شعارات الماركات، وسوم البحث، الروابط الرسمية، والملفات التعريفية.' }}</p>
+        </div>
+        <span class="material-icons-round arrow">{{ currentLang() === 'en' ? 'arrow_forward' : 'arrow_back' }}</span>
+      </a>
+
+      <!-- Products -->
+      <a routerLink="/admin/products" class="module-card card">
+        <div class="module-icon-wrapper color-teal">
+          <span class="material-icons-round module-icon">shopping_bag</span>
+        </div>
+        <div class="module-details">
+          <h3>{{ currentLang() === 'en' ? 'Product Catalog' : 'كتالوج المنتجات' }}</h3>
+          <p>{{ currentLang() === 'en' ? 'Manage product dimensions, barcode specifications, and SKU items.' : 'إدارة مواصفات وأبعاد المنتجات، أرقام الباركود، ووحدات التخزين.' }}</p>
+        </div>
+        <span class="material-icons-round arrow">{{ currentLang() === 'en' ? 'arrow_forward' : 'arrow_back' }}</span>
+      </a>
+
+      <!-- Offers -->
+      <a routerLink="/admin/offers" class="module-card card">
+        <div class="module-icon-wrapper color-blue">
+          <span class="material-icons-round module-icon">local_offer</span>
+        </div>
+        <div class="module-details">
+          <h3>{{ currentLang() === 'en' ? 'Promotions & Deals' : 'العروض والتخفيضات' }}</h3>
+          <p>{{ currentLang() === 'en' ? 'Manage active discounts, flash sales, featured items, and BOGO deals.' : 'إدارة الخصومات النشطة، صفقات الفلاش، العروض المميزة وتخفيضات BOGO.' }}</p>
+        </div>
+        <span class="material-icons-round arrow">{{ currentLang() === 'en' ? 'arrow_forward' : 'arrow_back' }}</span>
+      </a>
+
+      <!-- Flyers -->
+      <a routerLink="/admin/flyers" class="module-card card">
+        <div class="module-icon-wrapper color-gold">
+          <span class="material-icons-round module-icon">menu_book</span>
+        </div>
+        <div class="module-details">
+          <h3>{{ currentLang() === 'en' ? 'Brochures & Flyers' : 'المجلات والمنشورات' }}</h3>
+          <p>{{ currentLang() === 'en' ? 'Upload and manage scanned promotional flyers, pages, and validity dates.' : 'رفع وإدارة منشورات العروض الترويجية، الصفحات، وفترات الصلاحية.' }}</p>
+        </div>
+        <span class="material-icons-round arrow">{{ currentLang() === 'en' ? 'arrow_forward' : 'arrow_back' }}</span>
+      </a>
+
+      <!-- Coupons -->
+      <a routerLink="/admin/coupons" class="module-card card">
+        <div class="module-icon-wrapper color-orange">
+          <span class="material-icons-round module-icon">confirmation_number</span>
+        </div>
+        <div class="module-details">
+          <h3>{{ currentLang() === 'en' ? 'Promo Coupons' : 'كوبونات الخصم' }}</h3>
+          <p>{{ currentLang() === 'en' ? 'Create discount vouchers, usage thresholds, and expiry state controls.' : 'إنشاء قسائم التخفيض، حدود الاستخدام، والتحكم بحالات الانتهاء.' }}</p>
+        </div>
+        <span class="material-icons-round arrow">{{ currentLang() === 'en' ? 'arrow_forward' : 'arrow_back' }}</span>
+      </a>
+
+      <!-- Partner Requests -->
+      <a routerLink="/admin/partner-requests" class="module-card card">
+        <div class="module-icon-wrapper color-amber">
+          <span class="material-icons-round module-icon">handshake</span>
+        </div>
+        <div class="module-details">
+          <h3>{{ currentLang() === 'en' ? 'Partner Requests' : 'طلبات الشراكة' }}</h3>
+          <p>{{ currentLang() === 'en' ? 'Review merchant applications, documents, contact details, and approvals.' : 'مراجعة طلبات انضمام التجار، المستندات، بيانات التواصل، والموافقات.' }}</p>
+        </div>
+        <span class="material-icons-round arrow">{{ currentLang() === 'en' ? 'arrow_forward' : 'arrow_back' }}</span>
+      </a>
+
+      <!-- Notifications -->
+      <a routerLink="/admin/notifications" class="module-card card">
+        <div class="module-icon-wrapper color-red">
+          <span class="material-icons-round module-icon">notifications</span>
+        </div>
+        <div class="module-details">
+          <h3>{{ currentLang() === 'en' ? 'Broadcast Alerts' : 'إرسال الإشعارات' }}</h3>
+          <p>{{ currentLang() === 'en' ? 'Send SMS, Email, and in-app push promotional announcements.' : 'إرسال الرسائل النصية، والبريد الإلكتروني، وتنبيهات التطبيق للمستخدمين.' }}</p>
+        </div>
+        <span class="material-icons-round arrow">{{ currentLang() === 'en' ? 'arrow_forward' : 'arrow_back' }}</span>
+      </a>
+
+      <!-- Cities -->
+      <a routerLink="/admin/cities" class="module-card card">
+        <div class="module-icon-wrapper color-cyan">
+          <span class="material-icons-round module-icon">place</span>
+        </div>
+        <div class="module-details">
+          <h3>{{ currentLang() === 'en' ? 'Cities & Locations' : 'المدن والمناطق' }}</h3>
+          <p>{{ currentLang() === 'en' ? 'Configure operational coverage areas, provinces, and city coordinates.' : 'إدارة مناطق التغطية الجغرافية، المحافظات، وإحداثيات المدن.' }}</p>
+        </div>
+        <span class="material-icons-round arrow">{{ currentLang() === 'en' ? 'arrow_forward' : 'arrow_back' }}</span>
+      </a>
+
+      <!-- Categories -->
+      <a routerLink="/admin/categories" class="module-card card">
+        <div class="module-icon-wrapper color-indigo">
+          <span class="material-icons-round module-icon">category</span>
+        </div>
+        <div class="module-details">
+          <h3>{{ currentLang() === 'en' ? 'Departments & Categories' : 'الأقسام والتصنيفات' }}</h3>
+          <p>{{ currentLang() === 'en' ? 'Structure catalog taxonomy, category icons, display order, and hierarchy.' : 'تنظيم التصنيفات، أيقونات الأقسام، ترتيب العرض، والتسلسل الهرمي.' }}</p>
+        </div>
+        <span class="material-icons-round arrow">{{ currentLang() === 'en' ? 'arrow_forward' : 'arrow_back' }}</span>
+      </a>
+
+      <!-- Staff & Admins -->
+      <a routerLink="/admin/users" class="module-card card">
+        <div class="module-icon-wrapper color-slate">
+          <span class="material-icons-round module-icon">people</span>
+        </div>
+        <div class="module-details">
+          <h3>{{ currentLang() === 'en' ? 'Staff & Admins' : 'المشرفين والموظفين' }}</h3>
+          <p>{{ currentLang() === 'en' ? 'Manage user roles, store manager accounts, and administrative access.' : 'إدارة أدوار المستخدمين، حسابات مدراء المتاجر، وصلاحيات الوصول.' }}</p>
+        </div>
+        <span class="material-icons-round arrow">{{ currentLang() === 'en' ? 'arrow_forward' : 'arrow_back' }}</span>
+      </a>
+
+      <!-- Audit Logs -->
+      <a routerLink="/admin/audit-logs" class="module-card card">
+        <div class="module-icon-wrapper color-gray">
+          <span class="material-icons-round module-icon">history_edu</span>
+        </div>
+        <div class="module-details">
+          <h3>{{ currentLang() === 'en' ? 'Audit & History Logs' : 'سجل العمليات والتدقيق' }}</h3>
+          <p>{{ currentLang() === 'en' ? 'Track administrative operations, timestamps, and audit history.' : 'تتبع العمليات الإدارية، التوقيتات، وسجلات التعديلات في النظام.' }}</p>
+        </div>
+        <span class="material-icons-round arrow">{{ currentLang() === 'en' ? 'arrow_forward' : 'arrow_back' }}</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Fast Creation Actions Bar -->
+  <div class="quick-creation-panel card">
+    <div class="quick-header">
+      <span class="material-icons-round">flash_on</span>
+      <h3>{{ currentLang() === 'en' ? 'Quick Actions' : 'إجراءات سريعة' }}</h3>
+    </div>
+    <div class="quick-buttons-row">
+      <a routerLink="/admin/offers" class="quick-action-btn btn-offer">
+        <span class="material-icons-round">add_circle</span>
+        <span>{{ currentLang() === 'en' ? 'Add New Offer' : 'إضافة عرض جديد' }}</span>
+      </a>
+      <a routerLink="/admin/flyers" class="quick-action-btn btn-flyer">
+        <span class="material-icons-round">upload_file</span>
+        <span>{{ currentLang() === 'en' ? 'Upload New Flyer' : 'رفع منشور جديد' }}</span>
+      </a>
+      <a routerLink="/admin/products" class="quick-action-btn btn-product">
+        <span class="material-icons-round">post_add</span>
+        <span>{{ currentLang() === 'en' ? 'Add New Product' : 'إضافة منتج جديد' }}</span>
+      </a>
+      <a routerLink="/admin/coupons" class="quick-action-btn btn-coupon">
+        <span class="material-icons-round">confirmation_number</span>
+        <span>{{ currentLang() === 'en' ? 'Create Coupon' : 'إنشاء كوبون' }}</span>
+      </a>
+      <a routerLink="/admin/notifications" class="quick-action-btn btn-notif">
+        <span class="material-icons-round">campaign</span>
+        <span>{{ currentLang() === 'en' ? 'Broadcast Notification' : 'إرسال إشعار' }}</span>
+      </a>
+    </div>
   </div>
 </div>
+
+

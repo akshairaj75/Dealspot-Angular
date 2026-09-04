@@ -1,9 +1,8 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-// import { AdminService } from '../../../core/services/admin.service';
-// import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
-// import { AuditLog } from '../../../core/models';
+import { TranslationService } from '../../../core/services/translation.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -12,25 +11,25 @@ import { RouterLink } from '@angular/router';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
-export class DashboardComponent implements OnInit {
-  // private adminService = inject(AdminService);
-  
-  stats = signal<any>(null);
-  // recentLogs = signal<AuditLog[]>([]);
-  loading = false;
+export class DashboardComponent {
+  private translationService = inject(TranslationService);
+  private authService = inject(AuthService);
 
-  ngOnInit(): void {
-    // this.adminService.getDashboardStats().subscribe(res => this.stats.set(res));
-    // this.adminService.getAuditLogs().subscribe({
-    //   next: (logs) => {
-    //     this.recentLogs.set(logs.slice(0, 5));
-    //     this.loading = false;
-    //   },
-    //   error: () => {
-    //     this.loading = false;
-    //   }
-    // });
+  currentLang = this.translationService.currentLang;
+  currentUser = this.authService.currentUser;
+
+  get userRoleLabel(): string {
+    const role = (this.currentUser()?.role || '').toUpperCase();
+    if (this.currentLang() === 'ar') {
+      if (role === 'SUPER_ADMIN') return 'المدير العام';
+      if (role === 'STORE_MANAGER') return 'مدير المتجر';
+      return 'المشرف';
+    } else {
+      if (role === 'SUPER_ADMIN') return 'Super Administrator';
+      if (role === 'STORE_MANAGER') return 'Store Manager';
+      return 'Administrator';
+    }
   }
-
-  
 }
+
+
