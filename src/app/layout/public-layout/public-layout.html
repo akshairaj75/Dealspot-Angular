@@ -289,48 +289,130 @@
   <!-- Public Footer -->
   <footer class="app-footer">
     <div class="footer-container">
-      <div class="footer-section">
+      <!-- Brand & Info Column -->
+      <div class="footer-section footer-brand-col">
         <div class="footer-logo">
           <img *ngIf="appConfig.logoUrl" [src]="appConfig.logoUrl" [alt]="appConfig.appNameEn" class="footer-logo-img">
-          <span *ngIf="!appConfig.logoUrl" class="material-icons-round">{{ appConfig.logoIcon }}</span>
-          <span>{{ currentLang() === 'en' ? appConfig.appNameEn : appConfig.appNameAr }}</span>
+          <span *ngIf="!appConfig.logoUrl" class="material-icons-round logo-icon">{{ appConfig.logoIcon }}</span>
+          <span class="brand-text">{{ currentLang() === 'en' ? appConfig.appNameEn : appConfig.appNameAr }}</span>
         </div>
         <p class="footer-description">
           {{ currentLang() === 'en' ? appConfig.taglineEn : appConfig.taglineAr }}
         </p>
-      </div>
-
-      <div class="footer-section">
-        <h4>{{ currentLang() === 'en' ? 'Explore' : 'استكشف' }}</h4>
-        <ul class="footer-links">
-          <li><a routerLink="/offers">{{ currentLang() === 'en' ? 'All Offers' : 'جميع العروض' }}</a></li>
-          <li><a routerLink="/stores">{{ currentLang() === 'en' ? 'Shops & Stores' : 'المتاجر والمحلات' }}</a></li>
-          <li><a routerLink="/flyers">{{ currentLang() === 'en' ? 'Latest Flyers' : 'أحدث المنشورات' }}</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-section">
-        <h4>{{ currentLang() === 'en' ? 'Partner & Support' : 'الشراكة والدعم' }}</h4>
-        <ul class="footer-links">
-          <li><a routerLink="/partner-with-us" class="partner-link-highlight">{{ currentLang() === 'en' ? '🤝 Partner
-              With Us' : '🤝 سجل متجرك معنا' }}</a></li>
-          <li><a routerLink="/login">{{ currentLang() === 'en' ? 'User Login' : 'تسجيل دخول المستخدم' }}</a></li>
-          <li><a routerLink="/login" [queryParams]="{admin: true}">{{ currentLang() === 'en' ? 'Admin Portal' : 'بوابة
-              المسؤول' }}</a></li>
-        </ul>
-      </div>
-
-
-      <div class="footer-section">
-        <h4>{{ currentLang() === 'en' ? 'Active City' : 'المدينة النشطة' }}</h4>
-        <div class="footer-city-info">
-          <span class="material-icons-round text-primary">place</span>
-          <span>{{ activeCity() | translate:'name' }}</span>
+        <div class="footer-trust-chips">
+          <span class="trust-chip">
+            <span class="material-icons-round chip-icon">verified</span>
+            <span>{{ currentLang() === 'en' ? 'Verified Deals' : 'عروض موثوقة' }}</span>
+          </span>
+          <span class="trust-chip">
+            <span class="material-icons-round chip-icon">update</span>
+            <span>{{ currentLang() === 'en' ? 'Updated Daily' : 'تحديثات يومية' }}</span>
+          </span>
         </div>
       </div>
+
+      <!-- Explore Column -->
+      <div class="footer-section">
+        <h4 class="footer-title">
+          <span class="material-icons-round title-icon">explore</span>
+          <span>{{ currentLang() === 'en' ? 'Explore Deals' : 'استكشف العروض' }}</span>
+        </h4>
+        <ul class="footer-links">
+          <li>
+            <a routerLink="/offers-list">
+              <span class="material-icons-round link-bullet">local_offer</span>
+              <span>{{ currentLang() === 'en' ? 'All Offers & Discounts' : 'جميع العروض والخصومات' }}</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/stores">
+              <span class="material-icons-round link-bullet">storefront</span>
+              <span>{{ currentLang() === 'en' ? 'Supermarkets & Stores' : 'المتاجر والهايبرماركت' }}</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/flyers">
+              <span class="material-icons-round link-bullet">auto_stories</span>
+              <span>{{ currentLang() === 'en' ? 'Weekly Flyers & Catalogs' : 'المجلات والكتالوجات الأسبوعية' }}</span>
+            </a>
+          </li>
+          <li>
+            <a [routerLink]="isLoggedIn() ? '/saved-offers' : '/login'">
+              <span class="material-icons-round link-bullet">bookmark_border</span>
+              <span>{{ currentLang() === 'en' ? 'My Saved Bookmarks' : 'العروض المحفوظة' }}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Partner & Support Column -->
+      <div class="footer-section">
+        <h4 class="footer-title">
+          <span class="material-icons-round title-icon">business_center</span>
+          <span>{{ currentLang() === 'en' ? 'Business & Support' : 'الأعمال والدعم' }}</span>
+        </h4>
+        <ul class="footer-links">
+          <li>
+            <a routerLink="/partner-with-us" class="partner-link-highlight">
+              <span class="material-icons-round link-bullet">handshake</span>
+              <span>{{ currentLang() === 'en' ? 'Partner With Us (Register Store)' : 'انضم كشريك (سجل متجرك)' }}</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/login">
+              <span class="material-icons-round link-bullet">login</span>
+              <span>{{ currentLang() === 'en' ? 'User Login / Sign Up' : 'تسجيل الدخول / إنشاء حساب' }}</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/login" [queryParams]="{admin: true}">
+              <span class="material-icons-round link-bullet">admin_panel_settings</span>
+              <span>{{ currentLang() === 'en' ? 'Admin Portal Access' : 'بوابة الإدارة والمسؤولين' }}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Location Switcher Column -->
+      <div class="footer-section footer-location-col">
+        <h4 class="footer-title">
+          <span class="material-icons-round title-icon">location_on</span>
+          <span>{{ currentLang() === 'en' ? 'Browsing Location' : 'موقع التصفح' }}</span>
+        </h4>
+        <div class="footer-city-card" (click)="isCityModalOpen = true" role="button" tabindex="0"
+          [attr.aria-label]="currentLang() === 'en' ? 'Change City' : 'تغيير المدينة'">
+          <div class="city-card-icon">
+            <span class="material-icons-round">place</span>
+          </div>
+          <div class="city-card-details">
+            <span class="city-card-label">{{ currentLang() === 'en' ? 'Active City' : 'المدينة الحالية' }}</span>
+            <span class="city-card-name">{{ activeCity() | translate:'name' }}</span>
+          </div>
+          <button class="city-card-change-btn" type="button">
+            <span>{{ currentLang() === 'en' ? 'Change' : 'تغيير' }}</span>
+            <span class="material-icons-round change-arrow">{{ currentLang() === 'en' ? 'chevron_right' : 'chevron_left' }}</span>
+          </button>
+        </div>
+        <p class="city-helper-text">
+          {{ currentLang() === 'en' ? 'Switch cities anytime to view nearby supermarket deals.' : 'يمكنك تبديل المدينة في أي وقت لمشاهدة عروض المتاجر القريبة.' }}
+        </p>
+      </div>
     </div>
+
+    <!-- Footer Bottom Bar -->
     <div class="footer-bottom">
-      <p>{{ currentLang() === 'en' ? appConfig.copyrightEn : appConfig.copyrightAr }}</p>
+      <div class="footer-bottom-container">
+        <p class="footer-copyright">
+          © {{ currentYear }} {{ currentLang() === 'en' ? appConfig.appNameEn : appConfig.appNameAr }}.
+          {{ currentLang() === 'en' ? 'All rights reserved.' : 'جميع الحقوق محفوظة.' }}
+        </p>
+        <div class="footer-badges">
+          <span class="country-badge">
+            <span class="sa-flag">🇸🇦</span>
+            <span>{{ currentLang() === 'en' ? 'Kingdom of Saudi Arabia' : 'المملكة العربية السعودية' }}</span>
+          </span>
+        </div>
+      </div>
     </div>
   </footer>
 

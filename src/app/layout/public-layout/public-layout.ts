@@ -60,6 +60,7 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
   isProfileOpen = false;
   isNotificationOpen = false;
   isCityModalOpen = false;
+  currentYear = new Date().getFullYear();
 
   unreadNotificationsCount = this.notificationService.unreadCount;
   recentNotifications = this.notificationService.recentNotifications;
