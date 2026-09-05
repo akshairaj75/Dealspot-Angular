@@ -744,15 +744,15 @@
   }
 
   .product-name-highlight {
-    font-size: 10.5px;
+    font-size: 11px;
   }
 
   .offer-price {
-    font-size: 13.5px;
+    font-size: 14px;
   }
 
   .original-price {
-    font-size: 10.5px;
+    font-size: 11px;
   }
 
   .flyer-image-wrapper {
@@ -764,7 +764,7 @@
   }
 
   .flyer-title {
-    font-size: 12px;
+    font-size: 13px;
   }
 }
 

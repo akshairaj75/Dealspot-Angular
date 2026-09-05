@@ -434,7 +434,7 @@
 }
 
 .product-spotlight-tag {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -442,7 +442,7 @@
 }
 
 .product-spotlight-title {
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
@@ -753,7 +753,7 @@
 }
 
 .product-box-badge {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   color: var(--text-muted);
   letter-spacing: 0.05em;
@@ -761,7 +761,7 @@
 
 .product-box-title {
   margin: 0;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text-primary);
 }

@@ -515,7 +515,7 @@
   top: 8px;
   left: 60px;
   z-index: 5;
-  font-size: 9.5px;
+  font-size: 11px;
   padding: 2px 6px;
   border-radius: var(--radius-full);
 }
@@ -761,7 +761,7 @@
 }
 
 .badge-cat-tag {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--primary);
   background: rgba(37, 99, 235, 0.08);
@@ -773,36 +773,32 @@
    Empty State & Loading Spinner
    ========================================================================== */
 .empty-state {
-  padding: 60px 24px;
   text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  padding: 60px 20px;
   background: var(--surface);
-  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  margin: 20px 0;
 }
 
 .empty-state-icon {
-  font-size: 52px;
+  font-size: 56px;
   color: var(--text-muted);
-  opacity: 0.6;
+  margin-bottom: 16px;
 }
 
 .empty-state-title {
-  font-size: 18px;
-  font-weight: 800;
+  font-size: 20px;
+  font-weight: 700;
   color: var(--text-primary);
-  margin: 0;
+  margin-bottom: 8px;
 }
 
 .empty-state-desc {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-secondary);
-  margin: 0;
-  max-width: 440px;
-  line-height: 1.5;
+  max-width: 420px;
+  margin: 0 auto 20px;
 }
 
 .spinner-container {
@@ -815,47 +811,47 @@
 /* ==========================================================================
    Responsive Adaptations
    ========================================================================== */
-@media (max-width: 991px) {
-  .offers-page-layout {
-    flex-direction: column;
-    gap: 20px;
-  }
-  
-  .filters-sidebar {
-    width: 100%;
-    position: static;
+@media (max-width: 1024px) {
+  .offers-grid-container {
+    grid-template-columns: 1fr;
   }
 
-  .filters-body {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
-  }
-
-  .filter-group-checkboxes {
-    grid-column: 1 / -1;
-    border-top: none;
-    padding-top: 0;
-    flex-direction: row;
-    gap: 20px;
-    flex-wrap: wrap;
+  .offers-main-content {
+    order: 2;
   }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 768px) {
+  .offers-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .page-title {
+    font-size: 22px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+  }
+
+  .view-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
   .grid-cards {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
 
-  .offer-card-image {
-    height: 125px;
-    min-height: 125px;
-    max-height: 125px;
+  .offer-grid-card {
+    border-radius: var(--radius-sm);
   }
 
   .offer-card-body {
-    padding: 8px 10px;
+    padding: 8px;
     gap: 4px;
   }
 
@@ -864,12 +860,12 @@
   }
 
   .store-badge-row {
-    font-size: 10px;
+    font-size: 11px;
     gap: 4px;
   }
 
   .offer-title-main {
-    font-size: 12px;
+    font-size: 13px;
     min-height: 16px;
   }
 
@@ -878,26 +874,26 @@
   }
 
   .product-name-highlight {
-    font-size: 10.5px;
+    font-size: 11px;
   }
 
   .offer-price {
-    font-size: 13.5px;
+    font-size: 14px;
   }
 
   .original-price {
-    font-size: 10.5px;
+    font-size: 11px;
   }
 
   .discount-badge-float {
-    font-size: 10px;
+    font-size: 11px;
     padding: 2px 6px;
   }
 
   .flash-badge-float {
     left: 48px;
-    font-size: 8.5px;
-    padding: 1px 4px;
+    font-size: 11px;
+    padding: 1px 5px;
   }
 
   [dir="rtl"] .flash-badge-float {
@@ -926,8 +922,8 @@
   }
 
   .badge-cat-tag {
-    font-size: 9px;
-    padding: 1px 4px;
+    font-size: 11px;
+    padding: 1px 5px;
   }
 
   .filters-body {

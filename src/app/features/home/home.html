@@ -260,7 +260,7 @@
           
           <div class="offer-card-footer">
             <span class="valid-date" *ngIf="offer.validUntil || offer.valid_until">{{ currentLang() === 'en' ? 'Valid to: ' : 'ساري حتى: ' }}{{ offer.validUntil || offer.valid_until }}</span>
-            <span class="badge badge-featured" style="padding: 2px 8px; font-size: 9px;">{{ offer.badgeType || (currentLang() === 'en' ? 'Featured' : 'مميز') }}</span>
+            <span class="badge badge-featured" style="padding: 2px 8px; font-size: 11px;">{{ offer.badgeType || (currentLang() === 'en' ? 'Featured' : 'مميز') }}</span>
           </div>
         </div>
       </div>
@@ -321,7 +321,7 @@
           
           <div class="offer-card-footer">
             <span class="valid-date" *ngIf="offer.validUntil || offer.valid_until">{{ currentLang() === 'en' ? 'Until: ' : 'حتى: ' }}{{ offer.validUntil || offer.valid_until }}</span>
-            <span class="badge badge-flash" *ngIf="offer.flash || offer.badgeType === 'FLASH'" style="padding: 2px 8px; font-size: 9px;">Flash</span>
+            <span class="badge badge-flash" *ngIf="offer.flash || offer.badgeType === 'FLASH'" style="padding: 2px 8px; font-size: 11px;">Flash</span>
           </div>
         </div>
       </div>

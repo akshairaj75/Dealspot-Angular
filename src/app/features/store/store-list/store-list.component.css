@@ -872,8 +872,8 @@
   .verified-badge-float {
     top: 6px;
     left: 6px;
-    padding: 2px 5px;
-    font-size: 9.5px;
+    padding: 2px 6px;
+    font-size: 11px;
   }
 
   [dir="rtl"] .verified-badge-float {
@@ -882,7 +882,7 @@
   }
 
   .verified-badge-float .material-icons-round {
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .store-body-panel {
@@ -891,11 +891,11 @@
   }
 
   .store-title-main {
-    font-size: 12.5px;
+    font-size: 13px;
   }
 
   .store-category-desc {
-    font-size: 10.5px;
+    font-size: 11px;
   }
 
   .store-counts-row {
@@ -903,9 +903,9 @@
   }
 
   .count-tag {
-    font-size: 9.5px;
-    padding: 2px 5px;
-    gap: 2px;
+    font-size: 11px;
+    padding: 2px 6px;
+    gap: 3px;
   }
 
   .count-tag .material-icons-round {

@@ -553,7 +553,7 @@
   }
 
   .category-label {
-    font-size: 10.5px;
+    font-size: 11px;
     max-width: 66px;
   }
 }
@@ -904,7 +904,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-secondary);
   background: var(--surface-hover);
@@ -1080,15 +1080,15 @@
   }
 
   .product-name-highlight {
-    font-size: 10.5px;
+    font-size: 11px;
   }
 
   .offer-price {
-    font-size: 13.5px;
+    font-size: 14px;
   }
 
   .original-price {
-    font-size: 10.5px;
+    font-size: 11px;
   }
 
   .grid-flyers {
@@ -1107,11 +1107,11 @@
   }
 
   .flyer-title {
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .flyer-pages-count {
-    font-size: 10.5px;
+    font-size: 11px;
   }
 }
 
