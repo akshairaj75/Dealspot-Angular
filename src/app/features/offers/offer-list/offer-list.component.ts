@@ -74,6 +74,10 @@ export class OfferListComponent implements OnInit, OnDestroy {
     return this.categories().filter(c => (c.parentId === mainId || c.parent_id === mainId));
   });
 
+  // Mobile Filter Drawer State
+  isMobileFilterOpen = signal<boolean>(false);
+  activeFiltersCount = signal<number>(0);
+
   // Filter States
   selectedCityId: number | null = null;
   selectedMainCategoryId: number | null = null;
@@ -182,8 +186,52 @@ export class OfferListComponent implements OnInit, OnDestroy {
     });
   }
 
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.isMobileFilterOpen()) {
+      this.closeMobileFilter();
+    }
+  }
+
+  openMobileFilter(): void {
+    this.isMobileFilterOpen.set(true);
+    try {
+      document.body.style.overflow = 'hidden';
+    } catch (_) {}
+  }
+
+  closeMobileFilter(): void {
+    this.isMobileFilterOpen.set(false);
+    try {
+      document.body.style.overflow = '';
+    } catch (_) {}
+  }
+
+  applyMobileFilter(): void {
+    this.applyFilters();
+    this.closeMobileFilter();
+  }
+
+  private calculateActiveFiltersCount(): void {
+    let count = 0;
+    if (this.selectedCityId !== null) count++;
+    if (this.selectedMainCategoryId !== null) count++;
+    if (this.selectedSubCategoryId !== null) count++;
+    if (this.selectedStoreId !== null) count++;
+    if (this.selectedBrandId !== null || (this.selectedBrandName !== null && this.selectedBrandName !== '')) count++;
+    if (this.selectedDiscountRange > 0) count++;
+    if (this.showFlashOnly) count++;
+    if (this.showFeaturedOnly) count++;
+    if (this.onlySaved()) count++;
+    if (this.searchQuery && this.searchQuery.trim().length > 0) count++;
+    this.activeFiltersCount.set(count);
+  }
+
   ngOnDestroy(): void {
     this.brandSearchSub?.unsubscribe();
+    try {
+      document.body.style.overflow = '';
+    } catch (_) {}
   }
 
   handleCategoryParam(catIdParam: any): void {
@@ -502,6 +550,7 @@ export class OfferListComponent implements OnInit, OnDestroy {
     }
 
     this.offers.set(list);
+    this.calculateActiveFiltersCount();
     this.cd.detectChanges();
   }
 

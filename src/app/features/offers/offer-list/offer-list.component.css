@@ -2,9 +2,10 @@
 
 .offers-page-layout {
   display: flex;
-  gap: 28px;
+  gap: 24px;
   align-items: flex-start;
-  max-width: 1340px;
+  max-width: 100%;
+  width: 100%;
   margin: 0 auto;
 }
 
@@ -30,7 +31,15 @@
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
+}
+
+.filters-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
 }
 
 .filter-header-icon {
@@ -41,9 +50,24 @@
 .filters-header h3 {
   font-size: 15px;
   font-weight: 800;
-  flex: 1;
   color: var(--text-primary);
   margin: 0;
+}
+
+.filter-count-badge {
+  background: var(--primary);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  line-height: 1.4;
+}
+
+.filters-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .btn-reset {
@@ -63,6 +87,22 @@
   color: var(--primary);
   border-color: var(--primary);
   background: var(--surface-hover);
+}
+
+.btn-close-mobile-filter {
+  display: none;
+}
+
+.filters-mobile-footer {
+  display: none;
+}
+
+.mobile-filter-bar {
+  display: none;
+}
+
+.filters-backdrop {
+  display: none;
 }
 
 .filters-body {
@@ -376,8 +416,8 @@
    ========================================================================== */
 .grid-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
 }
 
 .offer-grid-card {
@@ -403,9 +443,9 @@
 .offer-card-image {
   position: relative;
   width: 100%;
-  height: 200px;
-  min-height: 200px;
-  max-height: 200px;
+  height: 165px;
+  min-height: 165px;
+  max-height: 165px;
   overflow: hidden;
   background: #ffffff;
   border-bottom: 1px solid var(--border);
@@ -452,45 +492,45 @@
 /* Float Badges & Action Buttons */
 .discount-badge-float {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  top: 8px;
+  left: 8px;
   z-index: 5;
   background: #ef4444;
   color: #ffffff;
   font-weight: 800;
   font-size: 11px;
-  padding: 4px 8px;
+  padding: 2px 6px;
   border-radius: var(--radius-full);
   box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
 }
 
 [dir="rtl"] .discount-badge-float {
   left: auto;
-  right: 12px;
+  right: 8px;
 }
 
 .flash-badge-float {
   position: absolute;
-  top: 12px;
-  left: 70px;
+  top: 8px;
+  left: 60px;
   z-index: 5;
-  font-size: 10px;
-  padding: 3px 8px;
+  font-size: 9.5px;
+  padding: 2px 6px;
   border-radius: var(--radius-full);
 }
 
 [dir="rtl"] .flash-badge-float {
   left: auto;
-  right: 70px;
+  right: 60px;
 }
 
 .save-btn-float,
 .share-btn-float {
   position: absolute;
-  top: 12px;
+  top: 8px;
   z-index: 5;
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(4px);
@@ -505,21 +545,21 @@
 }
 
 .save-btn-float {
-  right: 12px;
+  right: 8px;
 }
 
 .share-btn-float {
-  right: 52px;
+  right: 42px;
 }
 
 [dir="rtl"] .save-btn-float {
   right: auto;
-  left: 12px;
+  left: 8px;
 }
 
 [dir="rtl"] .share-btn-float {
   right: auto;
-  left: 52px;
+  left: 42px;
 }
 
 .save-btn-float:hover,
@@ -537,19 +577,19 @@
 
 .save-btn-float .material-icons-round,
 .share-btn-float .material-icons-round {
-  font-size: 18px;
+  font-size: 15px;
 }
 
 /* ==========================================================================
    Offer Card Body
    ========================================================================== */
 .offer-card-body {
-  padding: 16px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
   flex: 1;
   justify-content: space-between;
-  gap: 10px;
+  gap: 7px;
   background: var(--surface);
 }
 
@@ -563,8 +603,8 @@
 .store-badge-row {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
+  gap: 6px;
+  font-size: 11.5px;
   font-weight: 700;
   color: var(--text-secondary);
   text-decoration: none;
@@ -576,9 +616,9 @@
 }
 
 .mini-store-logo {
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
   object-fit: cover;
   border: 1px solid var(--border);
   background: #ffffff;
@@ -586,7 +626,7 @@
 
 .verified-icon {
   color: #2563eb;
-  font-size: 16px;
+  font-size: 15px;
 }
 
 .offer-card-img-link {
@@ -600,33 +640,33 @@
 .offer-product-name-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(59, 130, 246, 0.12) 100%);
   border: 1px solid rgba(37, 99, 235, 0.15);
-  padding: 6px 10px;
-  border-radius: var(--radius-md, 8px);
-  margin-top: 2px;
-  margin-bottom: 2px;
+  padding: 5px 8px;
+  border-radius: var(--radius-md, 6px);
+  margin-top: 1px;
+  margin-bottom: 1px;
 }
 
 .product-icon-box {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 19px;
+  height: 19px;
   background: var(--primary);
   color: #ffffff;
-  border-radius: 6px;
+  border-radius: 4px;
   flex-shrink: 0;
 }
 
 .product-icon-box .material-icons-round {
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .product-name-highlight {
-  font-size: 13.5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.3;
@@ -637,14 +677,14 @@
 }
 
 .offer-title-main {
-  font-size: 14.5px;
+  font-size: 13.5px;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.4;
   margin: 0;
   height: auto;
-  min-height: 20px;
-  max-height: 42px;
+  min-height: 19px;
+  max-height: 38px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -663,16 +703,15 @@
 }
 
 .card-desc-text {
-  font-size: 12.5px;
-  line-height: 1.45;
+  font-size: 11.5px;
+  line-height: 1.4;
   color: var(--text-secondary);
   margin: 0;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  min-height: 36px;
 }
 
 .dark-theme .offer-product-name-row {
@@ -692,14 +731,14 @@
 }
 
 .offer-price {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 800;
-  color: var(--primary);
+  color: var(--danger, #ef4444);
   letter-spacing: -0.02em;
 }
 
 .original-price {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--text-muted);
   text-decoration: line-through;
@@ -709,9 +748,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 10px;
+  padding-top: 7px;
   border-top: 1px solid var(--border);
-  margin-top: 4px;
+  margin-top: 2px;
   font-size: 11px;
 }
 
@@ -721,11 +760,11 @@
 }
 
 .badge-cat-tag {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
   color: var(--primary);
   background: rgba(37, 99, 235, 0.08);
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: var(--radius-full);
 }
 
@@ -804,11 +843,100 @@
 
 @media (max-width: 576px) {
   .grid-cards {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .offer-card-image {
+    height: 125px;
+    min-height: 125px;
+    max-height: 125px;
+  }
+
+  .offer-card-body {
+    padding: 8px 10px;
+    gap: 4px;
+  }
+
+  .card-desc-text {
+    display: none;
+  }
+
+  .store-badge-row {
+    font-size: 10px;
+    gap: 4px;
+  }
+
+  .offer-title-main {
+    font-size: 12px;
+    min-height: 16px;
+  }
+
+  .offer-product-name-row {
+    padding: 2px 5px;
+  }
+
+  .product-name-highlight {
+    font-size: 10.5px;
+  }
+
+  .offer-price {
+    font-size: 13.5px;
+  }
+
+  .original-price {
+    font-size: 10.5px;
+  }
+
+  .discount-badge-float {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  .flash-badge-float {
+    left: 48px;
+    font-size: 8.5px;
+    padding: 1px 4px;
+  }
+
+  [dir="rtl"] .flash-badge-float {
+    left: auto;
+    right: 48px;
+  }
+
+  .save-btn-float,
+  .share-btn-float {
+    width: 26px;
+    height: 26px;
+  }
+
+  .save-btn-float .material-icons-round,
+  .share-btn-float .material-icons-round {
+    font-size: 14px;
+  }
+
+  .share-btn-float {
+    right: 38px;
+  }
+
+  [dir="rtl"] .share-btn-float {
+    right: auto;
+    left: 38px;
+  }
+
+  .badge-cat-tag {
+    font-size: 9px;
+    padding: 1px 4px;
   }
 
   .filters-body {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 360px) {
+  .grid-cards {
+    gap: 8px;
   }
 }
 
@@ -1152,5 +1280,245 @@
 .brand-empty-state p {
   font-size: 12px;
   margin: 0;
+}
+
+/* ==========================================================================
+   Responsive Mobile Filter Drawer & Layout (Screens <= 992px)
+   ========================================================================== */
+@media (max-width: 992px) {
+  .offers-page-layout {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    margin: 0;
+  }
+
+  .offers-grid-section {
+    gap: 8px;
+  }
+
+  /* Mobile Filter Top Trigger Bar */
+  .mobile-filter-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    width: 100%;
+    margin: 0;
+  }
+
+  /* Hide redundant "Found X offers" card on mobile; only show chips if active */
+  .offers-grid-header {
+    display: none !important;
+  }
+
+  .offers-grid-header.has-chips {
+    display: flex !important;
+    padding: 6px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin: 0;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .offers-grid-header .header-left-info {
+    display: none !important;
+  }
+
+  .btn-open-mobile-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 7px 16px;
+    border-radius: var(--radius-full);
+    background: var(--primary);
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.28);
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+
+  .btn-open-mobile-filter:active {
+    transform: scale(0.97);
+  }
+
+  .btn-open-mobile-filter .material-icons-round {
+    font-size: 17px;
+  }
+
+  .mobile-filter-badge {
+    background: #ffffff;
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 800;
+    padding: 1px 7px;
+    border-radius: var(--radius-full);
+    margin-left: 2px;
+    line-height: 1.4;
+  }
+
+  [dir="rtl"] .mobile-filter-badge {
+    margin-left: 0;
+    margin-right: 2px;
+  }
+
+  .mobile-results-count {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .mobile-results-count strong {
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+
+  /* Mobile Filter Backdrop */
+  .filters-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1050;
+    animation: fadeIn 0.2s ease;
+  }
+
+  /* Filters Sidebar transforms into Offcanvas Drawer */
+  .filters-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 320px;
+    max-width: 88vw;
+    height: 100vh;
+    height: 100dvh;
+    background: var(--surface);
+    z-index: 1060;
+    display: flex;
+    flex-direction: column;
+    border-radius: 0;
+    border: none;
+    border-right: 1px solid var(--border);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+  }
+
+  [dir="rtl"] .filters-sidebar {
+    left: auto;
+    right: 0;
+    border-right: none;
+    border-left: 1px solid var(--border);
+    transform: translateX(100%);
+  }
+
+  .filters-sidebar.mobile-open {
+    transform: translateX(0) !important;
+  }
+
+  .filters-header {
+    padding: 14px 18px;
+    flex-shrink: 0;
+  }
+
+  .btn-close-mobile-filter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .btn-close-mobile-filter:hover {
+    color: var(--text-primary);
+    background: var(--surface-hover);
+  }
+
+  .btn-close-mobile-filter .material-icons-round {
+    font-size: 18px;
+  }
+
+  .filters-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px 18px 24px;
+  }
+
+  /* Drawer Sticky Footer */
+  .filters-mobile-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  .btn-reset-mobile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--surface-hover);
+    color: var(--text-primary);
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+  }
+
+  .btn-reset-mobile .material-icons-round {
+    font-size: 16px;
+  }
+
+  .btn-apply-mobile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border-radius: var(--radius-md);
+    background: var(--primary);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 13.5px;
+    border: none;
+    cursor: pointer;
+    flex: 1;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+
+  .btn-apply-mobile:active {
+    transform: scale(0.98);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 

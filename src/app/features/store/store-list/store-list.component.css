@@ -3,33 +3,43 @@
 .store-list-container {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 20px;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 .store-list-header {
   border-bottom: 1px solid var(--border);
-  padding-bottom: 16px;
+  padding-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .page-title {
   font-size: 24px;
   font-weight: 800;
   color: var(--text-primary);
+  margin: 0;
 }
 
 .page-subtitle {
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--text-secondary);
+  margin: 0;
 }
 
 /* Filters Bar */
 .store-filters {
-  padding: 20px;
+  padding: 14px 18px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   background: var(--surface);
   border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 .search-field {
@@ -42,28 +52,70 @@
   position: absolute;
   left: 14px;
   color: var(--text-muted);
+  font-size: 18px;
+  pointer-events: none;
 }
 
-.rtl .search-field-icon {
+.search-field .form-control {
+  width: 100%;
+  padding: 10px 40px 10px 42px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  font-size: 13.5px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.search-field .form-control:focus {
+  background: var(--surface);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.clear-search-btn:hover {
+  color: var(--text-primary);
+}
+
+.clear-search-btn .material-icons-round {
+  font-size: 18px;
+}
+
+[dir="rtl"] .search-field-icon {
   left: auto;
   right: 14px;
 }
 
-.search-field .form-control {
-  padding-left: 44px;
-  border-radius: var(--radius-full);
+[dir="rtl"] .search-field .form-control {
+  padding-left: 40px;
+  padding-right: 42px;
 }
 
-.rtl .search-field .form-control {
-  padding-left: 14px;
-  padding-right: 44px;
+[dir="rtl"] .clear-search-btn {
+  right: auto;
+  left: 12px;
 }
 
 .category-filter-tags {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding: 2px 0 4px;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
 
@@ -75,17 +127,24 @@
   background: var(--surface-hover);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 600;
+  padding: 7px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
   color: var(--text-secondary);
   cursor: pointer;
   white-space: nowrap;
-  transition: var(--transition-fast);
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tag-btn .material-icons-round {
+  font-size: 15px;
 }
 
 .tag-btn:hover {
-  background: var(--primary-light);
+  background: var(--surface);
   border-color: var(--primary);
   color: var(--primary);
 }
@@ -94,55 +153,162 @@
   background: var(--primary);
   border-color: var(--primary);
   color: #ffffff;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
 }
 
-/* Store Cards */
+.tag-btn-followed .badge-count {
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* Empty State & Spinner */
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 50px;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.empty-state-icon {
+  font-size: 44px;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.empty-state-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.empty-state-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 380px;
+}
+
+/* Store Directory Grid & Cards */
+.grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
 .store-grid-card {
   display: flex;
   flex-direction: column;
   position: relative;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.store-grid-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
 }
 
 .verified-badge-float {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 10;
+  top: 10px;
+  left: 10px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  background: rgba(16, 185, 129, 0.92);
+  color: #ffffff;
+  backdrop-filter: blur(4px);
 }
 
-.rtl .verified-badge-float {
+[dir="rtl"] .verified-badge-float {
   left: auto;
-  right: 12px;
+  right: 10px;
 }
 
 .store-logo-panel {
-  height: 140px;
+  height: 130px;
   background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   border-bottom: 1px solid var(--border);
-  padding: 24px;
+  padding: 16px;
+  position: relative;
+}
+
+.dark-theme .store-logo-panel {
+  background: #0f172a;
 }
 
 .store-logo-panel img {
   max-width: 100%;
   max-height: 100%;
+  width: auto;
+  height: auto;
   object-fit: contain;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.store-grid-card:hover .store-logo-panel img {
+  transform: scale(1.05);
 }
 
 .store-body-panel {
-  padding: 20px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 7px;
   flex: 1;
 }
 
 .store-title-main {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 800;
   color: var(--text-primary);
+  margin: 0;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.store-title-main a {
+  color: inherit;
+  text-decoration: none;
 }
 
 .store-title-main a:hover {
@@ -150,39 +316,46 @@
 }
 
 .store-category-desc {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--text-muted);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .store-counts-row {
   display: flex;
-  gap: 16px;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .count-tag {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 4px;
+  font-size: 11px;
   color: var(--text-secondary);
   font-weight: 600;
   background: var(--surface-hover);
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
+  padding: 3px 7px;
+  border-radius: 4px;
 }
 
-.count-tag span:first-child {
-  font-size: 16px;
+.count-tag .material-icons-round {
+  font-size: 13px;
   color: var(--text-muted);
 }
 
 .store-card-actions {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
   margin-top: auto;
   border-top: 1px solid var(--border);
-  padding-top: 14px;
+  padding-top: 10px;
 }
 
 .follow-btn {
@@ -190,12 +363,18 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
   border-radius: var(--radius-full);
   transition: all 0.2s ease;
-  height: 38px;
+  height: 34px;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.follow-btn .material-icons-round {
+  font-size: 15px;
 }
 
 .btn-following {
@@ -208,5 +387,152 @@
   background: #fef2f2;
   color: #dc2626;
   border-color: #fca5a5;
+}
+
+.btn-icon-only {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.btn-icon-only:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--surface-hover);
+}
+
+.btn-icon-only .material-icons-round {
+  font-size: 18px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 576px) {
+  .store-list-container {
+    gap: 10px;
+  }
+
+  .store-list-header {
+    padding-bottom: 8px;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  .page-subtitle {
+    font-size: 12px;
+  }
+
+  .store-filters {
+    padding: 10px 12px;
+    gap: 8px;
+    border-radius: var(--radius-md);
+  }
+
+  .search-field .form-control {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    font-size: 13px;
+  }
+
+  .tag-btn {
+    padding: 5px 11px;
+    font-size: 11.5px;
+  }
+
+  .grid-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .store-logo-panel {
+    height: 95px;
+    padding: 10px;
+  }
+
+  .verified-badge-float {
+    top: 6px;
+    left: 6px;
+    padding: 2px 5px;
+    font-size: 9.5px;
+  }
+
+  [dir="rtl"] .verified-badge-float {
+    left: auto;
+    right: 6px;
+  }
+
+  .verified-badge-float .material-icons-round {
+    font-size: 11px;
+  }
+
+  .store-body-panel {
+    padding: 8px 10px;
+    gap: 4px;
+  }
+
+  .store-title-main {
+    font-size: 12.5px;
+  }
+
+  .store-category-desc {
+    font-size: 10.5px;
+  }
+
+  .store-counts-row {
+    gap: 4px;
+  }
+
+  .count-tag {
+    font-size: 9.5px;
+    padding: 2px 5px;
+    gap: 2px;
+  }
+
+  .count-tag .material-icons-round {
+    font-size: 11px;
+  }
+
+  .store-card-actions {
+    gap: 6px;
+    padding-top: 8px;
+  }
+
+  .follow-btn {
+    height: 29px;
+    font-size: 11px;
+    padding: 0 8px;
+    gap: 3px;
+  }
+
+  .follow-btn .material-icons-round {
+    font-size: 13px;
+  }
+
+  .btn-icon-only {
+    width: 29px;
+    height: 29px;
+  }
+
+  .btn-icon-only .material-icons-round {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 360px) {
+  .grid-cards {
+    gap: 8px;
+  }
+
+  .store-body-panel {
+    padding: 6px 8px;
+  }
 }
 

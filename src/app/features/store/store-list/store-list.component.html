@@ -15,10 +15,20 @@
         [placeholder]="currentLang() === 'en' ? 'Search store names...' : 'ابحث عن اسم المتجر...'" 
         class="form-control"
       >
+      <button 
+        type="button" 
+        class="clear-search-btn" 
+        *ngIf="searchQuery" 
+        (click)="searchQuery = ''"
+        [title]="currentLang() === 'en' ? 'Clear search' : 'مسح البحث'"
+      >
+        <span class="material-icons-round">close</span>
+      </button>
     </div>
 
     <div class="category-filter-tags">
       <button  
+        type="button"
         (click)="onlyFollowed.set(false); selectedCategoryId = null"
         [class.active]="!onlyFollowed() && selectedCategoryId === null"
         class="tag-btn"
@@ -27,20 +37,23 @@
       </button>
 
       <button  
+        type="button"
         (click)="toggleFollowedOnly()"
         [class.active]="onlyFollowed()"
         class="tag-btn tag-btn-followed"
       >
-        <span class="material-icons-round" style="font-size: 15px; vertical-align: middle; margin-inline-end: 4px;">favorite</span>
-        <span>{{ currentLang() === 'en' ? 'Followed Stores' : 'المتاجر المتابعة' }}</span>
+        <span class="material-icons-round">favorite</span>
+        <span>{{ currentLang() === 'en' ? 'Followed' : 'المتابعة' }}</span>
         <span class="badge-count" *ngIf="followedStoreIds().length > 0">({{ followedStoreIds().length }})</span>
       </button>
 
       <button
+        type="button"
         *ngFor="let cat of categories"
         (click)="onlyFollowed.set(false); selectedCategoryId = cat.id"
         [class.active]="!onlyFollowed() && selectedCategoryId === cat.id"
-        class="tag-btn">
+        class="tag-btn"
+      >
         {{ currentLang() === 'en' ? (cat.nameEn || cat.name_en || cat.name) : (cat.nameAr || cat.name_ar || cat.nameEn) }}
       </button>
     </div>

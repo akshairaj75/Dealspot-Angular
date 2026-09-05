@@ -1,10 +1,21 @@
 <div class="offers-page-layout">
-  <!-- Sidebar Filters Panel -->
-  <aside class="filters-sidebar">
+  <!-- Mobile Filter Backdrop -->
+  <div class="filters-backdrop" *ngIf="isMobileFilterOpen()" (click)="closeMobileFilter()"></div>
+
+  <!-- Sidebar Filters Panel (Desktop Sidebar & Mobile Drawer) -->
+  <aside class="filters-sidebar" [class.mobile-open]="isMobileFilterOpen()">
     <div class="filters-header">
-      <span class="material-icons-round filter-header-icon">filter_alt</span>
-      <h3>{{ currentLang() === 'en' ? 'Filter Offers' : 'تصفية العروض' }}</h3>
-      <button class="btn-reset" (click)="resetFilters()">{{ currentLang() === 'en' ? 'Reset' : 'إعادة ضبط' }}</button>
+      <div class="filters-header-title">
+        <span class="material-icons-round filter-header-icon">filter_alt</span>
+        <h3>{{ currentLang() === 'en' ? 'Filter Offers' : 'تصفية العروض' }}</h3>
+        <span class="filter-count-badge" *ngIf="activeFiltersCount() > 0">{{ activeFiltersCount() }}</span>
+      </div>
+      <div class="filters-header-actions">
+        <button type="button" class="btn-reset" (click)="resetFilters()">{{ currentLang() === 'en' ? 'Reset' : 'إعادة ضبط' }}</button>
+        <button type="button" class="btn-close-mobile-filter" (click)="closeMobileFilter()" [title]="currentLang() === 'en' ? 'Close' : 'إغلاق'">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
     </div>
 
     <div class="filters-body">
@@ -98,7 +109,7 @@
         </div>
       </div>
 
-      <!-- Store Filter -->
+      <!-- Retail Store Filter -->
       <div class="filter-group">
         <label class="form-label">{{ currentLang() === 'en' ? 'Retail Store' : 'المتجر الشريك' }}</label>
         <app-custom-select
@@ -117,7 +128,6 @@
       <!-- Brand Filter (Searchable + Infinite Scroll) -->
       <div class="filter-group brand-filter-group">
         <label class="form-label">{{ currentLang() === 'en' ? 'Brand' : 'الماركة' }}</label>
-        
         <div class="brand-filter-dropdown-container" [class.dropdown-active]="isBrandDropdownOpen()">
           <!-- Dropdown Trigger Button -->
           <button 
@@ -161,7 +171,6 @@
 
           <!-- Dropdown Menu Overlay -->
           <div class="brand-dropdown-menu" *ngIf="isBrandDropdownOpen()" (click)="$event.stopPropagation()">
-            <!-- Brand Search Input Box -->
             <div class="brand-search-box">
               <span class="material-icons-round search-icon">search</span>
               <input 
@@ -181,9 +190,7 @@
               </button>
             </div>
 
-            <!-- Scrollable Brands List -->
             <div class="brand-options-list" (scroll)="onBrandScroll($event)">
-              <!-- 'All Brands' Option -->
               <div 
                 class="brand-option-item all-brands-option" 
                 [class.selected]="!selectedBrandId && !selectedBrandName"
@@ -196,7 +203,6 @@
                 <span class="material-icons-round check-icon" *ngIf="!selectedBrandId && !selectedBrandName">check</span>
               </div>
 
-              <!-- Brand List Items -->
               <div 
                 *ngFor="let b of brandOptions()" 
                 class="brand-option-item" 
@@ -216,19 +222,16 @@
                 <span class="material-icons-round check-icon" *ngIf="selectedBrandId === b.id">check</span>
               </div>
 
-              <!-- Initial Loading Spinner -->
               <div class="brand-loading-state" *ngIf="brandLoading()">
                 <span class="spinner-border spinner-border-sm"></span>
                 <span>{{ currentLang() === 'en' ? 'Loading brands...' : 'جاري تحميل الماركات...' }}</span>
               </div>
 
-              <!-- Load More Indicator -->
               <div class="brand-loading-more" *ngIf="brandLoadingMore()">
                 <span class="spinner-border spinner-border-sm"></span>
                 <span>{{ currentLang() === 'en' ? 'Loading more...' : 'جاري تحميل المزيد...' }}</span>
               </div>
 
-              <!-- Empty State -->
               <div class="brand-empty-state" *ngIf="!brandLoading() && brandOptions().length === 0">
                 <span class="material-icons-round empty-icon">sentiment_dissatisfied</span>
                 <p>{{ currentLang() === 'en' ? 'No brands match your search' : 'لا توجد ماركات مطابقة للبحث' }}</p>
@@ -260,7 +263,7 @@
         </div>
       </div>
 
-      <!-- Toggle Deals types -->
+      <!-- Toggle Deals Types -->
       <div class="filter-group-checkboxes">
         <label class="checkbox-label" [class.active-saved-filter]="onlySaved()">
           <input type="checkbox" [checked]="onlySaved()" (change)="toggleSavedOnly()">
@@ -276,13 +279,36 @@
         </label>
       </div>
     </div>
-  </aside>
 
+    <!-- Mobile Drawer Sticky Action Footer -->
+    <div class="filters-mobile-footer">
+      <button type="button" class="btn btn-outline-secondary btn-reset-mobile" (click)="resetFilters()">
+        <span class="material-icons-round">restart_alt</span>
+        <span>{{ currentLang() === 'en' ? 'Reset' : 'إعادة ضبط' }}</span>
+      </button>
+      <button type="button" class="btn btn-primary btn-apply-mobile" (click)="applyMobileFilter()">
+        <span>{{ currentLang() === 'en' ? 'Show ' + offers().length + ' Offers' : 'عرض ' + offers().length + ' عرض' }}</span>
+      </button>
+    </div>
+  </aside>
 
   <!-- Offers Grid Section -->
   <section class="offers-grid-section">
+    <!-- Mobile Filter Trigger Bar -->
+    <div class="mobile-filter-bar">
+      <button type="button" class="btn-open-mobile-filter" (click)="openMobileFilter()">
+        <span class="material-icons-round">tune</span>
+        <span>{{ currentLang() === 'en' ? 'Filter & Sort' : 'الفلاتر والبحث' }}</span>
+        <span class="mobile-filter-badge" *ngIf="activeFiltersCount() > 0">{{ activeFiltersCount() }}</span>
+      </button>
+      <div class="mobile-results-count">
+        <span *ngIf="!loading"><strong>{{ offers().length }}</strong> {{ currentLang() === 'en' ? 'offers' : 'عرض' }}</span>
+        <span *ngIf="loading">{{ currentLang() === 'en' ? 'Loading...' : 'جاري التحميل...' }}</span>
+      </div>
+    </div>
+
     <!-- Active Filters Summary Bar -->
-    <div class="offers-grid-header card">
+    <div class="offers-grid-header card" [class.has-chips]="selectedMainCategoryId || selectedSubCategoryId || selectedStoreId || selectedBrandId || selectedBrandName || showFlashOnly || showFeaturedOnly || selectedDiscountRange > 0 || searchQuery">
       <div class="header-left-info">
         <span class="material-icons-round header-info-icon">local_offer</span>
         <p class="results-count" *ngIf="!loading">
@@ -297,7 +323,7 @@
         <!-- Main Category chip -->
         <span class="active-filter-badge" *ngIf="getSelectedMainCategory()">
           <span>{{ getSelectedMainCategory() | translate:'name' }}</span>
-          <button class="remove-chip-btn" (click)="onMainCategoryChange(null)">
+          <button type="button" class="remove-chip-btn" (click)="onMainCategoryChange(null)">
             <span class="material-icons-round">close</span>
           </button>
         </span>
@@ -305,7 +331,7 @@
         <!-- Subcategory chip -->
         <span class="active-filter-badge sub-badge" *ngIf="getSelectedSubCategory()">
           <span>{{ getSelectedSubCategory() | translate:'name' }}</span>
-          <button class="remove-chip-btn" (click)="onSubCategoryChange(null)">
+          <button type="button" class="remove-chip-btn" (click)="onSubCategoryChange(null)">
             <span class="material-icons-round">close</span>
           </button>
         </span>
@@ -314,12 +340,12 @@
         <span class="active-filter-badge brand-badge" *ngIf="getSelectedBrand()">
           <span class="material-icons-round font-xs">verified</span>
           <span>{{ getSelectedBrand() | translate:'name' }}</span>
-          <button class="remove-chip-btn" (click)="clearBrandFilter()">
+          <button type="button" class="remove-chip-btn" (click)="clearBrandFilter()">
             <span class="material-icons-round">close</span>
           </button>
         </span>
 
-        <button class="btn-clear-all-chips" (click)="resetFilters()">
+        <button type="button" class="btn-clear-all-chips" (click)="resetFilters()">
           <span class="material-icons-round">close</span>
           <span>{{ currentLang() === 'en' ? 'Clear All' : 'مسح الكل' }}</span>
         </button>
@@ -336,7 +362,7 @@
       <span class="material-icons-round empty-state-icon">local_offer</span>
       <h3 class="empty-state-title">{{ currentLang() === 'en' ? 'No offers match your criteria' : 'لم نجد عروضاً تطابق هذه الفلاتر' }}</h3>
       <p class="empty-state-desc">{{ currentLang() === 'en' ? 'Try adjusting or clearing your search filters to view more active promotions.' : 'يرجى تغيير أو إعادة ضبط الفلاتر لعرض العروض النشطة.' }}</p>
-      <button class="btn btn-primary" (click)="resetFilters()">
+      <button type="button" class="btn btn-primary" (click)="resetFilters()">
         <span class="material-icons-round">refresh</span>
         <span>{{ currentLang() === 'en' ? 'Reset All Filters' : 'إعادة ضبط جميع الفلاتر' }}</span>
       </button>
@@ -358,12 +384,12 @@
           </a>
           
           <!-- Save / Bookmark Button -->
-          <button class="save-btn-float" (click)="toggleSave(offer, $event)" [class.saved]="isSaved(offer.id)" [title]="isSaved(offer.id) ? 'Saved' : 'Save offer'">
+          <button type="button" class="save-btn-float" (click)="toggleSave(offer, $event)" [class.saved]="isSaved(offer.id)" [title]="isSaved(offer.id) ? 'Saved' : 'Save offer'">
             <span class="material-icons-round">{{ isSaved(offer.id) ? 'bookmark' : 'bookmark_border' }}</span>
           </button>
           
           <!-- Share Button -->
-          <button class="share-btn-float" (click)="shareOffer(offer, $event)" [title]="currentLang() === 'en' ? 'Share offer' : 'مشاركة العرض'">
+          <button type="button" class="share-btn-float" (click)="shareOffer(offer, $event)" [title]="currentLang() === 'en' ? 'Share offer' : 'مشاركة العرض'">
             <span class="material-icons-round">{{ copiedOfferId === offer.id ? 'check' : 'share' }}</span>
           </button>
         </div>
