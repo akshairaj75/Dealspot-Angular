@@ -369,17 +369,90 @@ export class OfferDetailComponent implements OnInit {
 
 
   shareOffer(): void {
-
+    const o = this.offer();
+    const title = o ? (this.currentLang() === 'en' ? (o.titleEn || o.title_en) : (o.titleAr || o.title_ar || o.titleEn)) : 'DealSpot Offer';
     const shareUrl = window.location.href;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(shareUrl).then(() => {
-        this.linkCopied = true;
-        setTimeout(() => {
-          this.linkCopied = false;
-          this.cd.detectChanges();
-        }, 2000);
+
+    if (navigator.share) {
+      navigator.share({
+        title: title,
+        text: title,
+        url: shareUrl
+      }).then(() => {
+        this.showCopiedToast();
+      }).catch((err) => {
+        if (err && err.name !== 'AbortError') {
+          this.copyToClipboard(shareUrl);
+        }
+      });
+    } else {
+      this.copyToClipboard(shareUrl);
+    }
+  }
+
+  private copyToClipboard(text: string): void {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        this.showCopiedToast();
+      }).catch(() => {
+        this.fallbackCopyTextToClipboard(text);
+      });
+    } else {
+      this.fallbackCopyTextToClipboard(text);
+    }
+  }
+
+  private fallbackCopyTextToClipboard(text: string): void {
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+
+      if (successful) {
+        this.showCopiedToast();
+      } else {
+        Swal.fire({
+          icon: 'info',
+          title: this.currentLang() === 'en' ? 'Share Offer Link' : 'مشاركة رابط العرض',
+          text: text,
+          confirmButtonText: 'OK'
+        });
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: 'info',
+        title: this.currentLang() === 'en' ? 'Share Offer Link' : 'مشاركة رابط العرض',
+        text: text,
+        confirmButtonText: 'OK'
       });
     }
+  }
+
+  private showCopiedToast(): void {
+    this.linkCopied = true;
+    this.cd.detectChanges();
+
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'success',
+      title: this.currentLang() === 'en' ? 'Offer link copied to clipboard!' : 'تم نسخ رابط العرض إلى الحافظة!',
+      showConfirmButton: false,
+      timer: 2500,
+      timerProgressBar: true
+    });
+
+    setTimeout(() => {
+      this.linkCopied = false;
+      this.cd.detectChanges();
+    }, 2500);
   }
 
   getSavingsAmount(): string {

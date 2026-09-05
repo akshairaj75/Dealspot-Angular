@@ -761,18 +761,93 @@ export class OfferListComponent implements OnInit, OnDestroy {
 
 
   shareOffer(offer: any, event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    const shareUrl = `${window.location.origin}/offers-list?search=${encodeURIComponent(offer.titleEn || offer.title_en || '')}`;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(shareUrl).then(() => {
-        this.copiedOfferId = offer.id;
-        setTimeout(() => {
-          this.copiedOfferId = null;
-          this.cd.detectChanges();
-        }, 2000);
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    const title = offer ? (this.currentLang() === 'en' ? (offer.titleEn || offer.title_en) : (offer.titleAr || offer.title_ar || offer.titleEn)) : 'DealSpot Offer';
+    const shareUrl = `${window.location.origin}/offers/${offer.id}`;
+
+    if (navigator.share) {
+      navigator.share({
+        title: title,
+        text: title,
+        url: shareUrl
+      }).then(() => {
+        this.showCopiedToast(offer.id);
+      }).catch((err) => {
+        if (err && err.name !== 'AbortError') {
+          this.copyToClipboard(shareUrl, offer.id);
+        }
+      });
+    } else {
+      this.copyToClipboard(shareUrl, offer.id);
+    }
+  }
+
+  private copyToClipboard(text: string, offerId: number): void {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        this.showCopiedToast(offerId);
+      }).catch(() => {
+        this.fallbackCopyTextToClipboard(text, offerId);
+      });
+    } else {
+      this.fallbackCopyTextToClipboard(text, offerId);
+    }
+  }
+
+  private fallbackCopyTextToClipboard(text: string, offerId: number): void {
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+
+      if (successful) {
+        this.showCopiedToast(offerId);
+      } else {
+        Swal.fire({
+          icon: 'info',
+          title: this.currentLang() === 'en' ? 'Share Offer Link' : 'مشاركة رابط العرض',
+          text: text,
+          confirmButtonText: 'OK'
+        });
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: 'info',
+        title: this.currentLang() === 'en' ? 'Share Offer Link' : 'مشاركة رابط العرض',
+        text: text,
+        confirmButtonText: 'OK'
       });
     }
+  }
+
+  private showCopiedToast(offerId: number): void {
+    this.copiedOfferId = offerId;
+    this.cd.detectChanges();
+
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'success',
+      title: this.currentLang() === 'en' ? 'Offer link copied to clipboard!' : 'تم نسخ رابط العرض إلى الحافظة!',
+      showConfirmButton: false,
+      timer: 2500,
+      timerProgressBar: true
+    });
+
+    setTimeout(() => {
+      this.copiedOfferId = null;
+      this.cd.detectChanges();
+    }, 2500);
   }
 }
