@@ -1,11 +1,5 @@
 <div class="flyer-list-page">
-  <!-- Section Title & Header -->
-  <div class="flyer-list-header">
-    <h1 class="page-title">{{ currentLang() === 'en' ? 'Active Store Flyers & Brochures' : 'المنشورات والمجلات الترويجية' }}</h1>
-    <p class="page-subtitle">{{ currentLang() === 'en' ? 'Flip through digital saving catalogs and store promotional booklets' : 'تصفح مجلات عروض المتاجر الأسبوعية والتخفيضات الكبرى والعروض الحصرية' }}</p>
-  </div>
-
-  <!-- Search Filter Bar -->
+  <!-- Search & City Filter Bar -->
   <div class="flyer-filters card">
     <div class="search-field">
       <span class="material-icons-round search-field-icon">search</span>
@@ -19,6 +13,23 @@
         <span class="material-icons-round">close</span>
       </button>
     </div>
+
+    <!-- Active Filter & Count Row -->
+    <div class="flyer-filter-summary-row" *ngIf="(selectedCityId && cityService.selectedCity()) || !loading">
+      <div class="flyer-active-city" *ngIf="selectedCityId && cityService.selectedCity()">
+        <span class="city-chip">
+          <span class="material-icons-round">place</span>
+          <span>{{ cityService.selectedCity() | translate:'name' }}</span>
+          <button type="button" class="remove-chip-btn" (click)="clearCityFilter()" [title]="currentLang() === 'en' ? 'Show all cities' : 'عرض جميع المدن'">
+            <span class="material-icons-round">close</span>
+          </button>
+        </span>
+      </div>
+
+      <div class="flyer-count-pill" *ngIf="!loading">
+        <span><strong>{{ getFilteredFlyers().length }}</strong> {{ currentLang() === 'en' ? 'flyers' : 'بروشور' }}</span>
+      </div>
+    </div>
   </div>
 
   <!-- Spinner state -->
@@ -30,7 +41,16 @@
   <div class="empty-state card" *ngIf="!loading && getFilteredFlyers().length === 0">
     <span class="material-icons-round empty-state-icon">menu_book</span>
     <h3 class="empty-state-title">{{ currentLang() === 'en' ? 'No flyers found' : 'لا توجد بروشورات متاحة' }}</h3>
-    <p class="empty-state-desc">{{ currentLang() === 'en' ? 'No promotional flyers found matching your search criteria.' : 'لم يتم العثور على أي نشرات عروض تطابق معايير البحث الحالية.' }}</p>
+    <p class="empty-state-desc" *ngIf="selectedCityId && cityService.selectedCity()">
+      {{ currentLang() === 'en' ? 'No promotional flyers found in ' + (cityService.selectedCity() | translate:'name') + '.' : 'لم يتم العثور على أي نشرات عروض في ' + (cityService.selectedCity() | translate:'name') + '.' }}
+    </p>
+    <p class="empty-state-desc" *ngIf="!selectedCityId">
+      {{ currentLang() === 'en' ? 'No promotional flyers found matching your search criteria.' : 'لم يتم العثور على أي نشرات عروض تطابق معايير البحث الحالية.' }}
+    </p>
+    <button *ngIf="selectedCityId" type="button" class="btn btn-outline" (click)="clearCityFilter()">
+      <span class="material-icons-round">public</span>
+      <span>{{ currentLang() === 'en' ? 'View Flyers from All Cities' : 'عرض البروشورات من جميع المدن' }}</span>
+    </button>
   </div>
 
   <!-- Flyers Grid -->

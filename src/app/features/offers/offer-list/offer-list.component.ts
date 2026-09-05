@@ -97,7 +97,7 @@ export class OfferListComponent implements OnInit, OnDestroy {
     // Monitor global active city signal
     effect(() => {
       const city = this.cityService.selectedCity();
-      if (city && this.selectedCityId === null) {
+      if (city && city.id) {
         this.selectedCityId = city.id;
         this.applyFilters();
       }

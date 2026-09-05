@@ -1,20 +1,23 @@
-import { Component, inject, OnInit, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, signal, effect, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FlyerService } from '../../../core/services/flyer.service';
+import { CityService } from '../../../core/services/city.service';
 import { TranslationService } from '../../../core/services/translation.service';
+import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
 import { environment } from '../../../environment/environment';
 
 @Component({
   selector: 'app-flyer-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, TranslatePipe],
   templateUrl: './flyer-list.component.html',
   styleUrls: ['./flyer-list.component.css']
 })
 export class FlyerListComponent implements OnInit {
   private flyerService = inject(FlyerService);
+  cityService = inject(CityService);
   private translationService = inject(TranslationService);
   private cd = inject(ChangeDetectorRef);
 
@@ -22,8 +25,23 @@ export class FlyerListComponent implements OnInit {
   filePath = environment.filePath;
 
   flyers = signal<any[]>([]);
+  selectedCityId: number | null = null;
   searchQuery = '';
   loading = false;
+
+  clearCityFilter(): void {
+    this.selectedCityId = null;
+  }
+
+  constructor() {
+    effect(() => {
+      const city = this.cityService.selectedCity();
+      if (city && city.id) {
+        this.selectedCityId = city.id;
+        this.cd.detectChanges();
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.loadFlyers();
@@ -47,6 +65,11 @@ export class FlyerListComponent implements OnInit {
 
   getFilteredFlyers(): any[] {
     let list = this.flyers();
+
+    if (this.selectedCityId !== null) {
+      const cId = Number(this.selectedCityId);
+      list = list.filter(f => f.cityId === cId || f.city_id === cId || (!f.cityId && !f.city_id) || f.store?.cityId === cId);
+    }
 
     if (this.searchQuery.trim()) {
       const q = this.searchQuery.toLowerCase();

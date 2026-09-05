@@ -244,7 +244,12 @@ export class HomeComponent implements OnInit {
       next: (res: any[]) => {
         const offers = res || [];
         this.allOffers.set(offers);
-        this.organizeOffers(offers);
+        const city = this.cityService.selectedCity();
+        if (city && city.id) {
+          this.filterByCity(city.id);
+        } else {
+          this.organizeOffers(offers);
+        }
         this.loading.set(false);
         this.cd.detectChanges();
       },
@@ -304,14 +309,15 @@ export class HomeComponent implements OnInit {
 
   private filterByCity(cityId: number): void {
     const all = this.allOffers();
-    if (!all || all.length === 0) return;
+    if (!all) return;
 
-    const cityOffers = all.filter(o => !o.cityId || o.cityId === cityId || o.city_id === cityId);
-    if (cityOffers.length > 0) {
-      this.organizeOffers(cityOffers);
-    } else {
-      this.organizeOffers(all);
-    }
+    // Filter deals matching selected city or deals marked nationwide (!cId)
+    const cityOffers = all.filter(o => {
+      const cId = o.cityId || o.city_id || o.city?.id || o.store?.cityId || o.store?.city_id;
+      return !cId || cId === cityId;
+    });
+
+    this.organizeOffers(cityOffers);
   }
 
   getImageUrl(url: string | null | undefined): string {

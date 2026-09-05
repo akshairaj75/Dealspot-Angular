@@ -625,16 +625,23 @@
 
 /* Page Layout Main */
 .main-content {
-  flex: 1;
+  flex: 1 0 auto;
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
   padding: 24px 24px 48px;
+  min-height: calc(100vh - 80px);
+  min-height: calc(100dvh - 80px);
+  display: flex;
+  flex-direction: column;
 }
 
 @media (max-width: 768px) {
   .main-content {
     padding: 8px 12px 32px;
+    min-height: calc(100vh - 64px);
+    min-height: calc(100dvh - 64px);
+    padding-bottom: 72px !important;
   }
 }
 

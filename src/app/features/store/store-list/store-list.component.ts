@@ -62,7 +62,7 @@ export class StoreListComponent implements OnInit, OnDestroy {
 
     effect(() => {
       const city = this.cityService.selectedCity();
-      if (city && this.selectedCityId === null) {
+      if (city && city.id) {
         this.selectedCityId = city.id;
         this.calculateActiveFiltersCount();
       }

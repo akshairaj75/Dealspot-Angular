@@ -10,16 +10,36 @@ export class CityService {
 
   private apiUrl = environment.apiUrl + '/cities';
 
-  selectedCity = signal<any>({
-    id: 1,
-    nameEn: 'Riyadh',
-    nameAr: 'الرياض'
-  });
+  private readonly STORAGE_KEY = 'dealspot_selected_city';
+
+  selectedCity = signal<any>(this.getInitialCity());
 
   constructor(private http: HttpClient) {}
 
+  private getInitialCity(): any {
+    try {
+      const saved = localStorage.getItem(this.STORAGE_KEY);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.warn('Failed to parse saved city from localStorage', e);
+    }
+    return {
+      id: 1,
+      nameEn: 'Riyadh',
+      nameAr: 'الرياض'
+    };
+  }
+
   setSelectedCity(city: any): void {
+    if (!city) return;
     this.selectedCity.set(city);
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(city));
+    } catch (e) {
+      console.warn('Failed to save city to localStorage', e);
+    }
   }
 
   getCities(): Observable<any[]> {
