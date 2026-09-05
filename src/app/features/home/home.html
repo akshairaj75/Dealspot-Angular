@@ -36,18 +36,7 @@
   </section>
 
   <!-- Categories Horizontal Scroll -->
-  <section class="home-section" *ngIf="categories().length > 0">
-    <div class="section-header">
-      <h2 class="section-title">{{ currentLang() === 'en' ? 'Browse by Category' : 'تصفح حسب القسم' }}</h2>
-      <div class="scroll-nav-controls">
-        <button type="button" class="btn-scroll-arrow" (click)="scrollCategories(-240)" [attr.aria-label]="currentLang() === 'en' ? 'Previous categories' : 'الأقسام السابقة'">
-          <span class="material-icons-round">chevron_left</span>
-        </button>
-        <button type="button" class="btn-scroll-arrow" (click)="scrollCategories(240)" [attr.aria-label]="currentLang() === 'en' ? 'Next categories' : 'الأقسام التالية'">
-          <span class="material-icons-round">chevron_right</span>
-        </button>
-      </div>
-    </div>
+  <section class="home-section categories-section" *ngIf="categories().length > 0">
     <div class="categories-scroll" #catScrollContainer>
       <a 
         *ngFor="let cat of categories()" 
