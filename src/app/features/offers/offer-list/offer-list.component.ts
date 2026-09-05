@@ -132,6 +132,9 @@ export class OfferListComponent implements OnInit, OnDestroy {
 
     // Handle query parameters (from Home page, Offer Detail, or direct links)
     this.route.queryParams.subscribe(params => {
+      if (params['q'] || params['search']) {
+        this.searchQuery = params['q'] || params['search'];
+      }
       if (params['category']) {
         this.handleCategoryParam(params['category']);
       }

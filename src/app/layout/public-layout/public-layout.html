@@ -19,12 +19,109 @@
           type="text" 
           name="search" 
           [(ngModel)]="searchQuery" 
+          (input)="onSearchInput($event)"
+          (focus)="onSearchFocus()"
+          (keyup.escape)="closeSearchSuggestions()"
           [placeholder]="currentLang() === 'en' ? 'Search offers, stores, brands...' : 'ابحث عن العروض، المتاجر، الماركات...'"
           class="search-input"
+          autocomplete="off"
         >
         <button type="submit" class="search-btn">
           <span class="material-icons-round">search</span>
         </button>
+
+        <!-- Search Suggestions Dropdown -->
+        <div class="search-suggestions-dropdown" *ngIf="showSuggestions() && searchQuery.trim().length >= 2" (click)="$event.stopPropagation()">
+          <div class="suggestions-loading" *ngIf="isSearching()">
+            <span class="material-icons-round spinning">sync</span>
+            <span>{{ currentLang() === 'en' ? 'Searching...' : 'جاري البحث...' }}</span>
+          </div>
+
+          <ng-container *ngIf="!isSearching()">
+            <!-- Products Section (Primary) -->
+            <div class="suggestion-group" *ngIf="suggestedProducts().length > 0">
+              <div class="suggestion-group-title">
+                <span class="material-icons-round">inventory_2</span>
+                <span>{{ currentLang() === 'en' ? 'Products' : 'المنتجات' }}</span>
+              </div>
+              <a 
+                *ngFor="let prod of suggestedProducts()" 
+                [routerLink]="['/offers-list']" 
+                [queryParams]="{ q: prod.nameEn || prod.nameAr }"
+                (click)="closeSearchSuggestions()"
+                class="suggestion-item"
+              >
+                <img [src]="getProductImageUrl(prod)" class="suggestion-thumb" [alt]="prod | translate:'name'">
+                <div class="suggestion-info">
+                  <span class="suggestion-title">{{ prod | translate:'name' }}</span>
+                  <span class="suggestion-meta" *ngIf="prod.brandNameEn || prod.brandNameAr || prod.sku">
+                    {{ currentLang() === 'en' ? (prod.brandNameEn || prod.sku) : (prod.brandNameAr || prod.sku) }}
+                  </span>
+                </div>
+                <span class="suggestion-badge">{{ currentLang() === 'en' ? 'View Offers' : 'عرض العروض' }}</span>
+              </a>
+            </div>
+
+            <!-- Offers Section -->
+            <div class="suggestion-group" *ngIf="suggestedOffers().length > 0">
+              <div class="suggestion-group-title">
+                <span class="material-icons-round">local_offer</span>
+                <span>{{ currentLang() === 'en' ? 'Offers' : 'العروض' }}</span>
+              </div>
+              <a 
+                *ngFor="let offer of suggestedOffers()" 
+                [routerLink]="['/offers', offer.id]" 
+                (click)="closeSearchSuggestions()"
+                class="suggestion-item"
+              >
+                <img [src]="getOfferImageUrl(offer)" class="suggestion-thumb" [alt]="offer | translate:'title'">
+                <div class="suggestion-info">
+                  <span class="suggestion-title">{{ offer | translate:'title' }}</span>
+                  <span class="suggestion-meta" *ngIf="offer.storeNameEn || offer.storeNameAr">
+                    {{ currentLang() === 'en' ? (offer.storeNameEn || offer.storeNameAr) : (offer.storeNameAr || offer.storeNameEn) }}
+                  </span>
+                </div>
+                <span class="badge badge-discount" *ngIf="offer.discountPct || offer.discount_pct">
+                  -{{ offer.discountPct || offer.discount_pct }}%
+                </span>
+              </a>
+            </div>
+
+            <!-- Stores Section -->
+            <div class="suggestion-group" *ngIf="suggestedStores().length > 0">
+              <div class="suggestion-group-title">
+                <span class="material-icons-round">store</span>
+                <span>{{ currentLang() === 'en' ? 'Stores' : 'المتاجر' }}</span>
+              </div>
+              <a 
+                *ngFor="let store of suggestedStores()" 
+                [routerLink]="['/stores', store.id]" 
+                (click)="closeSearchSuggestions()"
+                class="suggestion-item"
+              >
+                <img [src]="getStoreLogoUrl(store)" class="suggestion-logo" [alt]="store | translate:'name'">
+                <div class="suggestion-info">
+                  <span class="suggestion-title">{{ store | translate:'name' }}</span>
+                </div>
+                <span class="material-icons-round chevron-icon">chevron_right</span>
+              </a>
+            </div>
+
+            <!-- Empty State -->
+            <div class="suggestions-empty" *ngIf="suggestedProducts().length === 0 && suggestedOffers().length === 0 && suggestedStores().length === 0">
+              <span class="material-icons-round">search_off</span>
+              <p>{{ currentLang() === 'en' ? 'No results found for' : 'لا توجد نتائج لـ' }} "{{ searchQuery }}"</p>
+            </div>
+
+            <!-- Footer Action -->
+            <div class="suggestion-footer">
+              <button type="button" class="btn-see-all-search" (click)="onSearchSubmit()">
+                <span class="material-icons-round">search</span>
+                <span>{{ currentLang() === 'en' ? 'See all results for' : 'عرض جميع النتائج لـ' }} "{{ searchQuery }}"</span>
+              </button>
+            </div>
+          </ng-container>
+        </div>
       </form>
 
       <!-- Navigation & Quick Links -->
