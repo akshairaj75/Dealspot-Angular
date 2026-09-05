@@ -1,128 +1,257 @@
-<div class="store-list-container" [dir]="currentLang() === 'ar' ? 'rtl' : 'ltr'">
-  <!-- Section Title -->
-  <div class="store-list-header">
-    <h1 class="page-title">{{ currentLang() === 'en' ? 'Store Directory' : 'دليل المتاجر' }}</h1>
-    <p class="page-subtitle">{{ currentLang() === 'en' ? 'Browse and follow your favorite shops in Saudi Arabia' : 'تصفح وتابع المتاجر المفضلة لديك في المملكة' }}</p>
-  </div>
+<div class="stores-page-layout" [dir]="currentLang() === 'ar' ? 'rtl' : 'ltr'">
+  <!-- Mobile Filter Backdrop -->
+  <div class="filters-backdrop" *ngIf="isMobileFilterOpen()" (click)="closeMobileFilter()"></div>
 
-  <!-- Search & Category Filters -->
-  <div class="store-filters card">
-    <div class="search-field">
-      <span class="material-icons-round search-field-icon">search</span>
-      <input 
-        type="text" 
-        [(ngModel)]="searchQuery" 
-        [placeholder]="currentLang() === 'en' ? 'Search store names...' : 'ابحث عن اسم المتجر...'" 
-        class="form-control"
-      >
-      <button 
-        type="button" 
-        class="clear-search-btn" 
-        *ngIf="searchQuery" 
-        (click)="searchQuery = ''"
-        [title]="currentLang() === 'en' ? 'Clear search' : 'مسح البحث'"
-      >
-        <span class="material-icons-round">close</span>
-      </button>
+  <!-- Sidebar Filters Panel (Desktop Sidebar & Mobile Drawer) -->
+  <aside class="filters-sidebar" [class.mobile-open]="isMobileFilterOpen()">
+    <div class="filters-header">
+      <div class="filters-header-title">
+        <span class="material-icons-round filter-header-icon">storefront</span>
+        <h3>{{ currentLang() === 'en' ? 'Filter Stores' : 'تصفية المتاجر' }}</h3>
+        <span class="filter-count-badge" *ngIf="activeFiltersCount() > 0">{{ activeFiltersCount() }}</span>
+      </div>
+      <div class="filters-header-actions">
+        <button type="button" class="btn-reset" (click)="resetFilters()">{{ currentLang() === 'en' ? 'Reset' : 'إعادة ضبط' }}</button>
+        <button type="button" class="btn-close-mobile-filter" (click)="closeMobileFilter()" [title]="currentLang() === 'en' ? 'Close' : 'إغلاق'">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
     </div>
 
-    <div class="category-filter-tags">
-      <button  
-        type="button"
-        (click)="onlyFollowed.set(false); selectedCategoryId = null"
-        [class.active]="!onlyFollowed() && selectedCategoryId === null"
-        class="tag-btn"
-      >
-        {{ currentLang() === 'en' ? 'All Retailers' : 'جميع المتاجر' }}
-      </button>
-
-      <button  
-        type="button"
-        (click)="toggleFollowedOnly()"
-        [class.active]="onlyFollowed()"
-        class="tag-btn tag-btn-followed"
-      >
-        <span class="material-icons-round">favorite</span>
-        <span>{{ currentLang() === 'en' ? 'Followed' : 'المتابعة' }}</span>
-        <span class="badge-count" *ngIf="followedStoreIds().length > 0">({{ followedStoreIds().length }})</span>
-      </button>
-
-      <button
-        type="button"
-        *ngFor="let cat of categories"
-        (click)="onlyFollowed.set(false); selectedCategoryId = cat.id"
-        [class.active]="!onlyFollowed() && selectedCategoryId === cat.id"
-        class="tag-btn"
-      >
-        {{ currentLang() === 'en' ? (cat.nameEn || cat.name_en || cat.name) : (cat.nameAr || cat.name_ar || cat.nameEn) }}
-      </button>
-    </div>
-  </div>
-
-
-  <!-- Spinner state -->
-  <div class="spinner-container" *ngIf="loading">
-    <div class="spinner"></div>
-  </div>
-
-  <!-- Empty State -->
-  <div class="empty-state" *ngIf="!loading && getFilteredStores().length === 0">
-    <span class="material-icons-round empty-state-icon">storefront</span>
-    <h3 class="empty-state-title">{{ currentLang() === 'en' ? 'No stores found' : 'لم يتم العثور على متاجر' }}</h3>
-    <p class="empty-state-desc">{{ currentLang() === 'en' ? 'Try clearing your filters or search query to find all active retailers.' : 'جرب مسح معايير البحث لاستعراض كافة المتاجر.' }}</p>
-  </div>
-
-  <!-- Stores Directory Grid -->
-  <div class="grid-cards" *ngIf="!loading && getFilteredStores().length > 0">
-    <div class="store-grid-card card" *ngFor="let store of getFilteredStores()">
-      <!-- verified overlay label -->
-      <span class="badge badge-verified verified-badge-float" *ngIf="store.verified">
-        <span class="material-icons-round" style="font-size: 13px;">verified</span>
-        <span>{{ currentLang() === 'en' ? 'Verified' : 'معتمد' }}</span>
-      </span>
-
-      <div class="store-logo-panel">
-        <a [routerLink]="['/stores', store.id]" style="display: flex; width: 100%; height: 100%; align-items: center; justify-content: center;">
-          <img 
-            [src]="getLogoUrl(store)" 
-            [alt]="currentLang() === 'en' ? store.nameEn : store.nameAr"
-            (error)="$any($event.target).src = 'assets/images/placeholder-store.png'"
+    <div class="filters-body">
+      <!-- Search Keyword -->
+      <div class="filter-group">
+        <label class="form-label">{{ currentLang() === 'en' ? 'Search Store' : 'البحث عن متجر' }}</label>
+        <div class="search-input-wrapper">
+          <input 
+            type="text" 
+            [(ngModel)]="searchQuery" 
+            (ngModelChange)="onFilterChange()"
+            [placeholder]="currentLang() === 'en' ? 'Search store names...' : 'ابحث عن اسم المتجر...'"
+            class="form-control"
           >
-        </a>
+          <span class="material-icons-round search-inside-icon">search</span>
+        </div>
       </div>
 
-      <div class="store-body-panel">
-        <h3 class="store-title-main">
-          <a [routerLink]="['/stores', store.id]">{{ currentLang() === 'en' ? store.nameEn : store.nameAr }}</a>
-        </h3>
-        <p class="store-category-desc">{{ currentLang() === 'en' ? (store.categoryNameEn || store.category?.nameEn) : (store.categoryNameAr || store.category?.nameAr || store.categoryNameEn) }}</p>
-        
-        <div class="store-counts-row">
-          <div class="count-tag" *ngIf="store.followersCount !== undefined">
-            <span class="material-icons-round">people</span>
-            <span>{{ store.followersCount }} {{ currentLang() === 'en' ? 'Followers' : 'متابع' }}</span>
-          </div>
-          <div class="count-tag" *ngIf="store.cityNameEn || store.cityNameAr">
-            <span class="material-icons-round">place</span>
-            <span>{{ currentLang() === 'en' ? store.cityNameEn : (store.cityNameAr || store.cityNameEn) }}</span>
-          </div>
-        </div>
+      <!-- City Selector -->
+      <div class="filter-group">
+        <label class="form-label">{{ currentLang() === 'en' ? 'City' : 'المدينة' }}</label>
+        <app-custom-select
+          [options]="cities()"
+          [(ngModel)]="selectedCityId"
+          (ngModelChange)="onFilterChange()"
+          valueKey="id"
+          labelEnKey="nameEn"
+          labelArKey="nameAr"
+          [placeholder]="currentLang() === 'en' ? 'All Cities' : 'جميع المدن'"
+          [allowUnset]="true"
+          [unsetLabel]="currentLang() === 'en' ? 'All Cities' : 'جميع المدن'"
+        ></app-custom-select>
+      </div>
 
-        <div class="store-card-actions">
+      <!-- Category Filter -->
+      <div class="filter-group">
+        <label class="form-label">{{ currentLang() === 'en' ? 'Category' : 'القسم' }}</label>
+        <app-custom-select
+          [options]="categories"
+          [(ngModel)]="selectedCategoryId"
+          (ngModelChange)="onFilterChange()"
+          valueKey="id"
+          labelEnKey="nameEn"
+          labelArKey="nameAr"
+          [placeholder]="currentLang() === 'en' ? 'All Categories' : 'جميع الأقسام'"
+          [allowUnset]="true"
+          [unsetLabel]="currentLang() === 'en' ? 'All Categories' : 'جميع الأقسام'"
+        ></app-custom-select>
+
+        <!-- Category Quick Chips -->
+        <div class="store-chips-list" *ngIf="categories.length > 0">
           <button 
-            class="btn w-full follow-btn"
-            [class.btn-primary]="!isFollowing(store.id)"
-            [class.btn-following]="isFollowing(store.id)"
-            (click)="toggleFollow(store, $event)"
+            type="button" 
+            class="store-chip" 
+            [class.active]="selectedCategoryId === null"
+            (click)="selectedCategoryId = null; onFilterChange()"
           >
-            <span class="material-icons-round">{{ isFollowing(store.id) ? 'check_circle' : 'favorite_border' }}</span>
-            <span>{{ isFollowing(store.id) ? (currentLang() === 'en' ? 'Following' : 'تتابعه') : (currentLang() === 'en' ? 'Follow' : 'متابعة') }}</span>
+            {{ currentLang() === 'en' ? 'All' : 'الكل' }}
           </button>
-          <a [routerLink]="['/stores', store.id]" class="btn btn-outline btn-icon-only">
-            <span class="material-icons-round">{{ currentLang() === 'ar' ? 'chevron_left' : 'chevron_right' }}</span>
+          <button 
+            type="button" 
+            *ngFor="let cat of categories" 
+            class="store-chip"
+            [class.active]="selectedCategoryId === cat.id"
+            (click)="selectedCategoryId = cat.id; onFilterChange()"
+          >
+            {{ cat | translate:'name' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Toggle Checkboxes -->
+      <div class="filter-group-checkboxes">
+        <label class="checkbox-label" [class.active-followed]="onlyFollowed()">
+          <input type="checkbox" [checked]="onlyFollowed()" (change)="toggleFollowedOnly()">
+          <span>{{ currentLang() === 'en' ? 'Followed Stores Only' : 'المتاجر المتابعة فقط' }} <strong *ngIf="followedStoreIds().length > 0">({{ followedStoreIds().length }})</strong></span>
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" [checked]="onlyVerified()" (change)="toggleVerifiedOnly()">
+          <span>{{ currentLang() === 'en' ? 'Verified Stores Only' : 'المتاجر المعتمدة فقط' }}</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Mobile Drawer Sticky Action Footer -->
+    <div class="filters-mobile-footer">
+      <button type="button" class="btn btn-outline-secondary btn-reset-mobile" (click)="resetFilters()">
+        <span class="material-icons-round">restart_alt</span>
+        <span>{{ currentLang() === 'en' ? 'Reset' : 'إعادة ضبط' }}</span>
+      </button>
+      <button type="button" class="btn btn-primary btn-apply-mobile" (click)="applyMobileFilter()">
+        <span>{{ currentLang() === 'en' ? 'Show ' + getFilteredStores().length + ' Stores' : 'عرض ' + getFilteredStores().length + ' متجر' }}</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Stores Grid Section -->
+  <section class="stores-grid-section">
+    <!-- Mobile Filter Trigger Bar -->
+    <div class="mobile-filter-bar">
+      <button type="button" class="btn-open-mobile-filter" (click)="openMobileFilter()">
+        <span class="material-icons-round">tune</span>
+        <span>{{ currentLang() === 'en' ? 'Filter & Search' : 'الفلاتر والبحث' }}</span>
+        <span class="mobile-filter-badge" *ngIf="activeFiltersCount() > 0">{{ activeFiltersCount() }}</span>
+      </button>
+
+      <div class="mobile-results-count">
+        <span *ngIf="!loading"><strong>{{ getFilteredStores().length }}</strong> {{ currentLang() === 'en' ? 'stores' : 'متجر' }}</span>
+        <span *ngIf="loading">{{ currentLang() === 'en' ? 'Loading...' : 'جاري التحميل...' }}</span>
+      </div>
+    </div>
+
+    <!-- Active Filters Summary Bar (Desktop & Mobile Chips) -->
+    <div class="stores-grid-header card" [class.has-chips]="selectedCategoryId !== null || selectedCityId !== null || onlyFollowed() || onlyVerified() || searchQuery">
+      <div class="header-left-info">
+        <span class="material-icons-round header-info-icon">storefront</span>
+        <p class="results-count" *ngIf="!loading">
+          {{ currentLang() === 'en' ? 'Found' : 'تم العثور على' }} <strong>{{ getFilteredStores().length }}</strong> {{ currentLang() === 'en' ? 'partner stores' : 'متجر شريك' }}
+        </p>
+        <p class="results-count" *ngIf="loading">
+          {{ currentLang() === 'en' ? 'Searching active stores...' : 'جاري جلب المتاجر...' }}
+        </p>
+      </div>
+
+      <div class="active-chips" *ngIf="selectedCategoryId !== null || selectedCityId !== null || onlyFollowed() || onlyVerified() || searchQuery">
+        <!-- City chip -->
+        <span class="active-filter-badge city-badge" *ngIf="getSelectedCity()">
+          <span class="material-icons-round font-xs">place</span>
+          <span>{{ getSelectedCity() | translate:'name' }}</span>
+          <button type="button" class="remove-chip-btn" (click)="selectedCityId = null; onFilterChange()">
+            <span class="material-icons-round">close</span>
+          </button>
+        </span>
+
+        <!-- Category chip -->
+        <span class="active-filter-badge cat-badge" *ngIf="getSelectedCategory()">
+          <span>{{ getSelectedCategory() | translate:'name' }}</span>
+          <button type="button" class="remove-chip-btn" (click)="selectedCategoryId = null; onFilterChange()">
+            <span class="material-icons-round">close</span>
+          </button>
+        </span>
+
+        <!-- Followed chip -->
+        <span class="active-filter-badge followed-badge" *ngIf="onlyFollowed()">
+          <span class="material-icons-round font-xs">favorite</span>
+          <span>{{ currentLang() === 'en' ? 'Followed' : 'المتابعة' }}</span>
+          <button type="button" class="remove-chip-btn" (click)="onlyFollowed.set(false); onFilterChange()">
+            <span class="material-icons-round">close</span>
+          </button>
+        </span>
+
+        <!-- Verified chip -->
+        <span class="active-filter-badge verified-chip-badge" *ngIf="onlyVerified()">
+          <span class="material-icons-round font-xs">verified</span>
+          <span>{{ currentLang() === 'en' ? 'Verified' : 'معتمد' }}</span>
+          <button type="button" class="remove-chip-btn" (click)="onlyVerified.set(false); onFilterChange()">
+            <span class="material-icons-round">close</span>
+          </button>
+        </span>
+
+        <button type="button" class="btn-clear-all-chips" (click)="resetFilters()">
+          <span class="material-icons-round">close</span>
+          <span>{{ currentLang() === 'en' ? 'Clear All' : 'مسح الكل' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Spinner state -->
+    <div class="spinner-container" *ngIf="loading">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state card" *ngIf="!loading && getFilteredStores().length === 0">
+      <span class="material-icons-round empty-state-icon">storefront</span>
+      <h3 class="empty-state-title">{{ currentLang() === 'en' ? 'No stores match your criteria' : 'لم نجد متاجر تطابق هذه الفلاتر' }}</h3>
+      <p class="empty-state-desc">{{ currentLang() === 'en' ? 'Try adjusting or clearing your search filters to view more partner retailers.' : 'يرجى تغيير أو إعادة ضبط الفلاتر لعرض المتاجر النشطة.' }}</p>
+      <button type="button" class="btn btn-primary" (click)="resetFilters()">
+        <span class="material-icons-round">refresh</span>
+        <span>{{ currentLang() === 'en' ? 'Reset All Filters' : 'إعادة ضبط جميع الفلاتر' }}</span>
+      </button>
+    </div>
+
+    <!-- Stores Directory Grid -->
+    <div class="grid-cards" *ngIf="!loading && getFilteredStores().length > 0">
+      <div class="store-grid-card card" *ngFor="let store of getFilteredStores()">
+        <!-- verified overlay label -->
+        <span class="badge badge-verified verified-badge-float" *ngIf="store.verified || store.isVerified || store.is_verified === 1">
+          <span class="material-icons-round">verified</span>
+          <span>{{ currentLang() === 'en' ? 'Verified' : 'معتمد' }}</span>
+        </span>
+
+        <div class="store-logo-panel">
+          <a [routerLink]="['/stores', store.id]" class="store-logo-link">
+            <img 
+              [src]="getLogoUrl(store)" 
+              [alt]="currentLang() === 'en' ? store.nameEn : store.nameAr"
+              (error)="$any($event.target).src = 'assets/images/placeholder-store.png'"
+            >
           </a>
         </div>
+
+        <div class="store-body-panel">
+          <h3 class="store-title-main">
+            <a [routerLink]="['/stores', store.id]">{{ currentLang() === 'en' ? store.nameEn : store.nameAr }}</a>
+          </h3>
+          <p class="store-category-desc">{{ currentLang() === 'en' ? (store.categoryNameEn || store.category?.nameEn) : (store.categoryNameAr || store.category?.nameAr || store.categoryNameEn) }}</p>
+          
+          <div class="store-counts-row">
+            <div class="count-tag" *ngIf="store.followersCount !== undefined">
+              <span class="material-icons-round">people</span>
+              <span>{{ store.followersCount }} {{ currentLang() === 'en' ? 'Followers' : 'متابع' }}</span>
+            </div>
+            <div class="count-tag" *ngIf="store.cityNameEn || store.cityNameAr">
+              <span class="material-icons-round">place</span>
+              <span>{{ currentLang() === 'en' ? store.cityNameEn : (store.cityNameAr || store.cityNameEn) }}</span>
+            </div>
+          </div>
+
+          <div class="store-card-actions">
+            <button 
+              type="button"
+              class="btn w-full follow-btn"
+              [class.btn-primary]="!isFollowing(store.id)"
+              [class.btn-following]="isFollowing(store.id)"
+              (click)="toggleFollow(store, $event)"
+            >
+              <span class="material-icons-round">{{ isFollowing(store.id) ? 'check_circle' : 'favorite_border' }}</span>
+              <span>{{ isFollowing(store.id) ? (currentLang() === 'en' ? 'Following' : 'تتابعه') : (currentLang() === 'en' ? 'Follow' : 'متابعة') }}</span>
+            </button>
+            <a [routerLink]="['/stores', store.id]" class="btn btn-outline btn-icon-only">
+              <span class="material-icons-round">{{ currentLang() === 'ar' ? 'chevron_left' : 'chevron_right' }}</span>
+            </a>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
 </div>

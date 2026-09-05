@@ -1,24 +1,28 @@
-import { Component, inject, OnInit, signal, effect, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, effect, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { StoreService } from '../../../core/services/store.service';
 import { CategoryService } from '../../../core/services/category.service';
+import { CityService } from '../../../core/services/city.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { TranslationService } from '../../../core/services/translation.service';
+import { CustomSelectComponent } from '../../../shared/components/custom-select/custom-select.component';
+import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
 import { environment } from '../../../environment/environment';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-store-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, CustomSelectComponent, TranslatePipe],
   templateUrl: './store-list.component.html',
   styleUrls: ['./store-list.component.css']
 })
-export class StoreListComponent implements OnInit {
+export class StoreListComponent implements OnInit, OnDestroy {
   private storeService = inject(StoreService);
   private categoryService = inject(CategoryService);
+  private cityService = inject(CityService);
   private authService = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
@@ -28,13 +32,21 @@ export class StoreListComponent implements OnInit {
   currentLang = this.translationService.currentLang;
 
   stores = signal<any[]>([]);
-  categories: any = [];
+  categories: any[] = [];
+  cities = signal<any[]>([]);
   followedStoreIds = signal<number[]>([]);
   storeOffersCountMap = signal<Record<number, number>>({});
 
+  // Mobile Filter Drawer State
+  isMobileFilterOpen = signal<boolean>(false);
+  activeFiltersCount = signal<number>(0);
+
+  // Filter States
   searchQuery = '';
+  selectedCityId: number | null = null;
   selectedCategoryId: number | null = null;
   onlyFollowed = signal<boolean>(false);
+  onlyVerified = signal<boolean>(false);
   loading = false;
   filePath = environment.filePath;
 
@@ -47,6 +59,14 @@ export class StoreListComponent implements OnInit {
         this.followedStoreIds.set([]);
       }
     });
+
+    effect(() => {
+      const city = this.cityService.selectedCity();
+      if (city && this.selectedCityId === null) {
+        this.selectedCityId = city.id;
+        this.calculateActiveFiltersCount();
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -54,6 +74,11 @@ export class StoreListComponent implements OnInit {
       if (data && data['onlyFollowed']) {
         this.onlyFollowed.set(true);
       }
+    });
+
+    this.cityService.getCities().subscribe((res: any) => {
+      const list = Array.isArray(res) ? res : (res?.data || []);
+      this.cities.set(list);
     });
 
     this.categoryService.getCategories().subscribe((res: any) => {
@@ -65,6 +90,58 @@ export class StoreListComponent implements OnInit {
     });
 
     this.loadStores();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.isMobileFilterOpen()) {
+      this.closeMobileFilter();
+    }
+  }
+
+  openMobileFilter(): void {
+    this.isMobileFilterOpen.set(true);
+    try {
+      document.body.style.overflow = 'hidden';
+    } catch (_) {}
+  }
+
+  closeMobileFilter(): void {
+    this.isMobileFilterOpen.set(false);
+    try {
+      document.body.style.overflow = '';
+    } catch (_) {}
+  }
+
+  applyMobileFilter(): void {
+    this.calculateActiveFiltersCount();
+    this.closeMobileFilter();
+  }
+
+  calculateActiveFiltersCount(): void {
+    let count = 0;
+    if (this.selectedCityId !== null) count++;
+    if (this.selectedCategoryId !== null) count++;
+    if (this.onlyFollowed()) count++;
+    if (this.onlyVerified()) count++;
+    if (this.searchQuery && this.searchQuery.trim().length > 0) count++;
+    this.activeFiltersCount.set(count);
+  }
+
+  resetFilters(): void {
+    this.searchQuery = '';
+    this.selectedCityId = null;
+    this.selectedCategoryId = null;
+    this.onlyFollowed.set(false);
+    this.onlyVerified.set(false);
+    this.calculateActiveFiltersCount();
+    this.cd.detectChanges();
+  }
+
+  ngOnDestroy(): void {
+    try {
+      document.body.style.overflow = '';
+    } catch (_) {}
   }
 
   loadFollowedStores(): void {
@@ -84,6 +161,7 @@ export class StoreListComponent implements OnInit {
     this.storeService.getStores().subscribe({
       next: (data) => {
         this.stores.set(data || []);
+        this.calculateActiveFiltersCount();
         this.loading = false;
         this.cd.detectChanges();
       },
@@ -131,6 +209,26 @@ export class StoreListComponent implements OnInit {
       return;
     }
     this.onlyFollowed.set(!this.onlyFollowed());
+    this.calculateActiveFiltersCount();
+  }
+
+  toggleVerifiedOnly(): void {
+    this.onlyVerified.set(!this.onlyVerified());
+    this.calculateActiveFiltersCount();
+  }
+
+  onFilterChange(): void {
+    this.calculateActiveFiltersCount();
+  }
+
+  getSelectedCategory(): any | null {
+    if (this.selectedCategoryId === null) return null;
+    return this.categories.find(c => c.id === this.selectedCategoryId) || null;
+  }
+
+  getSelectedCity(): any | null {
+    if (this.selectedCityId === null) return null;
+    return this.cities().find(c => c.id === this.selectedCityId) || null;
   }
 
   getFilteredStores(): any[] {
@@ -140,23 +238,32 @@ export class StoreListComponent implements OnInit {
       filtered = filtered.filter(store => this.followedStoreIds().includes(store.id));
     }
 
-    if (this.selectedCategoryId !== null) {
-      filtered = filtered.filter(
-        store => store.categoryId === this.selectedCategoryId
-      );
+    if (this.onlyVerified()) {
+      filtered = filtered.filter(store => store.verified === true || store.isVerified === true || store.is_verified === 1);
     }
 
-    if (this.searchQuery.trim()) {
+    if (this.selectedCityId !== null) {
+      const cId = Number(this.selectedCityId);
+      filtered = filtered.filter(store => store.cityId === cId || store.city_id === cId);
+    }
+
+    if (this.selectedCategoryId !== null) {
+      const catId = Number(this.selectedCategoryId);
+      filtered = filtered.filter(store => store.categoryId === catId || store.category_id === catId);
+    }
+
+    if (this.searchQuery && this.searchQuery.trim()) {
       const query = this.searchQuery.trim().toLowerCase();
       filtered = filtered.filter(store =>
         store.nameEn?.toLowerCase().includes(query) ||
-        store.nameAr?.toLowerCase().includes(query)
+        store.nameAr?.toLowerCase().includes(query) ||
+        store.cityNameEn?.toLowerCase().includes(query) ||
+        store.cityNameAr?.toLowerCase().includes(query)
       );
     }
 
     return filtered;
   }
-
 
   toggleFollow(store: any, event: Event): void {
     event.preventDefault();
@@ -180,7 +287,6 @@ export class StoreListComponent implements OnInit {
       });
       return;
     }
-
 
     const wasFollowing = this.isFollowing(store.id);
 
