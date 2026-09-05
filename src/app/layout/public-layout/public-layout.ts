@@ -128,8 +128,18 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
-    if (target && !target.closest('.search-form') && !target.closest('.hero-search-container')) {
+    if (!target) return;
+
+    if (!target.closest('.search-form') && !target.closest('.hero-search-container')) {
       this.closeSearchSuggestions();
+    }
+
+    if (!target.closest('.notif-dropdown-wrapper')) {
+      this.isNotificationOpen = false;
+    }
+
+    if (!target.closest('.profile-dropdown-wrapper')) {
+      this.isProfileOpen = false;
     }
   }
 
@@ -230,11 +240,13 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
 
   toggleProfileDropdown(event: MouseEvent) {
     event.stopPropagation();
+    this.isNotificationOpen = false;
     this.isProfileOpen = !this.isProfileOpen;
   }
 
   closeDropdowns() {
     this.isProfileOpen = false;
+    this.isNotificationOpen = false;
   }
 
   selectCity(city: any) {
