@@ -58,6 +58,7 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
   showSuggestions = signal<boolean>(false);
 
   isProfileOpen = false;
+  isMobileProfileOpen = false;
   isNotificationOpen = false;
   isCityModalOpen = false;
   currentYear = new Date().getFullYear();
@@ -245,6 +246,16 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
     this.isProfileOpen = !this.isProfileOpen;
   }
 
+  toggleMobileProfile(event?: MouseEvent) {
+    if (event) event.stopPropagation();
+    this.isMobileProfileOpen = !this.isMobileProfileOpen;
+    this.closeDropdowns();
+  }
+
+  closeMobileProfile() {
+    this.isMobileProfileOpen = false;
+  }
+
   closeDropdowns() {
     this.isProfileOpen = false;
     this.isNotificationOpen = false;
@@ -267,6 +278,7 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
 
   logout() {
     this.closeDropdowns();
+    this.closeMobileProfile();
     this.authService.logout('/');
   }
 

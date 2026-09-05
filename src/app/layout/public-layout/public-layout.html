@@ -133,13 +133,6 @@
           <span class="lang-label">{{ currentLang() === 'en' ? 'AR' : 'EN' }}</span>
         </button>
 
-        <!-- Admin Direct Link (When Admin is Logged In) -->
-        <a *ngIf="isAdmin()" routerLink="/admin" class="btn-admin-pill"
-          [title]="currentLang() === 'en' ? 'Admin Dashboard' : 'لوحة التحكم'">
-          <span class="material-icons-round">admin_panel_settings</span>
-          <span class="admin-pill-text">{{ currentLang() === 'en' ? 'Admin Panel' : 'لوحة الإدارة' }}</span>
-        </a>
-
         <!-- User Notification Bell (When Logged In) -->
         <div class="notif-dropdown-wrapper" *ngIf="isLoggedIn()">
           <button type="button" class="btn-icon btn-user-notif" (click)="toggleNotificationDropdown($event)"
@@ -442,25 +435,176 @@
 
   <!-- Mobile Bottom Navigation Bar (Visible only on mobile <= 768px) -->
   <nav class="mobile-bottom-nav">
-    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="bottom-nav-item">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileProfile()" class="bottom-nav-item">
       <span class="material-icons-round">home</span>
       <span class="bottom-nav-label">{{ currentLang() === 'en' ? 'Home' : 'الرئيسية' }}</span>
     </a>
-    <a routerLink="/offers-list" routerLinkActive="active" class="bottom-nav-item">
+    <a routerLink="/offers-list" routerLinkActive="active" (click)="closeMobileProfile()" class="bottom-nav-item">
       <span class="material-icons-round">local_offer</span>
       <span class="bottom-nav-label">{{ currentLang() === 'en' ? 'Offers' : 'العروض' }}</span>
     </a>
-    <a routerLink="/stores" routerLinkActive="active" class="bottom-nav-item">
+    <a routerLink="/stores" routerLinkActive="active" (click)="closeMobileProfile()" class="bottom-nav-item">
       <span class="material-icons-round">storefront</span>
       <span class="bottom-nav-label">{{ currentLang() === 'en' ? 'Stores' : 'المتاجر' }}</span>
     </a>
-    <a routerLink="/flyers" routerLinkActive="active" class="bottom-nav-item">
+    <a routerLink="/flyers" routerLinkActive="active" (click)="closeMobileProfile()" class="bottom-nav-item">
       <span class="material-icons-round">auto_stories</span>
       <span class="bottom-nav-label">{{ currentLang() === 'en' ? 'Flyers' : 'المنشورات' }}</span>
     </a>
-    <a [routerLink]="isLoggedIn() ? '/saved-offers' : '/login'" routerLinkActive="active" class="bottom-nav-item">
-      <span class="material-icons-round">{{ isLoggedIn() ? 'bookmark' : 'person' }}</span>
-      <span class="bottom-nav-label">{{ isLoggedIn() ? (currentLang() === 'en' ? 'Saved' : 'محفوظاتي') : (currentLang() === 'en' ? 'Account' : 'حسابي') }}</span>
-    </a>
+    <button type="button" class="bottom-nav-item bottom-nav-btn" [class.active]="isMobileProfileOpen" (click)="toggleMobileProfile($event)">
+      <span class="material-icons-round" [class.text-amber]="isAdmin()">
+        {{ isLoggedIn() ? (isAdmin() ? 'security' : 'account_circle') : 'person_outline' }}
+      </span>
+      <span class="bottom-nav-label">{{ currentLang() === 'en' ? 'Profile' : 'حسابي' }}</span>
+    </button>
   </nav>
+
+  <!-- Mobile Profile Bottom Sheet / Drawer -->
+  <div class="mobile-profile-backdrop" *ngIf="isMobileProfileOpen" (click)="closeMobileProfile()">
+    <div class="mobile-profile-sheet" (click)="$event.stopPropagation()">
+      <div class="sheet-drag-handle"></div>
+      
+      <!-- User Profile Header (Logged In) -->
+      <div class="sheet-header" *ngIf="isLoggedIn()">
+        <div class="sheet-user-avatar" [class.is-admin]="isAdmin()">
+          <span class="material-icons-round" *ngIf="!isAdmin()">account_circle</span>
+          <span class="material-icons-round text-amber" *ngIf="isAdmin()">security</span>
+        </div>
+        <div class="sheet-user-info">
+          <div class="user-title-row">
+            <h4 class="sheet-user-name">{{ currentUser()?.fullName }}</h4>
+            <span class="sheet-role-badge" *ngIf="isAdmin()">{{ currentUser()?.role || 'ADMIN' }}</span>
+          </div>
+          <p class="sheet-user-email">{{ currentUser()?.email }}</p>
+        </div>
+        <button class="sheet-close-btn btn-icon" (click)="closeMobileProfile()" [title]="currentLang() === 'en' ? 'Close' : 'إغلاق'">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <!-- Guest Welcome Header (Logged Out) -->
+      <div class="sheet-header sheet-guest-header" *ngIf="!isLoggedIn()">
+        <div class="guest-welcome-text">
+          <h4>{{ currentLang() === 'en' ? 'Welcome to DealSpot' : 'مرحباً بك في ديل سبوت' }}</h4>
+          <p>{{ currentLang() === 'en' ? 'Sign in to save favorite deals & manage notifications' : 'سجل الدخول لحفظ العروض والكتالوجات' }}</p>
+        </div>
+        <button class="sheet-close-btn btn-icon" (click)="closeMobileProfile()">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <!-- Sheet Body -->
+      <div class="sheet-body">
+        <!-- Guest Quick Login Buttons -->
+        <div class="sheet-guest-actions" *ngIf="!isLoggedIn()">
+          <a routerLink="/login" (click)="closeMobileProfile()" class="btn btn-primary sheet-btn-primary">
+            <span class="material-icons-round">login</span>
+            <span>{{ currentLang() === 'en' ? 'Sign In to Account' : 'تسجيل الدخول' }}</span>
+          </a>
+          <a routerLink="/register" (click)="closeMobileProfile()" class="btn btn-outline sheet-btn-outline">
+            <span class="material-icons-round">person_add</span>
+            <span>{{ currentLang() === 'en' ? 'Create New Account' : 'إنشاء حساب جديد' }}</span>
+          </a>
+        </div>
+
+        <!-- Admin Control Panel (Highlight) -->
+        <div class="sheet-group" *ngIf="isAdmin()">
+          <div class="sheet-group-title">{{ currentLang() === 'en' ? 'Administration' : 'لوحة الإدارة' }}</div>
+          <a routerLink="/admin" (click)="closeMobileProfile()" class="sheet-item admin-item">
+            <div class="sheet-item-icon admin-icon">
+              <span class="material-icons-round">dashboard</span>
+            </div>
+            <div class="sheet-item-content">
+              <span class="sheet-item-title">{{ currentLang() === 'en' ? 'Admin Dashboard & Control' : 'لوحة تحكم المسؤول' }}</span>
+              <span class="sheet-item-subtitle">{{ currentLang() === 'en' ? 'Manage offers, stores, categories & users' : 'إدارة العروض، المتاجر، الأقسام والمستخدمين' }}</span>
+            </div>
+            <span class="material-icons-round sheet-item-arrow">{{ currentLang() === 'en' ? 'chevron_right' : 'chevron_left' }}</span>
+          </a>
+        </div>
+
+        <!-- User Saved Items (Available if logged in) -->
+        <div class="sheet-group" *ngIf="isLoggedIn()">
+          <div class="sheet-group-title">{{ currentLang() === 'en' ? 'My Activity' : 'نشاطي' }}</div>
+          <a routerLink="/saved-offers" (click)="closeMobileProfile()" class="sheet-item">
+            <div class="sheet-item-icon">
+              <span class="material-icons-round">bookmark</span>
+            </div>
+            <div class="sheet-item-content">
+              <span class="sheet-item-title">{{ currentLang() === 'en' ? 'Saved Deals & Offers' : 'العروض والخصومات المحفوظة' }}</span>
+            </div>
+            <span class="material-icons-round sheet-item-arrow">{{ currentLang() === 'en' ? 'chevron_right' : 'chevron_left' }}</span>
+          </a>
+
+          <a routerLink="/followed-stores" (click)="closeMobileProfile()" class="sheet-item">
+            <div class="sheet-item-icon">
+              <span class="material-icons-round">favorite</span>
+            </div>
+            <div class="sheet-item-content">
+              <span class="sheet-item-title">{{ currentLang() === 'en' ? 'Followed Stores' : 'المتاجر المتابعة' }}</span>
+            </div>
+            <span class="material-icons-round sheet-item-arrow">{{ currentLang() === 'en' ? 'chevron_right' : 'chevron_left' }}</span>
+          </a>
+        </div>
+
+        <!-- Preferences & Partner Tools -->
+        <div class="sheet-group">
+          <div class="sheet-group-title">{{ currentLang() === 'en' ? 'Preferences & Partner' : 'التفضيلات والشراكة' }}</div>
+          
+          <!-- City Switcher in Sheet -->
+          <button type="button" class="sheet-item sheet-btn-item" (click)="closeMobileProfile(); isCityModalOpen = true">
+            <div class="sheet-item-icon">
+              <span class="material-icons-round">place</span>
+            </div>
+            <div class="sheet-item-content">
+              <span class="sheet-item-title">{{ currentLang() === 'en' ? 'Selected City' : 'المدينة الحالية' }}</span>
+              <span class="sheet-item-badge">{{ activeCity() | translate:'name' }}</span>
+            </div>
+            <span class="material-icons-round sheet-item-arrow">{{ currentLang() === 'en' ? 'chevron_right' : 'chevron_left' }}</span>
+          </button>
+
+          <!-- Language Switcher in Sheet -->
+          <button type="button" class="sheet-item sheet-btn-item" (click)="toggleLanguage()">
+            <div class="sheet-item-icon">
+              <span class="material-icons-round">language</span>
+            </div>
+            <div class="sheet-item-content">
+              <span class="sheet-item-title">{{ currentLang() === 'en' ? 'Language / اللغة' : 'اللغة / Language' }}</span>
+              <span class="sheet-item-badge">{{ currentLang() === 'en' ? 'العربية' : 'English' }}</span>
+            </div>
+            <span class="material-icons-round sheet-item-arrow">swap_horiz</span>
+          </button>
+
+          <!-- Partner With Us -->
+          <a routerLink="/partner-with-us" (click)="closeMobileProfile()" class="sheet-item">
+            <div class="sheet-item-icon partner-icon">
+              <span class="material-icons-round">handshake</span>
+            </div>
+            <div class="sheet-item-content">
+              <span class="sheet-item-title">{{ currentLang() === 'en' ? 'Partner With Us (Register Store)' : 'انضم كشريك (سجل متجرك)' }}</span>
+            </div>
+            <span class="material-icons-round sheet-item-arrow">{{ currentLang() === 'en' ? 'chevron_right' : 'chevron_left' }}</span>
+          </a>
+
+          <!-- Admin Portal Access (for guest) -->
+          <a *ngIf="!isLoggedIn()" routerLink="/login" [queryParams]="{admin: true}" (click)="closeMobileProfile()" class="sheet-item">
+            <div class="sheet-item-icon">
+              <span class="material-icons-round">admin_panel_settings</span>
+            </div>
+            <div class="sheet-item-content">
+              <span class="sheet-item-title">{{ currentLang() === 'en' ? 'Admin Portal Access' : 'بوابة المسؤولين' }}</span>
+            </div>
+            <span class="material-icons-round sheet-item-arrow">{{ currentLang() === 'en' ? 'chevron_right' : 'chevron_left' }}</span>
+          </a>
+        </div>
+
+        <!-- Logout Action (if logged in) -->
+        <div class="sheet-footer-action" *ngIf="isLoggedIn()">
+          <button type="button" class="btn btn-outline text-danger sheet-logout-btn" (click)="logout()">
+            <span class="material-icons-round">logout</span>
+            <span>{{ currentLang() === 'en' ? 'Log Out' : 'تسجيل الخروج' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
