@@ -17,6 +17,7 @@ import { NotificationService } from '../../core/services/notification.service';
 import { OfferService } from '../../core/services/offer.service';
 import { StoreService } from '../../core/services/store.service';
 import { ProductService } from '../../core/services/product.service';
+import { FlyerService } from '../../core/services/flyer.service';
 import { APP_CONFIG } from '../../core/config/app-config';
 import { environment } from '../../environment/environment';
 
@@ -43,6 +44,7 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
   offerService = inject(OfferService);
   storeService = inject(StoreService);
   productService = inject(ProductService);
+  flyerService = inject(FlyerService);
 
   currentLang = this.translationService.currentLang;
   appConfig = APP_CONFIG;
@@ -51,11 +53,31 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
   searchSubject = new Subject<string>();
   private searchSub?: Subscription;
 
+  isSearchOverlayOpen = signal<boolean>(false);
   suggestedOffers = signal<any[]>([]);
   suggestedStores = signal<any[]>([]);
   suggestedProducts = signal<any[]>([]);
+  suggestedFlyers = signal<any[]>([]);
+  recentSearches = signal<string[]>([]);
   isSearching = signal<boolean>(false);
   showSuggestions = signal<boolean>(false);
+
+  trendingSearches = [
+    { en: 'iPhone 16 Pro', ar: 'آيفون 16 برو' },
+    { en: 'Lulu Hypermarket', ar: 'لولو هايبرماركت' },
+    { en: 'Smart TVs', ar: 'شاشات ذكية' },
+    { en: 'Panda Offers', ar: 'عروض بنده' },
+    { en: 'Grocery Discounts', ar: 'عروض المقاضي' },
+    { en: 'AirPods & Audio', ar: 'سماعات ايربودز' },
+    { en: 'Perfumes & Oud', ar: 'عطور وبخور' },
+    { en: 'Carrefour Deals', ar: 'عروض كارفور' }
+  ];
+
+  quickCategories = [
+    { nameEn: 'All Offers', nameAr: 'جميع العروض', icon: 'local_offer', route: '/offers-list' },
+    { nameEn: 'Flyers & Booklets', nameAr: 'المجلات والبروشورات', icon: 'menu_book', route: '/flyers' },
+    { nameEn: 'Browse Stores', nameAr: 'تصفح المتاجر', icon: 'storefront', route: '/stores' }
+  ];
 
   isProfileOpen = false;
   isMobileProfileOpen = false;
@@ -81,6 +103,8 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
       this.refreshNotifications();
     }
 
+    this.loadRecentSearches();
+
     this.cityService.getCities().subscribe({
       next: (res) => {
         if (res && res.length > 0) {
@@ -97,7 +121,7 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
 
     // Debounced search on key up
     this.searchSub = this.searchSubject.pipe(
-      debounceTime(250),
+      debounceTime(220),
       distinctUntilChanged()
     ).subscribe(query => {
       this.fetchSearchSuggestions(query);
@@ -108,6 +132,92 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
     if (this.searchSub) {
       this.searchSub.unsubscribe();
     }
+  }
+
+  openSearchOverlay(): void {
+    this.isSearchOverlayOpen.set(true);
+    this.loadRecentSearches();
+    if (this.searchQuery && this.searchQuery.trim().length >= 2) {
+      this.fetchSearchSuggestions(this.searchQuery);
+    }
+    setTimeout(() => {
+      const input = document.getElementById('fullscreen-search-input') as HTMLInputElement;
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    }, 120);
+  }
+
+  closeSearchOverlay(): void {
+    this.isSearchOverlayOpen.set(false);
+    this.showSuggestions.set(false);
+  }
+
+  loadRecentSearches(): void {
+    try {
+      const saved = localStorage.getItem('dealspot_recent_searches');
+      if (saved) {
+        this.recentSearches.set(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.warn('Could not read recent searches:', e);
+    }
+  }
+
+  saveRecentSearch(term: string): void {
+    const clean = (term || '').trim();
+    if (!clean) return;
+    try {
+      const current = this.recentSearches().filter(s => s.toLowerCase() !== clean.toLowerCase());
+      const updated = [clean, ...current].slice(0, 10);
+      this.recentSearches.set(updated);
+      localStorage.setItem('dealspot_recent_searches', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Could not save recent search:', e);
+    }
+  }
+
+  removeRecentSearch(term: string, event: MouseEvent): void {
+    event.stopPropagation();
+    try {
+      const updated = this.recentSearches().filter(s => s !== term);
+      this.recentSearches.set(updated);
+      localStorage.setItem('dealspot_recent_searches', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Could not remove recent search:', e);
+    }
+  }
+
+  clearRecentSearches(event?: MouseEvent): void {
+    if (event) event.stopPropagation();
+    this.recentSearches.set([]);
+    try {
+      localStorage.removeItem('dealspot_recent_searches');
+    } catch (e) {
+      console.warn('Could not clear recent searches:', e);
+    }
+  }
+
+  applySearch(term: string): void {
+    const clean = (term || '').trim();
+    if (!clean) return;
+    this.searchQuery = clean;
+    this.saveRecentSearch(clean);
+    this.closeSearchOverlay();
+    this.closeSearchSuggestions();
+    this.router.navigate(['/offers-list'], { queryParams: { q: clean } });
+  }
+
+  clearSearchQuery(): void {
+    this.searchQuery = '';
+    this.suggestedOffers.set([]);
+    this.suggestedStores.set([]);
+    this.suggestedProducts.set([]);
+    this.suggestedFlyers.set([]);
+    this.showSuggestions.set(false);
+    const input = document.getElementById('fullscreen-search-input') as HTMLInputElement;
+    if (input) input.focus();
   }
 
   onSearchInput(event: Event): void {
@@ -132,7 +242,7 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
     const target = event.target as HTMLElement;
     if (!target) return;
 
-    if (!target.closest('.search-form') && !target.closest('.hero-search-container')) {
+    if (!target.closest('.search-form') && !target.closest('.hero-search-container') && !target.closest('.search-fullscreen-overlay')) {
       this.closeSearchSuggestions();
     }
 
@@ -145,12 +255,21 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
     }
   }
 
+  @HostListener('window:keydown.escape')
+  onEscapePress(): void {
+    if (this.isSearchOverlayOpen()) {
+      this.closeSearchOverlay();
+    }
+    this.closeSearchSuggestions();
+  }
+
   private fetchSearchSuggestions(query: string): void {
     const cleanQ = (query || '').trim();
     if (cleanQ.length < 2) {
       this.suggestedOffers.set([]);
       this.suggestedStores.set([]);
       this.suggestedProducts.set([]);
+      this.suggestedFlyers.set([]);
       this.isSearching.set(false);
       this.showSuggestions.set(false);
       return;
@@ -159,21 +278,21 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
     this.isSearching.set(true);
     this.showSuggestions.set(true);
 
-    // 1. Fetch matching products (most important)
-    this.productService.getPagedProducts(0, 4, cleanQ).subscribe({
+    // 1. Fetch matching products
+    this.productService.getPagedProducts(0, 6, cleanQ).subscribe({
       next: (res) => {
         const list = res?.content || (Array.isArray(res) ? res : []);
-        this.suggestedProducts.set(list.slice(0, 4));
+        this.suggestedProducts.set(list.slice(0, 6));
         this.isSearching.set(false);
       },
       error: () => this.isSearching.set(false)
     });
 
     // 2. Fetch matching offers
-    this.offerService.getPagedOffers(0, 4, cleanQ).subscribe({
+    this.offerService.getPagedOffers(0, 6, cleanQ).subscribe({
       next: (res) => {
         const list = res?.content || (Array.isArray(res) ? res : []);
-        this.suggestedOffers.set(list.slice(0, 4));
+        this.suggestedOffers.set(list.slice(0, 6));
       }
     });
 
@@ -184,8 +303,22 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
         const filtered = (stores || []).filter((s: any) =>
           (s.nameEn && s.nameEn.toLowerCase().includes(qLower)) ||
           (s.nameAr && s.nameAr.toLowerCase().includes(qLower))
-        ).slice(0, 3);
+        ).slice(0, 4);
         this.suggestedStores.set(filtered);
+      }
+    });
+
+    // 4. Fetch/filter matching flyers
+    this.flyerService.getAllFlyers().subscribe({
+      next: (flyers) => {
+        const qLower = cleanQ.toLowerCase();
+        const filtered = (flyers || []).filter((f: any) =>
+          (f.titleEn && f.titleEn.toLowerCase().includes(qLower)) ||
+          (f.titleAr && f.titleAr.toLowerCase().includes(qLower)) ||
+          (f.storeNameEn && f.storeNameEn.toLowerCase().includes(qLower)) ||
+          (f.storeNameAr && f.storeNameAr.toLowerCase().includes(qLower))
+        ).slice(0, 4);
+        this.suggestedFlyers.set(filtered);
       }
     });
   }
@@ -209,6 +342,13 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
     if (!raw) return 'https://images.unsplash.com/photo-1534723480100-2d884f3c7efd?w=100&auto=format&fit=crop&q=60';
     if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
     return `${environment.apiUrl.replace('/api/dealspot', '')}/${raw.startsWith('/') ? raw.substring(1) : raw}`;
+  }
+
+  getFlyerImageUrl(flyer: any): string {
+    const raw = flyer?.coverImageUrl || flyer?.cover_image_url;
+    if (!raw) return 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&auto=format&fit=crop&q=60';
+    if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+    return environment.filePath + raw;
   }
 
   refreshNotifications(): void {
