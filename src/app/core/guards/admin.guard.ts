@@ -6,12 +6,17 @@ export const adminGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  if (authService.isAdmin()) {
+  if (authService.isAdmin() && !authService.isTokenExpired()) {
     return true;
   }
 
-  // Redirect to admin login with returnUrl
-  router.navigate(['/login'], { queryParams: { admin: 'true', returnUrl: state.url } });
+  // If token is present but expired, log out with expired notice
+  if (authService.token() && authService.isTokenExpired()) {
+    authService.logout('/login', true);
+  } else {
+    router.navigate(['/login'], { queryParams: { admin: 'true', returnUrl: state.url } });
+  }
+
   return false;
 };
 
