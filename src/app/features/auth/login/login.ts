@@ -80,6 +80,15 @@ export class LoginComponent implements OnInit {
   adminLoginForm!: FormGroup;
 
   ngOnInit(): void {
+    if (this.authService.isAuthenticated() && !this.authService.isTokenExpired()) {
+      if (this.authService.isAdmin()) {
+        this.router.navigate(['/admin']);
+      } else {
+        this.router.navigate(['/']);
+      }
+      return;
+    }
+
     this.initForms();
     this.loadCities();
 

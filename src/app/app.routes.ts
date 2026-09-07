@@ -29,6 +29,7 @@ import { PartnerApplyComponent } from './features/partner/partner-apply/partner-
 import { PartnerRequestsComponent } from './features/admin/partner-requests/partner-requests';
 
 import { adminGuard } from './core/guards/admin.guard';
+import { guestGuard } from './core/guards/guest.guard';
 
 
 export const routes: Routes = [
@@ -45,15 +46,18 @@ export const routes: Routes = [
 
             {
                 path: 'login',
-                component: LoginComponent
+                component: LoginComponent,
+                canActivate: [guestGuard]
             },
             {
                 path: 'register',
-                component: LoginComponent
+                component: LoginComponent,
+                canActivate: [guestGuard]
             },
             {
                 path: 'admin/login',
-                component: LoginComponent
+                component: LoginComponent,
+                canActivate: [guestGuard]
             },
             {
                 path: 'partner-with-us',
