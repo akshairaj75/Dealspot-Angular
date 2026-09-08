@@ -47,6 +47,9 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private searchSub?: Subscription;
   filterCategoryId = signal<number | null>(null);
+  filterMainCategoryId = signal<number | null>(null);
+  filterSubCategoryId = signal<number | null>(null);
+  filterSubcategories = signal<any[]>([]);
   filterBrandId = signal<number | null>(null);
 
   // Search suggestions state
@@ -159,6 +162,10 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
         this.allCategories.set(res || []);
         const mains = (res || []).filter((c: any) => c.parentId === null || c.parentId === undefined);
         this.mainCategories.set(mains);
+        if (this.filterMainCategoryId()) {
+          const subs = (res || []).filter((c: any) => c.parentId === this.filterMainCategoryId());
+          this.filterSubcategories.set(subs);
+        }
         this.cd.detectChanges();
       },
       error: (err) => console.error('Failed to load categories:', err)
@@ -245,8 +252,33 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showSuggestions.set(false);
   }
 
-  onFilterCategoryChange(catId: any): void {
-    this.filterCategoryId.set(catId ? Number(catId) : null);
+  onFilterMainCategoryChange(mainId: any): void {
+    const numId = mainId ? Number(mainId) : null;
+    this.filterMainCategoryId.set(numId);
+    this.filterSubCategoryId.set(null);
+
+    if (numId) {
+      const subs = this.allCategories().filter((c: any) => c.parentId === numId);
+      this.filterSubcategories.set(subs);
+      this.filterCategoryId.set(numId);
+    } else {
+      this.filterSubcategories.set([]);
+      this.filterCategoryId.set(null);
+    }
+    this.resetAndLoadProducts();
+  }
+
+  onFilterSubCategoryChange(subId: any): void {
+    const numId = subId ? Number(subId) : null;
+    this.filterSubCategoryId.set(numId);
+
+    if (numId) {
+      this.filterCategoryId.set(numId);
+    } else if (this.filterMainCategoryId()) {
+      this.filterCategoryId.set(this.filterMainCategoryId());
+    } else {
+      this.filterCategoryId.set(null);
+    }
     this.resetAndLoadProducts();
   }
 
@@ -255,11 +287,51 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
     this.resetAndLoadProducts();
   }
 
+  clearCategoryFilter(): void {
+    this.filterMainCategoryId.set(null);
+    this.filterSubCategoryId.set(null);
+    this.filterSubcategories.set([]);
+    this.filterCategoryId.set(null);
+    this.resetAndLoadProducts();
+  }
+
+  clearBrandFilter(): void {
+    this.filterBrandId.set(null);
+    this.resetAndLoadProducts();
+  }
+
   clearAllFilters(): void {
     this.searchQuery = '';
+    this.filterMainCategoryId.set(null);
+    this.filterSubCategoryId.set(null);
+    this.filterSubcategories.set([]);
     this.filterCategoryId.set(null);
     this.filterBrandId.set(null);
     this.resetAndLoadProducts();
+  }
+
+  getActiveCategoryFilterName(): string {
+    if (this.filterSubCategoryId()) {
+      const sub = this.allCategories().find(c => c.id === this.filterSubCategoryId());
+      const subName = this.currentLang() === 'en' ? (sub?.nameEn || sub?.name) : (sub?.nameAr || sub?.nameEn || sub?.name);
+
+      const main = this.allCategories().find(c => c.id === this.filterMainCategoryId());
+      const mainName = this.currentLang() === 'en' ? (main?.nameEn || main?.name) : (main?.nameAr || main?.nameEn || main?.name);
+
+      return mainName ? `${mainName} ➔ ${subName}` : (subName || '');
+    }
+    if (this.filterMainCategoryId()) {
+      const main = this.allCategories().find(c => c.id === this.filterMainCategoryId());
+      return this.currentLang() === 'en' ? (main?.nameEn || main?.name || '') : (main?.nameAr || main?.nameEn || main?.name || '');
+    }
+    return '';
+  }
+
+  getActiveBrandFilterName(): string {
+    if (!this.filterBrandId()) return '';
+    const brand = this.brands().find((b: any) => b.id === this.filterBrandId());
+    if (!brand) return `#${this.filterBrandId()}`;
+    return this.currentLang() === 'en' ? (brand.nameEn || brand.name || brand.brand) : (brand.nameAr || brand.nameEn || brand.name || brand.brand);
   }
 
   resetAndLoadProducts(): void {

@@ -27,6 +27,7 @@ import { NotificationsCrudComponent } from './features/admin/notifications-crud/
 import { UsersCrudComponent } from './features/admin/users-crud/users-crud';
 import { PartnerApplyComponent } from './features/partner/partner-apply/partner-apply';
 import { PartnerRequestsComponent } from './features/admin/partner-requests/partner-requests';
+import { AuditLogsComponent } from './features/admin/audit-logs/audit-logs.component';
 
 import { adminGuard } from './core/guards/admin.guard';
 import { guestGuard } from './core/guards/guest.guard';
@@ -108,7 +109,8 @@ export const routes: Routes = [
             {
                 path: 'product-specs/:productId/details',
                 component: ProductSpecsCrudComponent
-            }]
+            },
+            { path: 'audit-logs', component: AuditLogsComponent }]
     },
 
 

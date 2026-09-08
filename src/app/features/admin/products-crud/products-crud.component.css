@@ -281,6 +281,106 @@
   color: var(--danger);
 }
 
+/* ── Active Filters Summary Bar ────────────────────────────── */
+.active-filters-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border);
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.active-filters-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.chip-label-icon {
+  font-size: 0.95rem;
+  color: var(--primary);
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.6rem;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary);
+  transition: all 0.15s ease;
+}
+
+.filter-chip:hover {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.chip-icon {
+  font-size: 0.88rem;
+  opacity: 0.85;
+}
+
+.chip-text {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--primary);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+
+.chip-remove:hover {
+  background: var(--danger);
+  color: #fff;
+}
+
+.chip-remove .material-icons-round {
+  font-size: 0.75rem;
+}
+
+.btn-clear-all-chips {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  margin-inline-start: 0.25rem;
+  transition: color 0.15s ease;
+}
+
+.btn-clear-all-chips:hover {
+  color: var(--danger);
+}
+
 /* ============================================================
    3. LOADING & EMPTY STATES
    ============================================================ */

@@ -1,0 +1,88 @@
+<div class="audit-logs-container">
+  <div class="header">
+    <h2>Audit Logs</h2>
+    <p class="subtitle">Track system activities and data changes</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-card">
+    <div class="filter-group">
+      <label>Entity Type</label>
+      <select [(ngModel)]="filter.entityType" (change)="onFilterChange()">
+        <option value="">All Entities</option>
+        <option *ngFor="let item of entityTypes" [value]="item.value">{{item.label}}</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Action</label>
+      <select [(ngModel)]="filter.action" (change)="onFilterChange()">
+        <option value="">All Actions</option>
+        <option *ngFor="let action of actions" [value]="action">{{action}}</option>
+      </select>
+    </div>
+    <div class="filter-group search-group">
+      <label>Search Payload</label>
+      <input type="text" placeholder="Search keywords..." [(ngModel)]="filter.searchKeyword" (keyup.enter)="onFilterChange()">
+    </div>
+    <button class="btn-refresh" (click)="loadLogs()">Refresh</button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading audit logs...</p>
+  </div>
+
+  <!-- Data Table -->
+  <div class="table-container" *ngIf="!loading">
+    <table class="audit-table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Action</th>
+          <th>Entity</th>
+          <th>Entity ID</th>
+          <th>Performed By</th>
+          <th>IP Address</th>
+          <th>Payload Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let log of logs">
+          <td>{{ log.createdAt | date:'MMM d, y, h:mm a' }}</td>
+          <td>
+            <span class="badge" [ngClass]="'badge-' + log.action.toLowerCase()">
+              {{ log.action }}
+            </span>
+          </td>
+          <td>{{ log.entityType }}</td>
+          <td>{{ log.entityId }}</td>
+          <td>
+            <div *ngIf="log.performedBy" class="user-info">
+              <span class="user-name">{{ log.performedBy.fullName }}</span>
+              <span class="user-role">{{ log.performedBy.role }}</span>
+            </div>
+            <span *ngIf="!log.performedBy" class="system-user">SYSTEM</span>
+          </td>
+          <td><span class="ip-address">{{ log.ipAddress }}</span></td>
+          <td class="payload-cell">
+            <details>
+              <summary>View Details</summary>
+              <pre>{{ formatPayload(log.payload) | json }}</pre>
+            </details>
+          </td>
+        </tr>
+        <tr *ngIf="logs.length === 0">
+          <td colspan="7" class="empty-state">No audit logs found matching criteria.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="!loading && totalPages > 1">
+    <button [disabled]="filter.page === 0" (click)="onPageChange(filter.page - 1)">Previous</button>
+    <span class="page-info">Page {{ filter.page + 1 }} of {{ totalPages }}</span>
+    <button [disabled]="filter.page >= totalPages - 1" (click)="onPageChange(filter.page + 1)">Next</button>
+  </div>
+</div>

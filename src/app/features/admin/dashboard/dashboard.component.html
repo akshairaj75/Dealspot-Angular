@@ -171,6 +171,28 @@
     </div>
   </div>
 
+  <!-- Recent Activities -->
+  <div class="recent-activities-section card" *ngIf="recentActivities.length > 0">
+    <div class="quick-header">
+      <span class="material-icons-round">history</span>
+      <h3>{{ currentLang() === 'en' ? 'Recent Activities' : 'أحدث النشاطات' }}</h3>
+      <a routerLink="/admin/audit-logs" class="view-all-link">{{ currentLang() === 'en' ? 'View All' : 'عرض الكل' }}</a>
+    </div>
+    <div class="activities-list">
+      <div class="activity-item" *ngFor="let activity of recentActivities">
+        <div class="activity-icon" [ngClass]="'icon-' + (activity.action ? activity.action.toLowerCase() : 'update')">
+          <span class="material-icons-round">bolt</span>
+        </div>
+        <div class="activity-content">
+          <p class="activity-desc">{{ activity.description || activity.message || activity.title }}</p>
+          <span class="activity-meta">
+            {{ activity.performedBy || 'System' }} • {{ (activity.timestamp || activity.createdAt) | date:'short' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Fast Creation Actions Bar -->
   <div class="quick-creation-panel card">
     <div class="quick-header">

@@ -106,14 +106,26 @@
       </div>
 
       <div class="filters-group">
-        <div class="filter-select-wrap" style="min-width: 180px;">
-          <app-custom-select [options]="allCategories()" [ngModel]="filterCategoryId()"
-            (ngModelChange)="onFilterCategoryChange($event)" valueKey="id" labelEnKey="nameEn" labelArKey="nameAr"
-            [placeholder]="currentLang() === 'en' ? 'All Categories' : 'جميع الأقسام'" [allowUnset]="true"
-            [unsetLabel]="currentLang() === 'en' ? 'All Categories' : 'جميع الأقسام'"></app-custom-select>
+        <!-- Main Category Filter -->
+        <div class="filter-select-wrap" style="min-width: 175px;">
+          <app-custom-select [options]="mainCategories()" [ngModel]="filterMainCategoryId()"
+            (ngModelChange)="onFilterMainCategoryChange($event)" valueKey="id" labelEnKey="nameEn" labelArKey="nameAr"
+            [placeholder]="currentLang() === 'en' ? 'Main Category' : 'القسم الرئيسي'" [allowUnset]="true"
+            [unsetLabel]="currentLang() === 'en' ? 'All Main Categories' : 'جميع الأقسام الرئيسية'"></app-custom-select>
         </div>
 
-        <div class="filter-select-wrap" style="min-width: 180px;">
+        <!-- Subcategory Filter (Cascading) -->
+        <div class="filter-select-wrap" style="min-width: 175px;">
+          <app-custom-select [options]="filterSubcategories()" [ngModel]="filterSubCategoryId()"
+            (ngModelChange)="onFilterSubCategoryChange($event)" valueKey="id" labelEnKey="nameEn" labelArKey="nameAr"
+            [disabled]="!filterMainCategoryId() || filterSubcategories().length === 0"
+            [placeholder]="!filterMainCategoryId() ? (currentLang() === 'en' ? 'Select Main First' : 'اختر القسم أولاً') : (filterSubcategories().length === 0 ? (currentLang() === 'en' ? 'No Subcategories' : 'لا توجد أقسام فرعية') : (currentLang() === 'en' ? 'Subcategory' : 'القسم الفرعي'))"
+            [allowUnset]="true"
+            [unsetLabel]="currentLang() === 'en' ? 'All Subcategories' : 'جميع الأقسام الفرعية'"></app-custom-select>
+        </div>
+
+        <!-- Brand Filter -->
+        <div class="filter-select-wrap" style="min-width: 165px;">
           <app-custom-select [options]="brands()" [ngModel]="filterBrandId()"
             (ngModelChange)="onFilterBrandChange($event)" valueKey="id" labelEnKey="nameEn" labelArKey="nameAr"
             [searchable]="true" (searchChange)="onBrandSearch($event)" [loading]="loadingBrands()"
@@ -128,12 +140,56 @@
             <span><strong>{{ products().length }}</strong> / <strong>{{ totalElements() }}</strong></span>
           </span>
           <button type="button" class="btn-reset-filters"
-            *ngIf="searchQuery || filterCategoryId() !== null || filterBrandId() !== null" (click)="clearAllFilters()">
+            *ngIf="searchQuery || filterMainCategoryId() !== null || filterBrandId() !== null" (click)="clearAllFilters()"
+            [title]="currentLang() === 'en' ? 'Clear all active filters' : 'إعادة ضبط الفلاتر'">
             <span class="material-icons-round">filter_alt_off</span>
             <span>{{ currentLang() === 'en' ? 'Clear' : 'إلغاء' }}</span>
           </button>
         </div>
       </div>
+    </div>
+
+    <!-- Active Filters Summary Chips Bar -->
+    <div class="active-filters-bar" *ngIf="searchQuery || filterMainCategoryId() || filterBrandId()">
+      <span class="active-filters-label">
+        <span class="material-icons-round chip-label-icon">tune</span>
+        {{ currentLang() === 'en' ? 'Active Filters:' : 'الفلاتر النشطة:' }}
+      </span>
+
+      <!-- Category Filter Chip -->
+      <span class="filter-chip" *ngIf="filterMainCategoryId()">
+        <span class="material-icons-round chip-icon">category</span>
+        <span class="chip-text">{{ getActiveCategoryFilterName() }}</span>
+        <button type="button" class="chip-remove" (click)="clearCategoryFilter()"
+          [title]="currentLang() === 'en' ? 'Remove category filter' : 'إزالة فلتر القسم'">
+          <span class="material-icons-round">close</span>
+        </button>
+      </span>
+
+      <!-- Brand Filter Chip -->
+      <span class="filter-chip" *ngIf="filterBrandId()">
+        <span class="material-icons-round chip-icon">storefront</span>
+        <span class="chip-text">{{ getActiveBrandFilterName() }}</span>
+        <button type="button" class="chip-remove" (click)="clearBrandFilter()"
+          [title]="currentLang() === 'en' ? 'Remove brand filter' : 'إزالة فلتر الماركة'">
+          <span class="material-icons-round">close</span>
+        </button>
+      </span>
+
+      <!-- Search Query Chip -->
+      <span class="filter-chip" *ngIf="searchQuery">
+        <span class="material-icons-round chip-icon">search</span>
+        <span class="chip-text">"{{ searchQuery }}"</span>
+        <button type="button" class="chip-remove" (click)="searchQuery = ''; onSearchChange('')"
+          [title]="currentLang() === 'en' ? 'Clear search' : 'مسح البحث'">
+          <span class="material-icons-round">close</span>
+        </button>
+      </span>
+
+      <!-- Clear All Text Button -->
+      <button type="button" class="btn-clear-all-chips" (click)="clearAllFilters()">
+        {{ currentLang() === 'en' ? 'Clear all' : 'مسح الكل' }}
+      </button>
     </div>
   </div>
 
