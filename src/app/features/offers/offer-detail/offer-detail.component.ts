@@ -49,6 +49,7 @@ export class OfferDetailComponent implements OnInit {
 
   isSaved = signal<boolean>(false);
   loading = signal<boolean>(true);
+  isSpotlightExpanded = signal<boolean>(false);
   couponCopied = false;
   couponRevealed = false;
   linkCopied = false;
