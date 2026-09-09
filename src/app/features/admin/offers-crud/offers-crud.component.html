@@ -88,17 +88,17 @@
   <div class="offers-list-view" *ngIf="!loading() && offers().length > 0; else noOffers">
     <div class="offer-card-item card" *ngFor="let o of offers()">
       <!-- Left: Thumbnail & Brand -->
-      <div class="item-left-group" [routerLink]="['/offers', o.id]" style="cursor: pointer;">
+      <a class="item-left-group" [routerLink]="['/offers', o.id]" target="_blank" style="cursor: pointer; text-decoration: none;">
         <div class="offer-thumb-box">
           <img [src]="getOfferImageUrl(o)" [alt]="o.titleEn || 'Offer'" class="offer-thumb">
           <span class="badge-chip" *ngIf="o.badgeType && o.badgeType !== 'NONE'">
             {{ o.badgeType }}
           </span>
         </div>
-      </div>
+      </a>
 
       <!-- Center: Title, Store, Category & Details -->
-      <div class="item-center-group" [routerLink]="['/offers', o.id]" style="cursor: pointer;">
+      <a class="item-center-group" [routerLink]="['/offers', o.id]" target="_blank" style="cursor: pointer; text-decoration: none; color: inherit;">
         <div class="offer-title-row">
           <h3 class="offer-title">{{ currentLang() === 'en' ? (o.titleEn || o.title_en) : (o.titleAr || o.title_ar || o.titleEn) }}</h3>
         </div>
@@ -135,7 +135,7 @@
             <span>{{ o.validFrom || o.valid_from }} → <strong [class.text-danger]="o.isExpired || o.status === 'EXPIRED'">{{ o.validUntil || o.valid_until }}</strong></span>
           </div>
         </div>
-      </div>
+      </a>
 
       <!-- Right: Status & Actions -->
       <div class="item-right-group">
@@ -158,7 +158,7 @@
         </span>
 
         <div class="item-action-btns">
-          <a [routerLink]="['/offers', o.id]" class="btn-item-action btn-item-view" [title]="currentLang() === 'en' ? 'View Details' : 'عرض التفاصيل'">
+          <a [routerLink]="['/offers', o.id]" target="_blank" class="btn-item-action btn-item-view" [title]="currentLang() === 'en' ? 'View Details' : 'عرض التفاصيل'">
             <span class="material-icons-round">visibility</span>
           </a>
           <button type="button" class="btn-item-action btn-item-extend" (click)="extendOffer(o.id, 7)" [title]="currentLang() === 'en' ? 'Extend Offer (+7 Days)' : 'تمديد العرض (+7 أيام)'">

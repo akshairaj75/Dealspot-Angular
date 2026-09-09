@@ -215,7 +215,7 @@
                 <button class="btn-item-action btn-item-edit" (click)="openEditModal(f)" [title]="currentLang() === 'en' ? 'Edit Flyer' : 'تعديل المنشور'">
                   <span class="material-icons-round">edit</span>
                 </button>
-                <a [routerLink]="['/admin/flyers', f.id, 'pages']" class="btn-item-action btn-item-pages" [title]="currentLang() === 'en' ? 'Manage Pages' : 'إدارة الصفحات'">
+                <a [routerLink]="['/admin/flyers', f.id, 'pages']" target="_blank" class="btn-item-action btn-item-pages" [title]="currentLang() === 'en' ? 'Manage Pages' : 'إدارة الصفحات'">
                   <span class="material-icons-round">auto_stories</span>
                 </a>
                 <button class="btn-item-action btn-item-del" (click)="deleteFlyer(f.id)" [title]="currentLang() === 'en' ? 'Delete Flyer' : 'حذف المنشور'">
@@ -299,7 +299,7 @@
         </div>
 
         <div class="flyer-card-footer">
-          <a [routerLink]="['/admin/flyers', f.id, 'pages']" class="btn-manage-pages">
+          <a [routerLink]="['/admin/flyers', f.id, 'pages']" target="_blank" class="btn-manage-pages">
             <span class="material-icons-round">auto_stories</span>
             <span>{{ currentLang() === 'en' ? 'Manage Pages' : 'إدارة صفحات الكتالوج' }}</span>
           </a>

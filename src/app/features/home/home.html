@@ -76,7 +76,7 @@
         <span class="badge badge-discount discount-badge-float">-{{ deal.discountPct || deal.discount_pct || 0 }}%</span>
         
         <div class="deal-card-image">
-          <a [routerLink]="['/offers', deal.id]" class="offer-card-img-link">
+          <a [routerLink]="['/offers', deal.id]" target="_blank" class="offer-card-img-link">
             <img [src]="getOfferImageUrl(deal)" [alt]="deal | translate:'title'">
           </a>
           <button class="save-btn-float" (click)="toggleSaveOffer(deal, $event)" [class.saved]="isSaved(deal.id)">
@@ -85,7 +85,7 @@
         </div>
 
         <div class="deal-card-body">
-          <a [routerLink]="['/stores', deal.storeId || deal.store_id]" class="store-badge-row">
+          <a [routerLink]="['/stores', deal.storeId || deal.store_id]" target="_blank" class="store-badge-row">
             <img [src]="getStoreLogoUrl(deal)" class="mini-store-logo" [alt]="deal.storeNameEn || 'Store Logo'">
             <span>{{ deal.store ? (deal.store | translate:'name') : (currentLang() === 'en' ? (deal.storeNameEn || deal.store_name_en) : (deal.storeNameAr || deal.store_name_ar || deal.storeNameEn)) }}</span>
           </a>
@@ -95,7 +95,7 @@
           </p>
 
           <h3 class="deal-card-title">
-            <a [routerLink]="['/offers', deal.id]">{{ deal | translate:'title' }}</a>
+            <a [routerLink]="['/offers', deal.id]" target="_blank">{{ deal | translate:'title' }}</a>
           </h3>
 
           <!-- Prominent Product Name -->
@@ -181,19 +181,19 @@
         <div class="flyer-image-wrapper">
           <img [src]="getImageUrl(flyer.coverImageUrl || flyer.cover_image_url || flyer.thumbnailUrl)" [alt]="flyer | translate:'title'">
           <div class="flyer-overlay">
-            <a [routerLink]="['/flyers', flyer.id]" class="btn btn-primary">
+            <a [routerLink]="['/flyers', flyer.id]" target="_blank" class="btn btn-primary">
               <span class="material-icons-round">auto_stories</span>
               <span>{{ currentLang() === 'en' ? 'Open Flyer' : 'فتح المنشور' }}</span>
             </a>
           </div>
         </div>
         <div class="flyer-card-body">
-          <a [routerLink]="['/stores', flyer.storeId || flyer.store_id]" class="store-badge-row">
+          <a [routerLink]="['/stores', flyer.storeId || flyer.store_id]" target="_blank" class="store-badge-row">
             <img [src]="getStoreLogoUrl(flyer)" class="mini-store-logo" [alt]="flyer.storeNameEn || 'Store Logo'">
             <span>{{ flyer.store ? (flyer.store | translate:'name') : (currentLang() === 'en' ? (flyer.storeNameEn || flyer.store_name_en) : (flyer.storeNameAr || flyer.store_name_ar || flyer.storeNameEn)) }}</span>
           </a>  
           <h3 class="flyer-title">
-            <a [routerLink]="['/flyers', flyer.id]">{{ flyer | translate:'title' }}</a>
+            <a [routerLink]="['/flyers', flyer.id]" target="_blank">{{ flyer | translate:'title' }}</a>
           </h3>
           <p class="flyer-pages-count">
             {{ flyer.totalPages || flyer.total_pages || (flyer.pages ? flyer.pages.length : 0) }} {{ currentLang() === 'en' ? 'Pages' : 'صفحات' }}
@@ -218,7 +218,7 @@
         <span class="badge badge-discount discount-badge-float">-{{ offer.discountPct || offer.discount_pct || 0 }}%</span>
         
         <div class="offer-card-image">
-          <a [routerLink]="['/offers', offer.id]" class="offer-card-img-link">
+          <a [routerLink]="['/offers', offer.id]" target="_blank" class="offer-card-img-link">
             <img [src]="getOfferImageUrl(offer)" [alt]="offer | translate:'title'">
           </a>
           <button class="save-btn-float" (click)="toggleSaveOffer(offer, $event)" [class.saved]="isSaved(offer.id)">
@@ -228,7 +228,7 @@
 
         <div class="offer-card-body">
           <div class="offer-store-header">
-            <a [routerLink]="['/stores', offer.storeId || offer.store_id]" class="store-badge-row">
+            <a [routerLink]="['/stores', offer.storeId || offer.store_id]" target="_blank" class="store-badge-row">
               <img [src]="getStoreLogoUrl(offer)" class="mini-store-logo" [alt]="offer.storeNameEn || 'Store Logo'">
               <span>{{ offer.store ? (offer.store | translate:'name') : (currentLang() === 'en' ? (offer.storeNameEn || offer.store_name_en) : (offer.storeNameAr || offer.store_name_ar || offer.storeNameEn)) }}</span>
             </a>
@@ -240,7 +240,7 @@
           </p>
 
           <h3 class="offer-title-main">
-            <a [routerLink]="['/offers', offer.id]">{{ offer | translate:'title' }}</a>
+            <a [routerLink]="['/offers', offer.id]" target="_blank">{{ offer | translate:'title' }}</a>
           </h3>
 
           <!-- Prominent Product Name -->
@@ -279,7 +279,7 @@
         <span class="badge badge-discount discount-badge-float">-{{ offer.discountPct || offer.discount_pct || 0 }}%</span>
         
         <div class="offer-card-image">
-          <a [routerLink]="['/offers', offer.id]" class="offer-card-img-link">
+          <a [routerLink]="['/offers', offer.id]" target="_blank" class="offer-card-img-link">
             <img [src]="getOfferImageUrl(offer)" [alt]="offer | translate:'title'">
           </a>
           <button class="save-btn-float" (click)="toggleSaveOffer(offer, $event)" [class.saved]="isSaved(offer.id)">
@@ -289,7 +289,7 @@
 
         <div class="offer-card-body">
           <div class="offer-store-header">
-            <a [routerLink]="['/stores', offer.storeId || offer.store_id]" class="store-badge-row">
+            <a [routerLink]="['/stores', offer.storeId || offer.store_id]" target="_blank" class="store-badge-row">
               <img [src]="getStoreLogoUrl(offer)" class="mini-store-logo" [alt]="offer.storeNameEn || 'Store Logo'">
               <span>{{ offer.store ? (offer.store | translate:'name') : (currentLang() === 'en' ? (offer.storeNameEn || offer.store_name_en) : (offer.storeNameAr || offer.store_name_ar || offer.storeNameEn)) }}</span>
             </a>
@@ -301,7 +301,7 @@
           </p>
 
           <h3 class="offer-title-main">
-            <a [routerLink]="['/offers', offer.id]">{{ offer | translate:'title' }}</a>
+            <a [routerLink]="['/offers', offer.id]" target="_blank">{{ offer | translate:'title' }}</a>
           </h3>
 
           <!-- Prominent Product Name -->

@@ -209,7 +209,7 @@
         </span>
 
         <div class="store-logo-panel">
-          <a [routerLink]="['/stores', store.id]" class="store-logo-link">
+          <a [routerLink]="['/stores', store.id]" target="_blank" class="store-logo-link">
             <img 
               [src]="getLogoUrl(store)" 
               [alt]="currentLang() === 'en' ? store.nameEn : store.nameAr"
@@ -220,7 +220,7 @@
 
         <div class="store-body-panel">
           <h3 class="store-title-main">
-            <a [routerLink]="['/stores', store.id]">{{ currentLang() === 'en' ? store.nameEn : store.nameAr }}</a>
+            <a [routerLink]="['/stores', store.id]" target="_blank">{{ currentLang() === 'en' ? store.nameEn : store.nameAr }}</a>
           </h3>
           <p class="store-category-desc">{{ currentLang() === 'en' ? (store.categoryNameEn || store.category?.nameEn) : (store.categoryNameAr || store.category?.nameAr || store.categoryNameEn) }}</p>
           
@@ -246,7 +246,7 @@
               <span class="material-icons-round">{{ isFollowing(store.id) ? 'check_circle' : 'favorite_border' }}</span>
               <span>{{ isFollowing(store.id) ? (currentLang() === 'en' ? 'Following' : 'تتابعه') : (currentLang() === 'en' ? 'Follow' : 'متابعة') }}</span>
             </button>
-            <a [routerLink]="['/stores', store.id]" class="btn btn-outline btn-icon-only">
+            <a [routerLink]="['/stores', store.id]" target="_blank" class="btn btn-outline btn-icon-only">
               <span class="material-icons-round">{{ currentLang() === 'ar' ? 'chevron_left' : 'chevron_right' }}</span>
             </a>
           </div>

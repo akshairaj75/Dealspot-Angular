@@ -112,7 +112,7 @@
               -{{ offer.discountPct || offer.discount_pct }}%
             </span>
             <div class="offer-card-image">
-              <a [routerLink]="['/offers', offer.id]" class="offer-card-img-link">
+              <a [routerLink]="['/offers', offer.id]" target="_blank" class="offer-card-img-link">
                 <img 
                   [src]="getOfferImageUrl(offer)" 
                   [alt]="offer.titleEn || offer.title_en || 'Offer Image'"
@@ -127,11 +127,11 @@
               </p>
 
               <h3 class="offer-title-main">
-                <a [routerLink]="['/offers', offer.id]">{{ currentLang() === 'en' ? (offer.titleEn || offer.title_en) : (offer.titleAr || offer.title_ar || offer.titleEn) }}</a>
+                <a [routerLink]="['/offers', offer.id]" target="_blank">{{ currentLang() === 'en' ? (offer.titleEn || offer.title_en) : (offer.titleAr || offer.title_ar || offer.titleEn) }}</a>
               </h3>
 
               <!-- Prominent Product Name -->
-              <a [routerLink]="['/offers', offer.id]" class="offer-product-name-row" *ngIf="(offer | translate:'productName') || (offer.product | translate:'name') || offer.productNameEn">
+              <a [routerLink]="['/offers', offer.id]" target="_blank" class="offer-product-name-row" *ngIf="(offer | translate:'productName') || (offer.product | translate:'name') || offer.productNameEn">
                 <span class="product-icon-box">
                   <span class="material-icons-round">inventory_2</span>
                 </span>
@@ -175,7 +175,7 @@
                 (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&auto=format&fit=crop&q=60'"
               >
               <div class="flyer-overlay">
-                <a [routerLink]="['/flyers', flyer.id]" class="btn btn-primary">
+                <a [routerLink]="['/flyers', flyer.id]" target="_blank" class="btn btn-primary">
                   <span class="material-icons-round">auto_stories</span>
                   <span>{{ currentLang() === 'en' ? 'Open Flyer' : 'فتح البروشور' }}</span>
                 </a>
@@ -183,7 +183,7 @@
             </div>
             <div class="flyer-card-body">
               <h3 class="flyer-title">
-                <a [routerLink]="['/flyers', flyer.id]">
+                <a [routerLink]="['/flyers', flyer.id]" target="_blank">
                   {{ currentLang() === 'en' ? (flyer.titleEn || flyer.title_en) : (flyer.titleAr || flyer.title_ar || flyer.titleEn) }}
                 </a>
               </h3>

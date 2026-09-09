@@ -650,7 +650,7 @@
               <h4>{{ currentLang() === 'en' ? 'Stores' : 'المتاجر' }}</h4>
             </div>
             <div class="stores-suggestion-list">
-              <a *ngFor="let store of suggestedStores()" [routerLink]="['/stores', store.id]" (click)="closeSearchOverlay()" class="store-suggestion-card">
+              <a *ngFor="let store of suggestedStores()" [routerLink]="['/stores', store.id]" target="_blank" (click)="closeSearchOverlay()" class="store-suggestion-card">
                 <img [src]="getStoreLogoUrl(store)" [alt]="store | translate:'name'" class="store-suggestion-logo">
                 <div class="store-suggestion-details">
                   <span class="store-suggestion-name">{{ store | translate:'name' }}</span>
@@ -668,7 +668,7 @@
               <h4>{{ currentLang() === 'en' ? 'Products & Items' : 'المنتجات والسلع' }}</h4>
             </div>
             <div class="products-suggestion-list">
-              <a *ngFor="let prod of suggestedProducts()" [routerLink]="['/offers-list']" [queryParams]="{ q: prod.nameEn || prod.nameAr }" (click)="closeSearchOverlay()" class="product-suggestion-card">
+              <a *ngFor="let prod of suggestedProducts()" [routerLink]="['/offers-list']" [queryParams]="{ q: prod.nameEn || prod.nameAr }" target="_blank" (click)="closeSearchOverlay()" class="product-suggestion-card">
                 <img [src]="getProductImageUrl(prod)" [alt]="prod | translate:'name'" class="product-suggestion-img">
                 <div class="product-suggestion-details">
                   <span class="product-suggestion-title">{{ prod | translate:'name' }}</span>
@@ -688,7 +688,7 @@
               <h4>{{ currentLang() === 'en' ? 'Offers & Discounts' : 'العروض والتخفيضات' }}</h4>
             </div>
             <div class="offers-suggestion-list">
-              <a *ngFor="let offer of suggestedOffers()" [routerLink]="['/offers', offer.id]" (click)="closeSearchOverlay()" class="offer-suggestion-card">
+              <a *ngFor="let offer of suggestedOffers()" [routerLink]="['/offers', offer.id]" target="_blank" (click)="closeSearchOverlay()" class="offer-suggestion-card">
                 <img [src]="getOfferImageUrl(offer)" [alt]="offer | translate:'title'" class="offer-suggestion-img">
                 <div class="offer-suggestion-details">
                   <span class="offer-suggestion-title">{{ offer | translate:'title' }}</span>
@@ -713,7 +713,7 @@
               <h4>{{ currentLang() === 'en' ? 'Flyers & Booklets' : 'المجلات والبروشورات' }}</h4>
             </div>
             <div class="flyers-suggestion-list">
-              <a *ngFor="let flyer of suggestedFlyers()" [routerLink]="['/flyers', flyer.id]" (click)="closeSearchOverlay()" class="flyer-suggestion-card">
+              <a *ngFor="let flyer of suggestedFlyers()" [routerLink]="['/flyers', flyer.id]" target="_blank" (click)="closeSearchOverlay()" class="flyer-suggestion-card">
                 <img [src]="getFlyerImageUrl(flyer)" [alt]="flyer.titleEn || flyer.title_en || 'Flyer'" class="flyer-suggestion-img">
                 <div class="flyer-suggestion-details">
                   <span class="flyer-suggestion-title">{{ currentLang() === 'en' ? (flyer.titleEn || flyer.title_en) : (flyer.titleAr || flyer.title_ar || flyer.titleEn) }}</span>

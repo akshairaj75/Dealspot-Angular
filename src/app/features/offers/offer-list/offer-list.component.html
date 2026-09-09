@@ -379,7 +379,7 @@
         <span class="badge badge-featured flash-badge-float" *ngIf="(offer.featured === true || offer.badgeType === 'FEATURED' || offer.is_featured === 1) && !offer.flash && offer.badgeType !== 'FLASH'">Featured</span>
         
         <div class="offer-card-image">
-          <a [routerLink]="['/offers', offer.id]" class="offer-card-img-link">
+          <a [routerLink]="['/offers', offer.id]" target="_blank" class="offer-card-img-link">
             <img [src]="getOfferImageUrl(offer)" [alt]="offer | translate:'title'">
           </a>
           
@@ -396,7 +396,7 @@
 
         <div class="offer-card-body">
           <div class="offer-store-header">
-            <a [routerLink]="['/stores', offer.storeId || offer.store_id]" class="store-badge-row">
+            <a [routerLink]="['/stores', offer.storeId || offer.store_id]" target="_blank" class="store-badge-row">
               <img [src]="getStoreLogoUrl(offer)" class="mini-store-logo" [alt]="offer.storeNameEn || 'Store Logo'">
               <span>{{ offer.store ? (offer.store | translate:'name') : (currentLang() === 'en' ? (offer.storeNameEn || offer.store_name_en) : (offer.storeNameAr || offer.store_name_ar || offer.storeNameEn)) }}</span>
             </a>
@@ -408,7 +408,7 @@
           </p>
 
           <h3 class="offer-title-main">
-            <a [routerLink]="['/offers', offer.id]">{{ offer | translate:'title' }}</a>
+            <a [routerLink]="['/offers', offer.id]" target="_blank">{{ offer | translate:'title' }}</a>
           </h3>
 
           <!-- Prominent Product Name -->
