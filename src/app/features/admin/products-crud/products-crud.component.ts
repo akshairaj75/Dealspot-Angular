@@ -8,6 +8,7 @@ import { CategoryService } from '../../../core/services/category.service';
 import { ProductService } from '../../../core/services/product.service';
 import { BrandService } from '../../../core/services/brand.service';
 import { TranslationService } from '../../../core/services/translation.service';
+import { ProductFilterStateService } from '../../../core/services/product-filter-state.service';
 import { CustomSelectComponent } from '../../../shared/components/custom-select/custom-select.component';
 import Swal from 'sweetalert2';
 import { environment } from '../../../environment/environment';
@@ -27,6 +28,7 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
   private productService = inject(ProductService);
   private brandService = inject(BrandService);
   private translationService = inject(TranslationService);
+  private filterStateService = inject(ProductFilterStateService);
   private cd = inject(ChangeDetectorRef);
 
   currentLang = this.translationService.currentLang;
@@ -97,6 +99,8 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
   // Scroll to top
   showScrollTop = signal<boolean>(false);
   private observer?: IntersectionObserver;
+
+  lastViewedProductId = signal<number | null>(null);
 
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
@@ -316,6 +320,7 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
     this.filterSubcategories.set([]);
     this.filterCategoryId.set(null);
     this.filterBrandId.set(null);
+    this.filterStateService.clearState();
     this.resetAndLoadProducts();
   }
 

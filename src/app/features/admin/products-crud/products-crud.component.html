@@ -88,9 +88,9 @@
                   </div>
                 </div>
 
-                <a [routerLink]="['/admin/products', p.id, 'details']" class="btn-suggestion-detail"
+                <a [routerLink]="['/admin/products', p.id, 'details']" target="_blank" class="btn-suggestion-detail"
                   (click)="$event.stopPropagation(); closeSuggestions()"
-                  [title]="currentLang() === 'en' ? 'Open Product Details' : 'فتح تفاصيل المنتج'">
+                  [title]="currentLang() === 'en' ? 'Open Product Details in New Tab' : 'فتح تفاصيل المنتج في تبويب جديد'">
                   <span class="material-icons-round">open_in_new</span>
                 </a>
               </div>
@@ -201,11 +201,11 @@
 
   <!-- Unified Responsive Product List -->
   <div class="products-list-view" *ngIf="!loading() && products().length > 0">
-    <div class="product-list-item" *ngFor="let p of products()"
+    <div [id]="'product-card-' + p.id" class="product-list-item" *ngFor="let p of products()"
       [class.card-inactive]="p.is_active === 0 || p.active === false || p.isActive === false">
-      <!-- Item Main Row (Click to view product details) -->
-      <div class="product-item-main" [routerLink]="['/admin/products', p.id, 'details']" [state]="{ product: p }"
-        style="cursor: pointer;">
+      <!-- Item Main Row (Click to view product details in new tab) -->
+      <a class="product-item-main" [routerLink]="['/admin/products', p.id, 'details']" target="_blank" [state]="{ product: p }"
+        style="cursor: pointer; text-decoration: none; color: inherit;">
         <!-- Product Image -->
         <div class="product-avatar-box">
           <img *ngIf="p.images && p.images.length > 0" [src]="filePath + p.images[0].imageUrl" class="product-img"
@@ -238,7 +238,7 @@
               'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}</span>
           </span>
         </div>
-      </div>
+      </a>
 
       <!-- Footer: Tags + Actions -->
       <div class="product-item-footer">
@@ -277,15 +277,15 @@
           </span>
 
           <div class="item-action-btns">
-            <a [routerLink]="['/admin/products', p.id, 'details']" [state]="{ product: p }"
-              class="btn-item-action btn-item-view" [title]="currentLang() === 'en' ? 'View Details' : 'عرض التفاصيل'">
+            <a [routerLink]="['/admin/products', p.id, 'details']" target="_blank" [state]="{ product: p }"
+              class="btn-item-action btn-item-view" [title]="currentLang() === 'en' ? 'View Details in New Tab' : 'عرض التفاصيل في تبويب جديد'">
               <span class="material-icons-round">visibility</span>
             </a>
             <button class="btn-item-action" (click)="openEditModal(p)"
               [title]="currentLang() === 'en' ? 'Edit Product' : 'تعديل المنتج'">
               <span class="material-icons-round">edit</span>
             </button>
-            <a [routerLink]="['/admin/product-specs', p.id, 'details']" class="btn-item-action btn-item-specs"
+            <a [routerLink]="['/admin/product-specs', p.id, 'details']" target="_blank" class="btn-item-action btn-item-specs"
               [title]="currentLang() === 'en' ? 'Technical Specs' : 'المواصفات الفنية'">
               <span class="material-icons-round">list_alt</span>
             </a>
