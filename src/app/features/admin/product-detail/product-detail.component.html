@@ -43,23 +43,29 @@
   </div>
 
   <ng-container *ngIf="!loading() && product()">
-    <!-- Hero / Main Header Card -->
-    <div class="hero-card">
-      <div class="hero-image-wrap">
-        <img *ngIf="previewUrl" [src]="previewUrl" class="hero-img" alt="Product Image"
-          (error)="$any($event.target).src = 'assets/images/placeholder-product.png'" />
-        <div *ngIf="!previewUrl" class="hero-img-placeholder">
-          <span class="material-icons-round">inventory_2</span>
-        </div>
+    <!-- Dedicated Product Hero Section (Image Portion + Overview Info) -->
+    <div class="product-hero-grid">
+      <!-- 1. Dedicated Image Portion (Gallery Frame like offer/offerId) -->
+      <div class="product-gallery-card">
+        <div class="main-image-frame">
+          <div class="main-image-viewport">
+            <img *ngIf="previewUrl" [src]="previewUrl" class="hero-img" [alt]="product()?.nameEn || 'Product Image'"
+              (error)="$any($event.target).src = 'assets/images/placeholder-product.png'" />
+            <div *ngIf="!previewUrl" class="hero-img-placeholder">
+              <span class="material-icons-round">inventory_2</span>
+            </div>
+          </div>
 
-        <label class="hero-img-upload-btn" *ngIf="isEditMode()">
-          <input type="file" (change)="onFileSelected($event)" accept="image/*" class="file-hidden" />
-          <span class="material-icons-round">photo_camera</span>
-          <span>{{ currentLang() === 'en' ? 'Change Photo' : 'تغيير الصورة' }}</span>
-        </label>
+          <label class="hero-img-upload-btn" *ngIf="isEditMode()">
+            <input type="file" (change)="onFileSelected($event)" accept="image/*" class="file-hidden" />
+            <span class="material-icons-round">photo_camera</span>
+            <span>{{ currentLang() === 'en' ? 'Change Photo' : 'تغيير الصورة' }}</span>
+          </label>
+        </div>
       </div>
 
-      <div class="hero-content">
+      <!-- 2. Product Overview Info Portion -->
+      <div class="product-overview-card">
         <div class="hero-top-badges">
           <span class="status-pill"
             [class.status-active]="product().is_active === 1 || product().active === true || product().isActive === true"
@@ -84,9 +90,10 @@
           </span>
         </div>
 
-        <h1 class="hero-title-en">{{ product().nameEn || product().name_en }}</h1>
-        <h2 class="hero-title-ar" *ngIf="product().nameAr || product().name_ar">{{ product().nameAr || product().name_ar
-          }}</h2>
+        <div class="product-title-spotlight">
+          <h1 class="hero-title-en">{{ product().nameEn || product().name_en }}</h1>
+          <h2 class="hero-title-ar" *ngIf="product().nameAr || product().name_ar">{{ product().nameAr || product().name_ar }}</h2>
+        </div>
 
         <div class="hero-meta-chips">
           <div class="chip-item" *ngIf="product().sku">

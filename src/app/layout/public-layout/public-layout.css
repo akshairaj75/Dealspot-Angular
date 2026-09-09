@@ -474,9 +474,10 @@
 }
 
 :host-context([dir="rtl"]) .profile-dropdown-menu,
-[dir="rtl"] .profile-dropdown-menu {
-  right: 0;
-  left: auto;
+[dir="rtl"] .profile-dropdown-menu,
+.rtl .profile-dropdown-menu {
+  left: 0;
+  right: auto;
 }
 
 @media (max-width: 576px) {
@@ -484,14 +485,16 @@
     position: fixed !important;
     top: 64px !important;
     right: 12px !important;
-    left: auto !important;
+    left: 12px !important;
+    width: auto !important;
     max-width: calc(100vw - 24px) !important;
     z-index: 1300 !important;
   }
 
   :host-context([dir="rtl"]) .profile-dropdown-menu,
-  [dir="rtl"] .profile-dropdown-menu {
-    right: auto !important;
+  [dir="rtl"] .profile-dropdown-menu,
+  .rtl .profile-dropdown-menu {
+    right: 12px !important;
     left: 12px !important;
   }
 }
@@ -1494,9 +1497,10 @@
 }
 
 :host-context([dir="rtl"]) .user-notif-popover,
-[dir="rtl"] .user-notif-popover {
-  right: 0;
-  left: auto;
+[dir="rtl"] .user-notif-popover,
+.rtl .user-notif-popover {
+  left: 0;
+  right: auto;
 }
 
 @media (max-width: 576px) {
@@ -1512,7 +1516,8 @@
   }
 
   :host-context([dir="rtl"]) .user-notif-popover,
-  [dir="rtl"] .user-notif-popover {
+  [dir="rtl"] .user-notif-popover,
+  .rtl .user-notif-popover {
     left: 12px !important;
     right: 12px !important;
   }
