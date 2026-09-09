@@ -165,11 +165,17 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  getParentId(c: any): number | null {
+    if (!c) return null;
+    const pId = c.parentId ?? c.parent_id ?? (c.parent ? c.parent.id : null);
+    return pId !== null && pId !== undefined && pId !== '' ? Number(pId) : null;
+  }
+
   loadCategories(): void {
     this.categoryService.getCategories().subscribe({
       next: (res: any[]) => {
         this.allCategories.set(res || []);
-        const mains = (res || []).filter((c: any) => c.parentId === null || c.parentId === undefined);
+        const mains = (res || []).filter((c: any) => this.getParentId(c) === null);
         this.mainCategories.set(mains);
         if (this.product()) {
           this.setupCategorySelection(this.product()?.categoryId || this.product()?.category_id);
@@ -319,8 +325,9 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     const catObj = this.allCategories().find(c => Number(c.id) === numId);
     if (!catObj) return;
 
-    if (catObj.parentId) {
-      this.selectedMainCategoryId = Number(catObj.parentId);
+    const parentId = this.getParentId(catObj);
+    if (parentId !== null) {
+      this.selectedMainCategoryId = parentId;
       this.onMainCategoryChange(this.selectedMainCategoryId, false);
       this.selectedSubCategoryId = numId;
     } else {
@@ -331,13 +338,14 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   }
 
   onMainCategoryChange(mainId: number | null, resetSub: boolean = true): void {
-    this.selectedMainCategoryId = mainId;
+    this.selectedMainCategoryId = mainId ? Number(mainId) : null;
     if (resetSub) {
       this.selectedSubCategoryId = null;
-      this.productForm.patchValue({ category_id: mainId });
+      this.productForm.patchValue({ category_id: this.selectedMainCategoryId });
     }
-    if (mainId) {
-      const subs = this.allCategories().filter(c => Number(c.parentId) === Number(mainId));
+    if (this.selectedMainCategoryId !== null) {
+      const targetId = this.selectedMainCategoryId;
+      const subs = this.allCategories().filter(c => this.getParentId(c) === targetId);
       this.availableSubcategories.set(subs);
     } else {
       this.availableSubcategories.set([]);

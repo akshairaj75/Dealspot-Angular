@@ -493,7 +493,15 @@ export class CustomSelectComponent implements ControlValueAccessor {
   currentLang = this.translationService.currentLang;
 
   // Options & Control Config
-  @Input() options: any[] = [];
+  private _options = signal<any[]>([]);
+
+  @Input() set options(val: any[]) {
+    this._options.set(val || []);
+  }
+  get options(): any[] {
+    return this._options();
+  }
+
   @Input() valueKey = 'id';
   @Input() labelKey = 'name';
   @Input() labelEnKey = 'nameEn';
@@ -527,11 +535,12 @@ export class CustomSelectComponent implements ControlValueAccessor {
   }
 
   get isSearchable(): boolean {
-    return this.searchable || (this.options && this.options.length > 6);
+    const list = this._options();
+    return this.searchable || (list && list.length > 6);
   }
 
   filteredOptions = computed(() => {
-    const list = this.options || [];
+    const list = this._options() || [];
     const query = this.searchQuery().trim().toLowerCase();
     if (!query) return list;
 

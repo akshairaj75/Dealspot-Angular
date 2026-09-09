@@ -74,7 +74,7 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
   unitOptions = [
     { id: 'EACH', nameEn: 'Pieces (pcs / each)', nameAr: 'حبة / قطعة' },
     { id: 'KG', nameEn: 'Kilograms (kg)', nameAr: 'كيلوجرام (كجم)' },
-    { id: 'GRAM', nameEn: 'Grams (g)', nameAr: 'جرام (جم)' },
+    { id: 'GRAM', nameEn: '99s (g)', nameAr: 'جرام (جم)' },
     { id: 'LITRE', nameEn: 'Liters (L)', nameAr: 'لتر' },
     { id: 'ML', nameEn: 'Milliliters (ml)', nameAr: 'مليلتر' },
     { id: 'PACK', nameEn: 'Pack', nameAr: 'عبوة / باقة' },
@@ -156,14 +156,21 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  getParentId(c: any): number | null {
+    if (!c) return null;
+    const pId = c.parentId ?? c.parent_id ?? (c.parent ? c.parent.id : null);
+    return pId !== null && pId !== undefined && pId !== '' ? Number(pId) : null;
+  }
+
   loadCategories(): void {
     this.categoryService.getCategories().subscribe({
       next: (res: any[]) => {
         this.allCategories.set(res || []);
-        const mains = (res || []).filter((c: any) => c.parentId === null || c.parentId === undefined);
+        const mains = (res || []).filter((c: any) => this.getParentId(c) === null);
         this.mainCategories.set(mains);
-        if (this.filterMainCategoryId()) {
-          const subs = (res || []).filter((c: any) => c.parentId === this.filterMainCategoryId());
+        if (this.filterMainCategoryId() !== null) {
+          const mainId = Number(this.filterMainCategoryId());
+          const subs = (res || []).filter((c: any) => this.getParentId(c) === mainId);
           this.filterSubcategories.set(subs);
         }
         this.cd.detectChanges();
@@ -253,32 +260,34 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onFilterMainCategoryChange(mainId: any): void {
-    const numId = mainId ? Number(mainId) : null;
+    const numId = (mainId !== null && mainId !== undefined && mainId !== '') ? Number(mainId) : null;
     this.filterMainCategoryId.set(numId);
     this.filterSubCategoryId.set(null);
 
-    if (numId) {
-      const subs = this.allCategories().filter((c: any) => c.parentId === numId);
+    if (numId !== null) {
+      const subs = this.allCategories().filter((c: any) => this.getParentId(c) === numId);
       this.filterSubcategories.set(subs);
       this.filterCategoryId.set(numId);
     } else {
       this.filterSubcategories.set([]);
       this.filterCategoryId.set(null);
     }
+    this.cd.detectChanges();
     this.resetAndLoadProducts();
   }
 
   onFilterSubCategoryChange(subId: any): void {
-    const numId = subId ? Number(subId) : null;
+    const numId = (subId !== null && subId !== undefined && subId !== '') ? Number(subId) : null;
     this.filterSubCategoryId.set(numId);
 
-    if (numId) {
+    if (numId !== null) {
       this.filterCategoryId.set(numId);
-    } else if (this.filterMainCategoryId()) {
+    } else if (this.filterMainCategoryId() !== null) {
       this.filterCategoryId.set(this.filterMainCategoryId());
     } else {
       this.filterCategoryId.set(null);
     }
+    this.cd.detectChanges();
     this.resetAndLoadProducts();
   }
 
@@ -456,18 +465,19 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
     const catId = p.categoryId || p.category_id;
 
     // Resolve Main category and Subcategory from the flat category list
-    const matchedCat = this.allCategories().find((c: any) => c.id === catId);
+    const matchedCat = this.allCategories().find((c: any) => Number(c.id) === Number(catId));
     if (matchedCat) {
-      if (matchedCat.parentId != null) {
+      const parentId = this.getParentId(matchedCat);
+      if (parentId !== null) {
         // It's a subcategory
-        this.selectedMainCategoryId = matchedCat.parentId;
-        const subs = this.allCategories().filter((c: any) => c.parentId === matchedCat.parentId);
+        this.selectedMainCategoryId = parentId;
+        const subs = this.allCategories().filter((c: any) => this.getParentId(c) === parentId);
         this.availableSubcategories.set(subs);
-        this.selectedSubCategoryId = matchedCat.id;
+        this.selectedSubCategoryId = Number(matchedCat.id);
       } else {
         // It's a top-level category
-        this.selectedMainCategoryId = matchedCat.id;
-        const subs = this.allCategories().filter((c: any) => c.parentId === matchedCat.id);
+        this.selectedMainCategoryId = Number(matchedCat.id);
+        const subs = this.allCategories().filter((c: any) => this.getParentId(c) === Number(matchedCat.id));
         this.availableSubcategories.set(subs);
         this.selectedSubCategoryId = null;
       }
@@ -518,18 +528,20 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onMainCategoryChange(mainId: number | null): void {
-    this.selectedMainCategoryId = mainId ? Number(mainId) : null;
+    const numId = (mainId !== null && mainId !== undefined && (mainId as any) !== '') ? Number(mainId) : null;
+    this.selectedMainCategoryId = numId;
     this.selectedSubCategoryId = null;
 
-    if (this.selectedMainCategoryId) {
-      const subs = this.allCategories().filter((c: any) => c.parentId === this.selectedMainCategoryId);
+    if (numId !== null) {
+      const subs = this.allCategories().filter((c: any) => this.getParentId(c) === numId);
       this.availableSubcategories.set(subs);
       // Default category to the selected main category
-      this.productForm.patchValue({ category_id: this.selectedMainCategoryId });
+      this.productForm.patchValue({ category_id: numId });
     } else {
       this.availableSubcategories.set([]);
       this.productForm.patchValue({ category_id: '' });
     }
+    this.cd.detectChanges();
   }
 
   onSubCategoryChange(subId: number | null): void {
