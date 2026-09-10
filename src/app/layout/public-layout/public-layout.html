@@ -199,11 +199,11 @@
     <div class="footer-container">
       <!-- Brand & Info Column -->
       <div class="footer-section footer-brand-col">
-        <div class="footer-logo">
+        <a routerLink="/" (click)="scrollToTop()" class="footer-logo">
           <img *ngIf="appConfig.logoUrl" [src]="appConfig.logoUrl" [alt]="appConfig.appNameEn" class="footer-logo-img">
           <span *ngIf="!appConfig.logoUrl" class="material-icons-round logo-icon">{{ appConfig.logoIcon }}</span>
           <span class="brand-text">{{ currentLang() === 'en' ? appConfig.appNameEn : appConfig.appNameAr }}</span>
-        </div>
+        </a>
         <p class="footer-description">
           {{ currentLang() === 'en' ? appConfig.taglineEn : appConfig.taglineAr }}
         </p>
@@ -227,25 +227,25 @@
         </h4>
         <ul class="footer-links">
           <li>
-            <a routerLink="/offers-list">
+            <a routerLink="/offers-list" (click)="scrollToTop()">
               <span class="material-icons-round link-bullet">local_offer</span>
               <span>{{ currentLang() === 'en' ? 'All Offers & Discounts' : 'جميع العروض والخصومات' }}</span>
             </a>
           </li>
           <li>
-            <a routerLink="/stores">
+            <a routerLink="/stores" (click)="scrollToTop()">
               <span class="material-icons-round link-bullet">storefront</span>
               <span>{{ currentLang() === 'en' ? 'Supermarkets & Stores' : 'المتاجر والهايبرماركت' }}</span>
             </a>
           </li>
           <li>
-            <a routerLink="/flyers">
+            <a routerLink="/flyers" (click)="scrollToTop()">
               <span class="material-icons-round link-bullet">auto_stories</span>
               <span>{{ currentLang() === 'en' ? 'Weekly Flyers & Catalogs' : 'المجلات والكتالوجات الأسبوعية' }}</span>
             </a>
           </li>
           <li>
-            <a [routerLink]="isLoggedIn() ? '/saved-offers' : '/login'">
+            <a [routerLink]="isLoggedIn() ? '/saved-offers' : '/login'" (click)="scrollToTop()">
               <span class="material-icons-round link-bullet">bookmark_border</span>
               <span>{{ currentLang() === 'en' ? 'My Saved Bookmarks' : 'العروض المحفوظة' }}</span>
             </a>
@@ -261,19 +261,19 @@
         </h4>
         <ul class="footer-links">
           <li>
-            <a routerLink="/partner-with-us" class="partner-link-highlight">
+            <a routerLink="/partner-with-us" (click)="scrollToTop()" class="partner-link-highlight">
               <span class="material-icons-round link-bullet">handshake</span>
               <span>{{ currentLang() === 'en' ? 'Partner With Us (Register Store)' : 'انضم كشريك (سجل متجرك)' }}</span>
             </a>
           </li>
           <li>
-            <a routerLink="/login">
+            <a routerLink="/login" (click)="scrollToTop()">
               <span class="material-icons-round link-bullet">login</span>
               <span>{{ currentLang() === 'en' ? 'User Login / Sign Up' : 'تسجيل الدخول / إنشاء حساب' }}</span>
             </a>
           </li>
           <li>
-            <a routerLink="/login" [queryParams]="{admin: true}">
+            <a routerLink="/login" [queryParams]="{admin: true}" (click)="scrollToTop()">
               <span class="material-icons-round link-bullet">admin_panel_settings</span>
               <span>{{ currentLang() === 'en' ? 'Admin Portal Access' : 'بوابة الإدارة والمسؤولين' }}</span>
             </a>
