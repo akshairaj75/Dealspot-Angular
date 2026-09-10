@@ -64,7 +64,12 @@ export class FlyerListComponent implements OnInit {
   }
 
   getFilteredFlyers(): any[] {
-    let list = this.flyers();
+    const today = new Date().toISOString().split('T')[0];
+    let list = this.flyers().filter(f => {
+      const isActive = f.active !== false && f.is_active !== 0 && f.isActive !== false;
+      const isNotExpired = !f.isExpired && !(f.validUntil && f.validUntil < today) && !(f.valid_until && f.valid_until < today);
+      return isActive && isNotExpired;
+    });
 
     if (this.selectedCityId !== null) {
       const cId = Number(this.selectedCityId);

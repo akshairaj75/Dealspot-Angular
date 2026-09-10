@@ -36,6 +36,7 @@ export class OfferService {
     search: string = '',
     storeId: number | null = null,
     badgeType: string | null = null,
+    status: string | null = null,
     active: boolean | null = null
   ): Observable<any> {
     let params = new HttpParams()
@@ -50,6 +51,9 @@ export class OfferService {
     }
     if (badgeType && badgeType !== 'ALL' && badgeType !== '') {
       params = params.set('badgeType', badgeType);
+    }
+    if (status && status !== 'ALL' && status !== '') {
+      params = params.set('status', status);
     }
     if (active !== null && active !== undefined) {
       params = params.set('active', active.toString());

@@ -11,10 +11,17 @@ export class FlyerService {
 
   constructor(private http: HttpClient) {}
 
-  getAllFlyers(storeId?: number): Observable<any[]> {
+  getAllFlyers(storeId?: number, includeExpired?: boolean): Observable<any[]> {
     let url = this.apiUrl + '/fetch-all-flyers';
+    const params: string[] = [];
     if (storeId) {
-      url += '?storeId=' + storeId;
+      params.push('storeId=' + storeId);
+    }
+    if (includeExpired) {
+      params.push('includeExpired=true');
+    }
+    if (params.length > 0) {
+      url += '?' + params.join('&');
     }
     return this.http.get<any[]>(url);
   }

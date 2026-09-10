@@ -227,6 +227,7 @@ export class OffersCrudComponent implements OnInit, AfterViewInit, OnDestroy {
       this.searchQuery,
       storeIdVal,
       this.selectedBadgeFilter,
+      this.selectedStatusFilter,
       activeVal
     ).subscribe({
       next: (res) => {
@@ -266,6 +267,7 @@ export class OffersCrudComponent implements OnInit, AfterViewInit, OnDestroy {
       this.searchQuery,
       storeIdVal,
       this.selectedBadgeFilter,
+      this.selectedStatusFilter,
       activeVal
     ).subscribe({
       next: (res) => {

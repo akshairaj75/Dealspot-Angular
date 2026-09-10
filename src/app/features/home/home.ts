@@ -263,7 +263,13 @@ export class HomeComponent implements OnInit {
     // 3. Flyers
     this.flyerService.getAllFlyers().subscribe({
       next: (res: any[]) => {
-        this.activeFlyers.set(res || []);
+        const today = new Date().toISOString().split('T')[0];
+        const validFlyers = (res || []).filter(f => {
+          const isActive = f.active !== false && f.is_active !== 0 && f.isActive !== false;
+          const isNotExpired = !f.isExpired && !(f.validUntil && f.validUntil < today) && !(f.valid_until && f.valid_until < today);
+          return isActive && isNotExpired;
+        });
+        this.activeFlyers.set(validFlyers);
         this.cd.detectChanges();
       },
       error: (err) => console.error('Failed to load flyers:', err)
@@ -284,20 +290,20 @@ export class HomeComponent implements OnInit {
     });
 
     // Flash Deals (flash=true or badgeType=FLASH)
-    const flash = validOffers.filter(o => 
-      o.flash === true || 
-      o.badgeType === 'FLASH' || 
-      o.is_flash === 1 || 
+    const flash = validOffers.filter(o =>
+      o.flash === true ||
+      o.badgeType === 'FLASH' ||
+      o.is_flash === 1 ||
       o.is_flash === true ||
       o.isFlash === true
     );
     this.flashDeals.set(flash);
 
     // Featured Offers (featured=true or badgeType=FEATURED)
-    const featured = validOffers.filter(o => 
-      o.featured === true || 
-      o.badgeType === 'FEATURED' || 
-      o.is_featured === 1 || 
+    const featured = validOffers.filter(o =>
+      o.featured === true ||
+      o.badgeType === 'FEATURED' ||
+      o.is_featured === 1 ||
       o.is_featured === true ||
       o.isFeatured === true
     );
@@ -394,14 +400,14 @@ export class HomeComponent implements OnInit {
     }
 
     // 2. Product Image from DTO or embedded Product
-    const dtoProdImg = item.productPrimaryImageUrl || 
-                       item.product_primary_image_url || 
-                       item.productImageUrl || 
-                       item.product_image_url || 
-                       item.product?.primaryImageUrl || 
-                       item.product?.primary_image_url || 
-                       item.product?.imageUrl ||
-                       (item.product?.images && item.product.images.length > 0 ? (item.product.images[0]?.imageUrl || item.product.images[0]?.image_url || item.product.images[0]) : null);
+    const dtoProdImg = item.productPrimaryImageUrl ||
+      item.product_primary_image_url ||
+      item.productImageUrl ||
+      item.product_image_url ||
+      item.product?.primaryImageUrl ||
+      item.product?.primary_image_url ||
+      item.product?.imageUrl ||
+      (item.product?.images && item.product.images.length > 0 ? (item.product.images[0]?.imageUrl || item.product.images[0]?.image_url || item.product.images[0]) : null);
     if (dtoProdImg && typeof dtoProdImg === 'string' && dtoProdImg.trim() !== '') {
       return this.getImageUrl(dtoProdImg);
     }
@@ -447,7 +453,7 @@ export class HomeComponent implements OnInit {
           }
           this.cd.detectChanges();
         },
-        error: () => {}
+        error: () => { }
       });
     } else {
       this.savedOfferIds.set([]);

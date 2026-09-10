@@ -475,34 +475,35 @@
 
 .flyer-image-wrapper {
   position: relative;
-  height: 220px;
-  background: #f1f5f9;
+  height: 240px;
+  background: #ffffff;
   overflow: hidden;
+  padding: 0;
+}
+
+.flyer-img-link {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .flyer-image-wrapper img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: top center;
+  transition: transform 0.3s ease;
+  display: block;
 }
 
-.flyer-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.flyer-card:hover .flyer-overlay {
-  opacity: 1;
+.flyer-card:hover .flyer-image-wrapper img {
+  transform: scale(1.04);
 }
 
 .flyer-card-body {
-  padding: 12px 14px;
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
 }
 
 .flyer-title {
@@ -548,6 +549,30 @@
 .validity-dates {
   color: var(--text-muted);
   font-weight: 500;
+}
+
+.btn-view-flyer {
+  width: 100%;
+  background: #15803d;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+  margin-top: 10px;
+  text-decoration: none;
+}
+
+.btn-view-flyer:hover {
+  background: #166534;
+  color: #ffffff;
+  transform: translateY(-1px);
 }
 
 /* Branches Grid */
@@ -756,7 +781,8 @@
   }
 
   .flyer-image-wrapper {
-    height: 155px;
+    height: 175px;
+    padding: 0;
   }
 
   .flyer-card-body {

@@ -942,25 +942,27 @@
 }
 
 .flyer-image-wrapper {
-  height: 220px;
+  height: 240px;
   position: relative;
   overflow: hidden;
   background: #ffffff;
   border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
+  display: block;
+  padding: 0;
+}
+
+.flyer-img-link {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .flyer-image-wrapper img {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  object-position: center;
-  transition: transform 0.35s ease;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: block;
 }
 
@@ -972,35 +974,16 @@
   transform: scale(1.04);
 }
 
-.flyer-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(15, 23, 42, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: var(--transition);
-  backdrop-filter: blur(2px);
-}
-
-.flyer-card:hover .flyer-overlay {
-  opacity: 1;
-}
-
 .flyer-card-body {
-  padding: 10px 12px;
+  padding: 12px 14px 14px;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
 .flyer-title {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -1015,6 +998,29 @@
   font-size: 11px;
   color: var(--text-muted);
   font-weight: 500;
+}
+
+.btn-view-flyer {
+  width: 100%;
+  background: #15803d;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+  margin-top: 6px;
+  text-decoration: none;
+}
+
+.btn-view-flyer:hover {
+  background: #166534;
+  color: #ffffff;
 }
 
 /* Offer Grid Card footer */
@@ -1100,8 +1106,8 @@
   }
 
   .flyer-image-wrapper {
-    height: 155px;
-    padding: 8px;
+    height: 175px;
+    padding: 0;
   }
 
   .flyer-card-body {

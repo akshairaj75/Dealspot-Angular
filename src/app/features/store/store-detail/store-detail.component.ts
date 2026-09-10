@@ -79,11 +79,16 @@ export class StoreDetailComponent implements OnInit {
         });
 
         // Fetch Offers for this store
-        this.offerService.getAllOffers().subscribe({
+        this.offerService.getAllOffers(id).subscribe({
           next: (allOffers: any[]) => {
-            const matchedOffers = (allOffers || []).filter(o => 
-              o.storeId === id || o.store_id === id || (o.store && o.store.id === id)
-            );
+            const today = new Date().toISOString().split('T')[0];
+            const matchedOffers = (allOffers || [])
+              .filter(o => o.storeId === id || o.store_id === id || (o.store && o.store.id === id))
+              .filter(o => {
+                const isActive = o.active !== false && o.is_active !== 0 && o.isActive !== false;
+                const isNotExpired = !o.isExpired && o.status !== 'EXPIRED' && !(o.validUntil && o.validUntil < today) && !(o.valid_until && o.valid_until < today);
+                return isActive && isNotExpired;
+              });
             this.offers.set(matchedOffers);
             this.cd.detectChanges();
           },
@@ -93,11 +98,16 @@ export class StoreDetailComponent implements OnInit {
         });
 
         // Fetch Flyers for this store
-        this.flyerService.getAllFlyers().subscribe({
+        this.flyerService.getAllFlyers(id).subscribe({
           next: (allFlyers: any[]) => {
-            const matchedFlyers = (allFlyers || []).filter(f => 
-              f.storeId === id || f.store_id === id || (f.store && f.store.id === id)
-            );
+            const today = new Date().toISOString().split('T')[0];
+            const matchedFlyers = (allFlyers || [])
+              .filter(f => f.storeId === id || f.store_id === id || (f.store && f.store.id === id))
+              .filter(f => {
+                const isActive = f.active !== false && f.is_active !== 0 && f.isActive !== false;
+                const isNotExpired = !f.isExpired && !(f.validUntil && f.validUntil < today) && !(f.valid_until && f.valid_until < today);
+                return isActive && isNotExpired;
+              });
             this.flyers.set(matchedFlyers);
             this.cd.detectChanges();
           },

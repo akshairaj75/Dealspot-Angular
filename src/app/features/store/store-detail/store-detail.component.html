@@ -121,11 +121,6 @@
               </a>
             </div>
             <div class="offer-card-body">
-              <!-- Description -->
-              <p class="card-desc-text" *ngIf="(offer | translate:'description') || (offer.product | translate:'description') || offer.descriptionEn">
-                {{ (offer | translate:'description') || (offer.product | translate:'description') || (currentLang() === 'en' ? (offer.descriptionEn || offer.description_en) : (offer.descriptionAr || offer.description_ar || offer.descriptionEn)) }}
-              </p>
-
               <h3 class="offer-title-main">
                 <a [routerLink]="['/offers', offer.id]" target="_blank">{{ currentLang() === 'en' ? (offer.titleEn || offer.title_en) : (offer.titleAr || offer.title_ar || offer.titleEn) }}</a>
               </h3>
@@ -169,17 +164,13 @@
         <div class="grid-cards" *ngIf="flyers().length > 0; else noFlyers">
           <div class="flyer-card card" *ngFor="let flyer of flyers()">
             <div class="flyer-image-wrapper">
-              <img 
-                [src]="getImageUrl(flyer.coverImageUrl || flyer.cover_image_url)" 
-                [alt]="flyer.titleEn || flyer.title_en || 'Flyer'"
-                (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&auto=format&fit=crop&q=60'"
-              >
-              <div class="flyer-overlay">
-                <a [routerLink]="['/flyers', flyer.id]" target="_blank" class="btn btn-primary">
-                  <span class="material-icons-round">auto_stories</span>
-                  <span>{{ currentLang() === 'en' ? 'Open Flyer' : 'فتح البروشور' }}</span>
-                </a>
-              </div>
+              <a [routerLink]="['/flyers', flyer.id]" target="_blank" class="flyer-img-link">
+                <img 
+                  [src]="getImageUrl(flyer.coverImageUrl || flyer.cover_image_url)" 
+                  [alt]="flyer.titleEn || flyer.title_en || 'Flyer'"
+                  (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&auto=format&fit=crop&q=60'"
+                >
+              </a>
             </div>
             <div class="flyer-card-body">
               <h3 class="flyer-title">
@@ -196,6 +187,9 @@
                   {{ currentLang() === 'en' ? 'Until:' : 'حتى:' }} {{ flyer.validUntil || flyer.valid_until }}
                 </span>
               </div>
+              <a [routerLink]="['/flyers', flyer.id]" target="_blank" class="btn btn-view-flyer">
+                <span>{{ currentLang() === 'en' ? 'View Flyer' : 'عرض البروشور' }}</span>
+              </a>
             </div>
           </div>
         </div>
