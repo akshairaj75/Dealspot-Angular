@@ -157,7 +157,7 @@
   display: none;
 }
 
-.mobile-filter-bar {
+.btn-floating-filter {
   display: none;
 }
 
@@ -781,30 +781,58 @@
     height: 42px;
   }
 
-  .mobile-filter-bar {
+  /* Mobile Floating Filter Action Button */
+  .btn-floating-filter {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    padding: 0.5rem 0.85rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
+    justify-content: center;
+    position: fixed;
+    bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+    inset-inline-end: 18px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--primary, #10b981);
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.42), 0 2px 6px rgba(0, 0, 0, 0.18);
+    z-index: 1030;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
   }
 
-  .btn-open-mobile-filter {
-    display: inline-flex;
+  .btn-floating-filter:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.55), 0 3px 8px rgba(0, 0, 0, 0.22);
+  }
+
+  .btn-floating-filter:active {
+    transform: scale(0.92);
+  }
+
+  .btn-floating-filter .material-icons-round {
+    font-size: 24px;
+    color: #ffffff;
+  }
+
+  .floating-filter-badge {
+    position: absolute;
+    top: -3px;
+    inset-inline-end: -3px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 10px;
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 800;
+    display: flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.4rem 0.85rem;
-    background: var(--surface-hover);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-full);
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    cursor: pointer;
+    justify-content: center;
+    border: 2px solid var(--surface, #ffffff);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    line-height: 1;
   }
 
   .filters-backdrop {

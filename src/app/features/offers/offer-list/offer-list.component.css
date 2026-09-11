@@ -98,7 +98,7 @@
   display: none;
 }
 
-.mobile-filter-bar {
+.btn-floating-filter {
   display: none;
 }
 
@@ -811,15 +811,6 @@
 /* ==========================================================================
    Responsive Adaptations
    ========================================================================== */
-@media (max-width: 1024px) {
-  .offers-grid-container {
-    grid-template-columns: 1fr;
-  }
-
-  .offers-main-content {
-    order: 2;
-  }
-}
 
 @media (max-width: 768px) {
   .offers-header {
@@ -1280,9 +1271,9 @@
 }
 
 /* ==========================================================================
-   Responsive Mobile Filter Drawer & Layout (Screens <= 992px)
+   Responsive Mobile Filter Drawer & Layout (Screens <= 768px)
    ========================================================================== */
-@media (max-width: 992px) {
+@media (max-width: 768px) {
   .offers-page-layout {
     flex-direction: column;
     gap: 8px;
@@ -1294,88 +1285,58 @@
     gap: 8px;
   }
 
-  /* Mobile Filter Top Trigger Bar */
-  .mobile-filter-bar {
+  /* Mobile Floating Filter Action Button */
+  .btn-floating-filter {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 8px 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
-    width: 100%;
-    margin: 0;
-  }
-
-  /* Hide redundant "Found X offers" card on mobile; only show chips if active */
-  .offers-grid-header {
-    display: none !important;
-  }
-
-  .offers-grid-header.has-chips {
-    display: flex !important;
-    padding: 6px 10px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    margin: 0;
-    box-shadow: var(--shadow-sm);
-  }
-
-  .offers-grid-header .header-left-info {
-    display: none !important;
-  }
-
-  .btn-open-mobile-filter {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    font-weight: 700;
-    padding: 7px 16px;
-    border-radius: var(--radius-full);
-    background: var(--primary);
+    justify-content: center;
+    position: fixed;
+    bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+    inset-inline-end: 18px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--primary, #10b981);
     color: #ffffff;
     border: none;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.28);
-    transition: transform 0.15s ease, opacity 0.15s ease;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.42), 0 2px 6px rgba(0, 0, 0, 0.18);
+    z-index: 1030;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
   }
 
-  .btn-open-mobile-filter:active {
-    transform: scale(0.97);
+  .btn-floating-filter:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.55), 0 3px 8px rgba(0, 0, 0, 0.22);
   }
 
-  .btn-open-mobile-filter .material-icons-round {
-    font-size: 17px;
+  .btn-floating-filter:active {
+    transform: scale(0.92);
   }
 
-  .mobile-filter-badge {
-    background: #ffffff;
-    color: var(--primary);
+  .btn-floating-filter .material-icons-round {
+    font-size: 24px;
+    color: #ffffff;
+  }
+
+  .floating-filter-badge {
+    position: absolute;
+    top: -3px;
+    inset-inline-end: -3px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 10px;
+    background: #ef4444;
+    color: #ffffff;
     font-size: 11px;
     font-weight: 800;
-    padding: 1px 7px;
-    border-radius: var(--radius-full);
-    margin-left: 2px;
-    line-height: 1.4;
-  }
-
-  [dir="rtl"] .mobile-filter-badge {
-    margin-left: 0;
-    margin-right: 2px;
-  }
-
-  .mobile-results-count {
-    font-size: 13px;
-    color: var(--text-secondary);
-    font-weight: 500;
-  }
-
-  .mobile-results-count strong {
-    color: var(--text-primary);
-    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--surface, #ffffff);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    line-height: 1;
   }
 
   /* Mobile Filter Backdrop */

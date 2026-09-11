@@ -294,18 +294,11 @@
 
   <!-- Offers Grid Section -->
   <section class="offers-grid-section">
-    <!-- Mobile Filter Trigger Bar -->
-    <div class="mobile-filter-bar">
-      <button type="button" class="btn-open-mobile-filter" (click)="openMobileFilter()">
-        <span class="material-icons-round">tune</span>
-        <span>{{ currentLang() === 'en' ? 'Filter & Sort' : 'الفلاتر والبحث' }}</span>
-        <span class="mobile-filter-badge" *ngIf="activeFiltersCount() > 0">{{ activeFiltersCount() }}</span>
-      </button>
-      <div class="mobile-results-count">
-        <span *ngIf="!loading"><strong>{{ offers().length }}</strong> {{ currentLang() === 'en' ? 'offers' : 'عرض' }}</span>
-        <span *ngIf="loading">{{ currentLang() === 'en' ? 'Loading...' : 'جاري التحميل...' }}</span>
-      </div>
-    </div>
+    <!-- Mobile Floating Filter Action Button (Icon Only) -->
+    <button type="button" class="btn-floating-filter" (click)="openMobileFilter()" [attr.aria-label]="currentLang() === 'en' ? 'Filter & Sort' : 'الفلاتر والبحث'">
+      <span class="material-icons-round">tune</span>
+      <span class="floating-filter-badge" *ngIf="activeFiltersCount() > 0">{{ activeFiltersCount() }}</span>
+    </button>
 
     <!-- Active Filters Summary Bar -->
     <div class="offers-grid-header card" [class.has-chips]="selectedMainCategoryId || selectedSubCategoryId || selectedStoreId || selectedBrandId || selectedBrandName || showFlashOnly || showFeaturedOnly || selectedDiscountRange > 0 || searchQuery">

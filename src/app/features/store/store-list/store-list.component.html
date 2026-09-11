@@ -106,20 +106,11 @@
 
     <!-- Stores Grid Section -->
     <section class="stores-grid-section">
-      <!-- Mobile Filter Trigger Bar -->
-      <div class="mobile-filter-bar">
-        <button type="button" class="btn-open-mobile-filter" (click)="openMobileFilter()">
-          <span class="material-icons-round">tune</span>
-          <span>{{ currentLang() === 'en' ? 'Filter & Search' : 'الفلاتر والبحث' }}</span>
-          <span class="mobile-filter-badge" *ngIf="activeFiltersCount() > 0">{{ activeFiltersCount() }}</span>
-        </button>
-
-        <div class="mobile-results-count">
-          <span *ngIf="!loading"><strong>{{ getFilteredStores().length }}</strong> {{ currentLang() === 'en' ? 'stores'
-            : 'متجر' }}</span>
-          <span *ngIf="loading">{{ currentLang() === 'en' ? 'Loading...' : 'جاري التحميل...' }}</span>
-        </div>
-      </div>
+      <!-- Mobile Floating Filter Action Button (Icon Only) -->
+      <button type="button" class="btn-floating-filter" (click)="openMobileFilter()" [attr.aria-label]="currentLang() === 'en' ? 'Filter & Search' : 'الفلاتر والبحث'">
+        <span class="material-icons-round">tune</span>
+        <span class="floating-filter-badge" *ngIf="activeFiltersCount() > 0">{{ activeFiltersCount() }}</span>
+      </button>
 
       <!-- Active Filters Summary Bar (Desktop & Mobile Chips) -->
       <div class="stores-grid-header card"
