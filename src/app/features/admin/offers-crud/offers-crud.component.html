@@ -24,8 +24,8 @@
       </button>
     </div>
 
-    <div class="filter-dropdowns" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-      <div style="min-width: 170px;" *ngIf="!authService.isStoreManager()">
+    <div class="filter-dropdowns">
+      <div class="filter-select-wrap" *ngIf="!authService.isStoreManager()">
         <app-custom-select
           [options]="stores()"
           [(ngModel)]="selectedStoreFilter"
@@ -40,7 +40,7 @@
         ></app-custom-select>
       </div>
 
-      <div style="min-width: 150px;">
+      <div class="filter-select-wrap">
         <app-custom-select
           [options]="badgeFilterOptions"
           [(ngModel)]="selectedBadgeFilter"
@@ -54,7 +54,7 @@
         ></app-custom-select>
       </div>
 
-      <div style="min-width: 150px;">
+      <div class="filter-select-wrap">
         <app-custom-select
           [options]="statusFilterOptions"
           [(ngModel)]="selectedStatusFilter"
@@ -68,14 +68,16 @@
         ></app-custom-select>
       </div>
 
-      <button class="btn-clear-filters" *ngIf="searchQuery || selectedBadgeFilter || selectedStatusFilter || selectedStoreFilter" (click)="clearAllFilters()">
-        <span class="material-icons-round">filter_alt_off</span>
-        <span>{{ currentLang() === 'en' ? 'Reset' : 'إعادة ضبط' }}</span>
-      </button>
+      <div class="filter-actions-strip">
+        <button class="btn-clear-filters" *ngIf="searchQuery || selectedBadgeFilter || selectedStatusFilter || selectedStoreFilter" (click)="clearAllFilters()">
+          <span class="material-icons-round">filter_alt_off</span>
+          <span>{{ currentLang() === 'en' ? 'Reset' : 'إعادة ضبط' }}</span>
+        </button>
 
-      <span class="results-stats-chip" *ngIf="totalElements() > 0">
-        {{ currentLang() === 'en' ? 'Showing ' + offers().length + ' of ' + totalElements() + ' offers' : 'عرض ' + offers().length + ' من ' + totalElements() + ' عرض' }}
-      </span>
+        <span class="results-stats-chip" *ngIf="totalElements() > 0">
+          {{ currentLang() === 'en' ? 'Showing ' + offers().length + ' of ' + totalElements() + ' offers' : 'عرض ' + offers().length + ' من ' + totalElements() + ' عرض' }}
+        </span>
+      </div>
     </div>
   </div>
 

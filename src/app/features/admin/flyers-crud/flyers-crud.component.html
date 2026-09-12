@@ -78,7 +78,7 @@
       </div>
 
       <div class="filters-group">
-        <div style="min-width: 170px;">
+        <div class="filter-select-wrap">
           <app-custom-select
             [options]="stores()"
             [ngModel]="selectedStoreFilter()"
@@ -93,7 +93,7 @@
           ></app-custom-select>
         </div>
 
-        <div style="min-width: 160px;">
+        <div class="filter-select-wrap">
           <app-custom-select
             [options]="cities()"
             [ngModel]="selectedCityFilter()"
@@ -107,7 +107,7 @@
           ></app-custom-select>
         </div>
 
-        <div style="min-width: 150px;">
+        <div class="filter-select-wrap">
           <app-custom-select
             [options]="statusFilterOptions()"
             [ngModel]="selectedStatusFilter()"

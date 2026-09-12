@@ -24,37 +24,29 @@
   <!-- 2. TABS & FILTER TOOLBAR                                      -->
   <!-- ============================================================ -->
   <div class="categories-nav-card">
-    <div class="nav-top-row">
-      <!-- Tab Switcher -->
-      <div class="category-tabs">
-        <button 
-          type="button" 
-          class="cat-tab-btn" 
-          [class.active]="activeTab === 'parent'" 
-          (click)="activeTab = 'parent'"
-        >
-          <span class="material-icons-round">folder</span>
-          <span>{{ currentLang() === 'en' ? 'Parent Categories' : 'الأقسام الرئيسية' }}</span>
-          <span class="tab-count-pill">{{ parentCategories.length }}</span>
-        </button>
+    <!-- Top Filter Tabs (Smooth Horizontal Swipeable Pills) -->
+    <div class="category-tabs">
+      <button 
+        type="button" 
+        class="cat-tab-btn" 
+        [class.active]="activeTab === 'parent'" 
+        (click)="activeTab = 'parent'"
+      >
+        <span class="material-icons-round">folder</span>
+        <span>{{ currentLang() === 'en' ? 'Parent Categories' : 'الأقسام الرئيسية' }}</span>
+        <span class="tab-count-pill">{{ parentCategories.length }}</span>
+      </button>
 
-        <button 
-          type="button" 
-          class="cat-tab-btn" 
-          [class.active]="activeTab === 'sub'" 
-          (click)="activeTab = 'sub'"
-        >
-          <span class="material-icons-round">folder_open</span>
-          <span>{{ currentLang() === 'en' ? 'Subcategories' : 'الأقسام الفرعية' }}</span>
-          <span class="tab-count-pill">{{ subCategories.length }}</span>
-        </button>
-      </div>
-
-      <!-- Item Counter Pill -->
-      <div class="items-total-pill">
-        <span class="material-icons-round icon-xs">layers</span>
-        <span>{{ (activeTab === 'parent' ? getFilteredParentCategories().length : getFilteredSubCategories().length) }} {{ currentLang() === 'en' ? 'Items' : 'عنصر' }}</span>
-      </div>
+      <button 
+        type="button" 
+        class="cat-tab-btn" 
+        [class.active]="activeTab === 'sub'" 
+        (click)="activeTab = 'sub'"
+      >
+        <span class="material-icons-round">folder_open</span>
+        <span>{{ currentLang() === 'en' ? 'Subcategories' : 'الأقسام الفرعية' }}</span>
+        <span class="tab-count-pill">{{ subCategories.length }}</span>
+      </button>
     </div>
 
     <!-- Filters Row -->
@@ -73,7 +65,7 @@
       </div>
 
       <!-- Parent Filter Dropdown (Subcategories Tab Only) -->
-      <div class="parent-filter-wrap" *ngIf="activeTab === 'sub'" style="min-width: 180px;">
+      <div class="parent-filter-wrap" *ngIf="activeTab === 'sub'">
         <app-custom-select
           [options]="parentCategories"
           [(ngModel)]="selectedParentFilter"
@@ -84,6 +76,12 @@
           [allowUnset]="true"
           [unsetLabel]="currentLang() === 'en' ? 'All Parent Categories' : 'جميع الأقسام الرئيسية'"
         ></app-custom-select>
+      </div>
+
+      <!-- Item Counter Pill -->
+      <div class="items-total-pill">
+        <span class="material-icons-round icon-xs">layers</span>
+        <span>{{ (activeTab === 'parent' ? getFilteredParentCategories().length : getFilteredSubCategories().length) }} {{ currentLang() === 'en' ? 'Items' : 'عنصر' }}</span>
       </div>
     </div>
   </div>

@@ -477,6 +477,27 @@ export interface CustomSelectOption {
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+
+    @media (max-width: 768px) {
+      .custom-select-trigger {
+        min-height: 38px;
+        padding: 0.35rem 0.65rem;
+        font-size: 0.8rem;
+      }
+      .trigger-thumb {
+        width: 18px;
+        height: 18px;
+      }
+      .trigger-icon {
+        font-size: 16px;
+      }
+      .trigger-label {
+        font-size: 0.8rem;
+      }
+      .chevron-icon {
+        font-size: 18px;
+      }
+    }
   `]
 })
 export class CustomSelectComponent implements ControlValueAccessor {

@@ -24,66 +24,54 @@
   <!-- 2. STATS & FILTER TOOLBAR                                     -->
   <!-- ============================================================ -->
   <div class="brands-nav-card">
-    <!-- Top Filter Tabs & Stats -->
-    <div class="nav-top-row">
-      <div class="filter-tabs">
-        <button 
-          type="button" 
-          class="filter-tab-btn" 
-          [class.active]="activeFilter() === 'ALL'"
-          (click)="setFilter('ALL')"
-        >
-          <span class="material-icons-round">loyalty</span>
-          <span>{{ currentLang() === 'en' ? 'All Brands' : 'جميع الماركات' }}</span>
-          <span class="tab-count-pill">{{ brands().length }}</span>
-        </button>
+    <!-- Top Filter Tabs (Smooth Horizontal Swipeable Pills) -->
+    <div class="filter-tabs">
+      <button 
+        type="button" 
+        class="filter-tab-btn" 
+        [class.active]="activeFilter() === 'ALL'"
+        (click)="setFilter('ALL')"
+      >
+        <span class="material-icons-round">loyalty</span>
+        <span>{{ currentLang() === 'en' ? 'All Brands' : 'جميع الماركات' }}</span>
+        <span class="tab-count-pill">{{ brands().length }}</span>
+      </button>
 
-        <button 
-          type="button" 
-          class="filter-tab-btn" 
-          [class.active]="activeFilter() === 'ACTIVE'"
-          (click)="setFilter('ACTIVE')"
-        >
-          <span class="material-icons-round text-success">check_circle</span>
-          <span>{{ currentLang() === 'en' ? 'Active' : 'نشطة' }}</span>
-          <span class="tab-count-pill pill-success">{{ getActiveCount() }}</span>
-        </button>
+      <button 
+        type="button" 
+        class="filter-tab-btn" 
+        [class.active]="activeFilter() === 'ACTIVE'"
+        (click)="setFilter('ACTIVE')"
+      >
+        <span class="material-icons-round text-success">check_circle</span>
+        <span>{{ currentLang() === 'en' ? 'Active' : 'نشطة' }}</span>
+        <span class="tab-count-pill pill-success">{{ getActiveCount() }}</span>
+      </button>
 
-        <button 
-          type="button" 
-          class="filter-tab-btn" 
-          [class.active]="activeFilter() === 'FEATURED'"
-          (click)="setFilter('FEATURED')"
-        >
-          <span class="material-icons-round text-warning">star</span>
-          <span>{{ currentLang() === 'en' ? 'Featured' : 'مميزة' }}</span>
-          <span class="tab-count-pill pill-warning">{{ getFeaturedCount() }}</span>
-        </button>
+      <button 
+        type="button" 
+        class="filter-tab-btn" 
+        [class.active]="activeFilter() === 'FEATURED'"
+        (click)="setFilter('FEATURED')"
+      >
+        <span class="material-icons-round text-warning">star</span>
+        <span>{{ currentLang() === 'en' ? 'Featured' : 'مميزة' }}</span>
+        <span class="tab-count-pill pill-warning">{{ getFeaturedCount() }}</span>
+      </button>
 
-        <button 
-          type="button" 
-          class="filter-tab-btn" 
-          [class.active]="activeFilter() === 'INACTIVE'"
-          (click)="setFilter('INACTIVE')"
-        >
-          <span class="material-icons-round text-muted">pause_circle</span>
-          <span>{{ currentLang() === 'en' ? 'Inactive' : 'غير نشطة' }}</span>
-          <span class="tab-count-pill pill-muted">{{ getInactiveCount() }}</span>
-        </button>
-      </div>
-
-      <div class="items-total-pill">
-        <span class="material-icons-round">storefront</span>
-        <span>
-          {{ currentLang() === 'en' ? 'Showing' : 'عرض' }}
-          <strong>{{ brands().length }}</strong>
-          {{ currentLang() === 'en' ? 'of' : 'من' }}
-          <strong>{{ totalElements() }}</strong>
-        </span>
-      </div>
+      <button 
+        type="button" 
+        class="filter-tab-btn" 
+        [class.active]="activeFilter() === 'INACTIVE'"
+        (click)="setFilter('INACTIVE')"
+      >
+        <span class="material-icons-round text-muted">pause_circle</span>
+        <span>{{ currentLang() === 'en' ? 'Inactive' : 'غير نشطة' }}</span>
+        <span class="tab-count-pill pill-muted">{{ getInactiveCount() }}</span>
+      </button>
     </div>
 
-    <!-- Search Bar -->
+    <!-- Search Bar & Results Counter -->
     <div class="toolbar-controls-row">
       <div class="search-wrap">
         <span class="material-icons-round search-ico">search</span>
@@ -96,6 +84,16 @@
         <button type="button" class="btn-clear" *ngIf="searchQuery" (click)="clearSearch()">
           <span class="material-icons-round">close</span>
         </button>
+      </div>
+
+      <div class="items-total-pill">
+        <span class="material-icons-round">storefront</span>
+        <span>
+          {{ currentLang() === 'en' ? 'Showing' : 'عرض' }}
+          <strong>{{ brands().length }}</strong>
+          {{ currentLang() === 'en' ? 'of' : 'من' }}
+          <strong>{{ totalElements() }}</strong>
+        </span>
       </div>
     </div>
   </div>

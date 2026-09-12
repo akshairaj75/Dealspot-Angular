@@ -8,7 +8,8 @@
         {{ currentLang() === 'en' ? 'Notification Delivery & Broadcast' : 'إدارة وبث الإشعارات' }}
       </h1>
       <p class="page-subtitle">
-        {{ currentLang() === 'en' ? 'Send contextual deal alerts, flyer releases, and announcements to customers.' : 'إرسال تنبيهات العروض المباشرة والمجلات والرسائل للمستخدمين ومتابعة سجلات الوصول.' }}
+        {{ currentLang() === 'en' ? 'Send contextual deal alerts, flyer releases, and announcements to customers.' :
+        'إرسال تنبيهات العروض المباشرة والمجلات والرسائل للمستخدمين ومتابعة سجلات الوصول.' }}
       </p>
     </div>
 
@@ -36,7 +37,8 @@
       </div>
       <div class="stat-content">
         <span class="stat-num">{{ offersList().length }}</span>
-        <span class="stat-label">{{ currentLang() === 'en' ? 'Linkable Active Offers' : 'العروض النشطة المتاحة للربط' }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Linkable Active Offers' : 'العروض النشطة المتاحة للربط'
+          }}</span>
       </div>
     </div>
 
@@ -46,7 +48,8 @@
       </div>
       <div class="stat-content">
         <span class="stat-num">{{ flyersList().length }}</span>
-        <span class="stat-label">{{ currentLang() === 'en' ? 'Linkable Active Flyers' : 'المجلات المتاحة للربط' }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Linkable Active Flyers' : 'المجلات المتاحة للربط'
+          }}</span>
       </div>
     </div>
   </div>
@@ -55,13 +58,9 @@
   <div class="controls-bar card">
     <div class="search-input-wrap">
       <span class="material-icons-round search-icon">search</span>
-      <input
-        type="text"
-        [(ngModel)]="searchQuery"
-        (keyup.enter)="onFilterChange()"
+      <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onFilterChange()"
         [placeholder]="currentLang() === 'en' ? 'Search by title, recipient user, or email...' : 'ابحث بالعنوان، المستخدم، أو البريد...'"
-        class="form-control"
-      >
+        class="form-control">
       <button *ngIf="searchQuery" (click)="searchQuery = ''; onFilterChange()" class="btn-clear-search">
         <span class="material-icons-round">close</span>
       </button>
@@ -70,32 +69,18 @@
     <div class="filters-flex">
       <!-- Type Filter -->
       <div class="filter-item">
-        <app-custom-select
-          [options]="typeOptions"
-          [(ngModel)]="typeFilter"
-          (ngModelChange)="onFilterChange()"
-          valueKey="value"
-          labelEnKey="labelEn"
-          labelArKey="labelAr"
-          [placeholder]="currentLang() === 'en' ? 'All Types' : 'جميع الأنواع'"
-          [allowUnset]="true"
-          [unsetLabel]="currentLang() === 'en' ? 'All Types' : 'جميع الأنواع'"
-        ></app-custom-select>
+        <app-custom-select [options]="typeOptions" [(ngModel)]="typeFilter" (ngModelChange)="onFilterChange()"
+          valueKey="value" labelEnKey="labelEn" labelArKey="labelAr"
+          [placeholder]="currentLang() === 'en' ? 'All Types' : 'جميع الأنواع'" [allowUnset]="true"
+          [unsetLabel]="currentLang() === 'en' ? 'All Types' : 'جميع الأنواع'"></app-custom-select>
       </div>
 
       <!-- Channel Filter -->
       <div class="filter-item">
-        <app-custom-select
-          [options]="channelOptions"
-          [(ngModel)]="channelFilter"
-          (ngModelChange)="onFilterChange()"
-          valueKey="value"
-          labelEnKey="labelEn"
-          labelArKey="labelAr"
-          [placeholder]="currentLang() === 'en' ? 'All Channels' : 'جميع القنوات'"
-          [allowUnset]="true"
-          [unsetLabel]="currentLang() === 'en' ? 'All Channels' : 'جميع القنوات'"
-        ></app-custom-select>
+        <app-custom-select [options]="channelOptions" [(ngModel)]="channelFilter" (ngModelChange)="onFilterChange()"
+          valueKey="value" labelEnKey="labelEn" labelArKey="labelAr"
+          [placeholder]="currentLang() === 'en' ? 'All Channels' : 'جميع القنوات'" [allowUnset]="true"
+          [unsetLabel]="currentLang() === 'en' ? 'All Channels' : 'جميع القنوات'"></app-custom-select>
       </div>
 
       <button type="button" class="btn btn-secondary btn-apply" (click)="onFilterChange()">
@@ -103,7 +88,8 @@
         <span>{{ currentLang() === 'en' ? 'Apply' : 'تطبيق' }}</span>
       </button>
 
-      <button type="button" class="btn btn-outline btn-reset" (click)="clearFilters()" [title]="currentLang() === 'en' ? 'Reset Filters' : 'إعادة ضبط'">
+      <button type="button" class="btn btn-outline btn-reset" (click)="clearFilters()"
+        [title]="currentLang() === 'en' ? 'Reset Filters' : 'إعادة ضبط'">
         <span class="material-icons-round">restart_alt</span>
       </button>
     </div>
@@ -119,7 +105,8 @@
         <!-- Left: Avatar Icon Badge -->
         <div class="notif-avatar-box" [class.broadcast-avatar]="!notif.userFullName">
           <span class="material-icons-round notif-avatar-ico" *ngIf="!notif.userFullName">campaign</span>
-          <span class="notif-avatar-letter" *ngIf="notif.userFullName">{{ notif.userFullName.charAt(0).toUpperCase() }}</span>
+          <span class="notif-avatar-letter" *ngIf="notif.userFullName">{{ notif.userFullName.charAt(0).toUpperCase()
+            }}</span>
         </div>
 
         <!-- Middle: Information & Details -->
@@ -167,22 +154,15 @@
 
         <!-- Right: Status Pill & Action Buttons -->
         <div class="item-right-group">
-          <span 
-            class="status-pill"
-            [class.status-active]="notif.read"
-            [class.status-inactive]="!notif.read"
-          >
+          <span class="status-pill" [class.status-active]="notif.read" [class.status-inactive]="!notif.read">
             <span class="status-dot"></span>
-            <span>{{ notif.read ? (currentLang() === 'en' ? 'Read' : 'مقروء') : (currentLang() === 'en' ? 'Unread' : 'غير مقروء') }}</span>
+            <span>{{ notif.read ? (currentLang() === 'en' ? 'Read' : 'مقروء') : (currentLang() === 'en' ? 'Unread' :
+              'غير مقروء') }}</span>
           </span>
 
           <div class="item-action-btns">
-            <button
-              type="button"
-              class="btn-item-action btn-item-del"
-              (click)="onDelete(notif.id)"
-              [title]="currentLang() === 'en' ? 'Delete notification log' : 'حذف سجل الإشعار'"
-            >
+            <button type="button" class="btn-item-action btn-item-del" (click)="onDelete(notif.id)"
+              [title]="currentLang() === 'en' ? 'Delete notification log' : 'حذف سجل الإشعار'">
               <span class="material-icons-round">delete_outline</span>
             </button>
           </div>
@@ -193,23 +173,16 @@
       <!-- Pagination Footer -->
       <div class="pagination-footer" *ngIf="totalPages > 1">
         <span class="page-info">
-          {{ currentLang() === 'en' ? ('Page ' + (currentPage + 1) + ' of ' + totalPages) : ('الصفحة ' + (currentPage + 1) + ' من ' + totalPages) }}
+          {{ currentLang() === 'en' ? ('Page ' + (currentPage + 1) + ' of ' + totalPages) : ('الصفحة ' + (currentPage +
+          1) + ' من ' + totalPages) }}
         </span>
         <div class="pagination-buttons">
-          <button
-            type="button"
-            class="btn-page-nav"
-            [disabled]="currentPage === 0"
-            (click)="loadNotifications(currentPage - 1)"
-          >
+          <button type="button" class="btn-page-nav" [disabled]="currentPage === 0"
+            (click)="loadNotifications(currentPage - 1)">
             <span class="material-icons-round">{{ currentLang() === 'en' ? 'chevron_left' : 'chevron_right' }}</span>
           </button>
-          <button
-            type="button"
-            class="btn-page-nav"
-            [disabled]="currentPage >= totalPages - 1"
-            (click)="loadNotifications(currentPage + 1)"
-          >
+          <button type="button" class="btn-page-nav" [disabled]="currentPage >= totalPages - 1"
+            (click)="loadNotifications(currentPage + 1)">
             <span class="material-icons-round">{{ currentLang() === 'en' ? 'chevron_right' : 'chevron_left' }}</span>
           </button>
         </div>
@@ -218,24 +191,25 @@
     </div>
   </div>
 
-    <ng-template #loadingTpl>
-      <div class="loading-state">
-        <div class="spinner-large"></div>
-        <p>{{ currentLang() === 'en' ? 'Loading notifications log...' : 'جاري تحميل سجل الإشعارات...' }}</p>
-      </div>
-    </ng-template>
+  <ng-template #loadingTpl>
+    <div class="loading-state">
+      <div class="spinner-large"></div>
+      <p>{{ currentLang() === 'en' ? 'Loading notifications log...' : 'جاري تحميل سجل الإشعارات...' }}</p>
+    </div>
+  </ng-template>
 
-    <ng-template #emptyTpl>
-      <div class="empty-state">
-        <span class="material-icons-round empty-icon">notifications_off</span>
-        <h3>{{ currentLang() === 'en' ? 'No Notifications Found' : 'لم يتم العثور على إشعارات' }}</h3>
-        <p>{{ currentLang() === 'en' ? 'Compose and broadcast a contextual deal or flyer notification to users.' : 'قم بصياغة وإرسال إشعار جديد للمستخدمين.' }}</p>
-        <button type="button" class="btn btn-primary mt-3" (click)="openBroadcastModal()">
-          <span class="material-icons-round">send</span>
-          <span>{{ currentLang() === 'en' ? 'Broadcast First Notification' : 'إرسال أول إشعار' }}</span>
-        </button>
-      </div>
-    </ng-template>
+  <ng-template #emptyTpl>
+    <div class="empty-state">
+      <span class="material-icons-round empty-icon">notifications_off</span>
+      <h3>{{ currentLang() === 'en' ? 'No Notifications Found' : 'لم يتم العثور على إشعارات' }}</h3>
+      <p>{{ currentLang() === 'en' ? 'Compose and broadcast a contextual deal or flyer notification to users.' : 'قم
+        بصياغة وإرسال إشعار جديد للمستخدمين.' }}</p>
+      <button type="button" class="btn btn-primary mt-3" (click)="openBroadcastModal()">
+        <span class="material-icons-round">send</span>
+        <span>{{ currentLang() === 'en' ? 'Broadcast First Notification' : 'إرسال أول إشعار' }}</span>
+      </button>
+    </div>
+  </ng-template>
 
   <!-- ENHANCED BROADCAST MODAL -->
   <div class="modal-backdrop" *ngIf="isBroadcastModalOpen()" (click)="closeBroadcastModal()">
@@ -247,7 +221,8 @@
           </div>
           <div>
             <h3>{{ currentLang() === 'en' ? 'Compose & Broadcast Notification' : 'صياغة وبث إشعار للمستخدمين' }}</h3>
-            <p class="modal-sub">{{ currentLang() === 'en' ? 'Link contextual offers/flyers/products and deliver real-time notifications.' : 'ربط العروض والمجلات والمنتجات وإرسال التنبيهات الفورية للمستخدمين.' }}</p>
+            <p class="modal-sub">{{ currentLang() === 'en' ? 'Link contextual offers/flyers/products and deliver
+              real-time notifications.' : 'ربط العروض والمجلات والمنتجات وإرسال التنبيهات الفورية للمستخدمين.' }}</p>
           </div>
         </div>
         <button type="button" class="btn-close-modal" (click)="closeBroadcastModal()">
@@ -256,82 +231,61 @@
       </div>
 
       <form [formGroup]="broadcastForm" (submit)="onSubmitBroadcast()" class="modal-body">
-        
+
         <div class="modal-content-grid">
           <!-- Left Column: Form Fields -->
           <div class="modal-form-fields">
-            
+
             <!-- Reference Entity Link Box -->
             <div class="entity-reference-box">
               <div class="box-header">
                 <span class="material-icons-round box-icon">link</span>
-                <span class="box-title">{{ currentLang() === 'en' ? 'Link Related Deal / Entity' : 'ربط عرض أو عنصر ذي صلة' }}</span>
+                <span class="box-title">{{ currentLang() === 'en' ? 'Link Related Deal / Entity' : 'ربط عرض أو عنصر ذي
+                  صلة' }}</span>
               </div>
 
               <div class="form-grid-2">
                 <!-- Reference Type -->
                 <div class="form-group">
                   <label class="form-label">{{ currentLang() === 'en' ? 'Item Type' : 'نوع العنصر' }}</label>
-                  <app-custom-select
-                    formControlName="refType"
-                    [options]="refTypeOptions"
-                    (ngModelChange)="onRefTypeChange($event)"
-                    valueKey="value"
-                    labelEnKey="labelEn"
-                    labelArKey="labelAr"
-                  ></app-custom-select>
+                  <app-custom-select formControlName="refType" [options]="refTypeOptions"
+                    (ngModelChange)="onRefTypeChange($event)" valueKey="value" labelEnKey="labelEn"
+                    labelArKey="labelAr"></app-custom-select>
                 </div>
 
                 <!-- Entity Picker based on refType -->
                 <div class="form-group" *ngIf="broadcastForm.get('refType')?.value === 'OFFER'">
-                  <label class="form-label required">{{ currentLang() === 'en' ? 'Select Offer *' : 'اختر العرض *' }}</label>
-                  <app-custom-select
-                    formControlName="refId"
-                    [options]="offersList()"
-                    (ngModelChange)="onEntitySelect($event)"
-                    [searchable]="true"
-                    valueKey="id"
-                    labelEnKey="nameEn"
+                  <label class="form-label required">{{ currentLang() === 'en' ? 'Select Offer *' : 'اختر العرض *'
+                    }}</label>
+                  <app-custom-select formControlName="refId" [options]="offersList()"
+                    (ngModelChange)="onEntitySelect($event)" [searchable]="true" valueKey="id" labelEnKey="nameEn"
                     labelArKey="nameAr"
-                    [placeholder]="currentLang() === 'en' ? '-- Select Offer --' : '-- اختر العرض --'"
-                  ></app-custom-select>
+                    [placeholder]="currentLang() === 'en' ? '-- Select Offer --' : '-- اختر العرض --'"></app-custom-select>
                 </div>
 
                 <div class="form-group" *ngIf="broadcastForm.get('refType')?.value === 'FLYER'">
-                  <label class="form-label required">{{ currentLang() === 'en' ? 'Select Flyer *' : 'اختر مجلة العروض *' }}</label>
-                  <app-custom-select
-                    formControlName="refId"
-                    [options]="flyersList()"
-                    (ngModelChange)="onEntitySelect($event)"
-                    [searchable]="true"
-                    valueKey="id"
-                    labelEnKey="nameEn"
+                  <label class="form-label required">{{ currentLang() === 'en' ? 'Select Flyer *' : 'اختر مجلة العروض *'
+                    }}</label>
+                  <app-custom-select formControlName="refId" [options]="flyersList()"
+                    (ngModelChange)="onEntitySelect($event)" [searchable]="true" valueKey="id" labelEnKey="nameEn"
                     labelArKey="nameAr"
-                    [placeholder]="currentLang() === 'en' ? '-- Select Flyer --' : '-- اختر المجلة --'"
-                  ></app-custom-select>
+                    [placeholder]="currentLang() === 'en' ? '-- Select Flyer --' : '-- اختر المجلة --'"></app-custom-select>
                 </div>
 
                 <div class="form-group product-picker-cell" *ngIf="broadcastForm.get('refType')?.value === 'PRODUCT'">
-                  <label class="form-label required">{{ currentLang() === 'en' ? 'Search & Select Product *' : 'بحث واختيار المنتج *' }}</label>
+                  <label class="form-label required">{{ currentLang() === 'en' ? 'Search & Select Product *' : 'بحث
+                    واختيار المنتج *' }}</label>
 
                   <div class="product-picker-box">
                     <!-- Search Input -->
                     <div class="product-search-input-wrap">
                       <span class="material-icons-round input-icon">search</span>
-                      <input
-                        type="text"
-                        [ngModel]="productSearchQuery()"
-                        (ngModelChange)="onProductSearchChange($event)"
-                        [ngModelOptions]="{standalone: true}"
+                      <input type="text" [ngModel]="productSearchQuery()"
+                        (ngModelChange)="onProductSearchChange($event)" [ngModelOptions]="{standalone: true}"
                         [placeholder]="currentLang() === 'en' ? 'Search products by name or brand...' : 'ابحث عن المنتجات بالاسم أو الماركة...'"
-                        class="form-control form-control-sm"
-                      >
-                      <button
-                        type="button"
-                        *ngIf="productSearchQuery()"
-                        (click)="clearProductSearch()"
-                        class="btn-clear-search-sm"
-                      >
+                        class="form-control form-control-sm">
+                      <button type="button" *ngIf="productSearchQuery()" (click)="clearProductSearch()"
+                        class="btn-clear-search-sm">
                         <span class="material-icons-round">close</span>
                       </button>
                     </div>
@@ -344,49 +298,44 @@
 
                     <!-- Product Items List -->
                     <div class="product-options-list" *ngIf="!loadingProducts() && pagedProductsList().length > 0">
-                      <div
-                        class="product-option-row"
-                        *ngFor="let p of pagedProductsList()"
-                        [class.selected]="broadcastForm.get('refId')?.value === p.id"
-                        (click)="selectProduct(p)"
-                      >
+                      <div class="product-option-row" *ngFor="let p of pagedProductsList()"
+                        [class.selected]="broadcastForm.get('refId')?.value === p.id" (click)="selectProduct(p)">
                         <div class="product-name-block">
                           <span class="p-name">{{ currentLang() === 'en' ? p.nameEn : p.nameAr }}</span>
                           <span class="p-id">#{{ p.id }}</span>
                         </div>
-                        <span class="material-icons-round check-icon" *ngIf="broadcastForm.get('refId')?.value === p.id">check_circle</span>
+                        <span class="material-icons-round check-icon"
+                          *ngIf="broadcastForm.get('refId')?.value === p.id">check_circle</span>
                       </div>
                     </div>
 
                     <!-- Empty Results -->
                     <div class="product-empty-notice" *ngIf="!loadingProducts() && pagedProductsList().length === 0">
                       <span class="material-icons-round">inventory_2</span>
-                      <span>{{ currentLang() === 'en' ? 'No products found matching query.' : 'لم يتم العثور على منتجات مطابقة.' }}</span>
+                      <span>{{ currentLang() === 'en' ? 'No products found matching query.' : 'لم يتم العثور على منتجات
+                        مطابقة.' }}</span>
                     </div>
 
                     <!-- Mini Pagination Controls -->
                     <div class="product-pagination-bar" *ngIf="productTotalPages() > 1">
                       <span class="pagination-counter">
-                        {{ currentLang() === 'en' ? ('Page ' + (productPage() + 1) + ' of ' + productTotalPages() + ' (' + productTotalElements() + ' items)') : ('صفحة ' + (productPage() + 1) + ' من ' + productTotalPages() + ' (' + productTotalElements() + ' عنصر)') }}
+                        {{ currentLang() === 'en' ? ('Page ' + (productPage() + 1) + ' of ' + productTotalPages() + ' ('
+                        + productTotalElements() + ' items)') : ('صفحة ' + (productPage() + 1) + ' من ' +
+                        productTotalPages() + ' (' + productTotalElements() + ' عنصر)') }}
                       </span>
                       <div class="mini-page-btns">
-                        <button
-                          type="button"
-                          class="btn-mini-page"
-                          [disabled]="productPage() === 0"
+                        <button type="button" class="btn-mini-page" [disabled]="productPage() === 0"
                           (click)="searchProducts(productPage() - 1)"
-                          [title]="currentLang() === 'en' ? 'Previous Page' : 'الصفحة السابقة'"
-                        >
-                          <span class="material-icons-round">{{ currentLang() === 'en' ? 'chevron_left' : 'chevron_right' }}</span>
+                          [title]="currentLang() === 'en' ? 'Previous Page' : 'الصفحة السابقة'">
+                          <span class="material-icons-round">{{ currentLang() === 'en' ? 'chevron_left' :
+                            'chevron_right' }}</span>
                         </button>
-                        <button
-                          type="button"
-                          class="btn-mini-page"
+                        <button type="button" class="btn-mini-page"
                           [disabled]="productPage() >= productTotalPages() - 1"
                           (click)="searchProducts(productPage() + 1)"
-                          [title]="currentLang() === 'en' ? 'Next Page' : 'الصفحة التالية'"
-                        >
-                          <span class="material-icons-round">{{ currentLang() === 'en' ? 'chevron_right' : 'chevron_left' }}</span>
+                          [title]="currentLang() === 'en' ? 'Next Page' : 'الصفحة التالية'">
+                          <span class="material-icons-round">{{ currentLang() === 'en' ? 'chevron_right' :
+                            'chevron_left' }}</span>
                         </button>
                       </div>
                     </div>
@@ -394,17 +343,12 @@
                 </div>
 
                 <div class="form-group" *ngIf="broadcastForm.get('refType')?.value === 'COUPON'">
-                  <label class="form-label required">{{ currentLang() === 'en' ? 'Select Coupon *' : 'اختر الكوبون *' }}</label>
-                  <app-custom-select
-                    formControlName="refId"
-                    [options]="couponsList()"
-                    (ngModelChange)="onEntitySelect($event)"
-                    [searchable]="true"
-                    valueKey="id"
-                    labelEnKey="nameEn"
+                  <label class="form-label required">{{ currentLang() === 'en' ? 'Select Coupon *' : 'اختر الكوبون *'
+                    }}</label>
+                  <app-custom-select formControlName="refId" [options]="couponsList()"
+                    (ngModelChange)="onEntitySelect($event)" [searchable]="true" valueKey="id" labelEnKey="nameEn"
                     labelArKey="nameAr"
-                    [placeholder]="currentLang() === 'en' ? '-- Select Coupon --' : '-- اختر الكوبون --'"
-                  ></app-custom-select>
+                    [placeholder]="currentLang() === 'en' ? '-- Select Coupon --' : '-- اختر الكوبون --'"></app-custom-select>
                 </div>
               </div>
 
@@ -412,7 +356,8 @@
               <div class="auto-fill-action-row" *ngIf="broadcastForm.get('refId')?.value">
                 <button type="button" class="btn-auto-fill" (click)="autoFillFromEntity()">
                   <span class="material-icons-round">auto_awesome</span>
-                  <span>{{ currentLang() === 'en' ? 'Auto-Fill Title & Message from Selected Item' : 'تعبئة العنوان والنص تلقائياً من العنصر المختار' }}</span>
+                  <span>{{ currentLang() === 'en' ? 'Auto-Fill Title & Message from Selected Item' : 'تعبئة العنوان
+                    والنص تلقائياً من العنصر المختار' }}</span>
                 </button>
               </div>
             </div>
@@ -420,51 +365,39 @@
             <!-- Type & Channel -->
             <div class="form-grid-2">
               <div class="form-group">
-                <label class="form-label required">{{ currentLang() === 'en' ? 'Notification Type *' : 'نوع الإشعار *' }}</label>
-                <app-custom-select
-                  formControlName="type"
-                  [options]="typeOptions"
-                  valueKey="value"
-                  labelEnKey="labelEn"
-                  labelArKey="labelAr"
-                ></app-custom-select>
+                <label class="form-label required">{{ currentLang() === 'en' ? 'Notification Type *' : 'نوع الإشعار *'
+                  }}</label>
+                <app-custom-select formControlName="type" [options]="typeOptions" valueKey="value" labelEnKey="labelEn"
+                  labelArKey="labelAr"></app-custom-select>
               </div>
 
               <div class="form-group">
-                <label class="form-label required">{{ currentLang() === 'en' ? 'Delivery Channel *' : 'قناة الوصول *' }}</label>
-                <app-custom-select
-                  formControlName="channel"
-                  [options]="channelOptions"
-                  valueKey="value"
-                  labelEnKey="labelEn"
-                  labelArKey="labelAr"
-                ></app-custom-select>
+                <label class="form-label required">{{ currentLang() === 'en' ? 'Delivery Channel *' : 'قناة الوصول *'
+                  }}</label>
+                <app-custom-select formControlName="channel" [options]="channelOptions" valueKey="value"
+                  labelEnKey="labelEn" labelArKey="labelAr"></app-custom-select>
               </div>
             </div>
 
             <!-- Titles -->
             <div class="form-group">
-              <label class="form-label required">{{ currentLang() === 'en' ? 'Title (English) *' : 'العنوان (الإنجليزية) *' }}</label>
-              <input
-                type="text"
-                formControlName="titleEn"
-                class="form-control"
-                placeholder="e.g. Flash 50% Off on Fresh Produce!"
-              >
-              <span class="error-msg" *ngIf="broadcastForm.get('titleEn')?.touched && broadcastForm.get('titleEn')?.invalid">
+              <label class="form-label required">{{ currentLang() === 'en' ? 'Title (English) *' : 'العنوان (الإنجليزية)
+                *' }}</label>
+              <input type="text" formControlName="titleEn" class="form-control"
+                placeholder="e.g. Flash 50% Off on Fresh Produce!">
+              <span class="error-msg"
+                *ngIf="broadcastForm.get('titleEn')?.touched && broadcastForm.get('titleEn')?.invalid">
                 {{ currentLang() === 'en' ? 'English title is required.' : 'العنوان بالإنجليزية مطلوب.' }}
               </span>
             </div>
 
             <div class="form-group">
-              <label class="form-label required">{{ currentLang() === 'en' ? 'Title (Arabic) *' : 'العنوان (العربية) *' }}</label>
-              <input
-                type="text"
-                formControlName="titleAr"
-                class="form-control"
-                placeholder="مثال: خصم 50% على المنتجات الطازجة لفترة محدودة!"
-              >
-              <span class="error-msg" *ngIf="broadcastForm.get('titleAr')?.touched && broadcastForm.get('titleAr')?.invalid">
+              <label class="form-label required">{{ currentLang() === 'en' ? 'Title (Arabic) *' : 'العنوان (العربية) *'
+                }}</label>
+              <input type="text" formControlName="titleAr" class="form-control"
+                placeholder="مثال: خصم 50% على المنتجات الطازجة لفترة محدودة!">
+              <span class="error-msg"
+                *ngIf="broadcastForm.get('titleAr')?.touched && broadcastForm.get('titleAr')?.invalid">
                 {{ currentLang() === 'en' ? 'Arabic title is required.' : 'العنوان بالعربية مطلوب.' }}
               </span>
             </div>
@@ -472,57 +405,39 @@
             <!-- Message Bodies -->
             <div class="form-grid-2">
               <div class="form-group">
-                <label class="form-label">{{ currentLang() === 'en' ? 'Message Body (English)' : 'نص الرسالة (الإنجليزية)' }}</label>
-                <textarea
-                  formControlName="bodyEn"
-                  rows="2"
-                  class="form-control"
-                  placeholder="Detailed notification message in English..."
-                ></textarea>
+                <label class="form-label">{{ currentLang() === 'en' ? 'Message Body (English)' : 'نص الرسالة
+                  (الإنجليزية)' }}</label>
+                <textarea formControlName="bodyEn" rows="2" class="form-control"
+                  placeholder="Detailed notification message in English..."></textarea>
               </div>
               <div class="form-group">
-                <label class="form-label">{{ currentLang() === 'en' ? 'Message Body (Arabic)' : 'نص الرسالة (العربية)' }}</label>
-                <textarea
-                  formControlName="bodyAr"
-                  rows="2"
-                  class="form-control"
-                  placeholder="نص الإشعار التفصيلي بالعربية..."
-                ></textarea>
+                <label class="form-label">{{ currentLang() === 'en' ? 'Message Body (Arabic)' : 'نص الرسالة (العربية)'
+                  }}</label>
+                <textarea formControlName="bodyAr" rows="2" class="form-control"
+                  placeholder="نص الإشعار التفصيلي بالعربية..."></textarea>
               </div>
             </div>
 
             <!-- Deep Link & Target Audience -->
             <div class="form-grid-2">
               <div class="form-group">
-                <label class="form-label">{{ currentLang() === 'en' ? 'In-App Deep Link URL' : 'رابط التوجيه المباشر' }}</label>
-                <input
-                  type="text"
-                  formControlName="deepLink"
-                  class="form-control"
-                  placeholder="/offers/123 or /flyers/45"
-                >
+                <label class="form-label">{{ currentLang() === 'en' ? 'In-App Deep Link URL' : 'رابط التوجيه المباشر'
+                  }}</label>
+                <input type="text" formControlName="deepLink" class="form-control"
+                  placeholder="/offers/123 or /flyers/45">
               </div>
 
               <div class="form-group">
                 <label class="form-label">{{ currentLang() === 'en' ? 'Target Audience' : 'الجمهور المستهدف' }}</label>
-                <app-custom-select
-                  formControlName="targetAudience"
-                  [options]="targetAudienceOptions"
-                  valueKey="value"
-                  labelEnKey="labelEn"
-                  labelArKey="labelAr"
-                ></app-custom-select>
+                <app-custom-select formControlName="targetAudience" [options]="targetAudienceOptions" valueKey="value"
+                  labelEnKey="labelEn" labelArKey="labelAr"></app-custom-select>
               </div>
             </div>
 
             <div class="form-group" *ngIf="broadcastForm.get('targetAudience')?.value === 'USER'">
-              <label class="form-label required">{{ currentLang() === 'en' ? 'Target User ID *' : 'معرف المستخدم المستهدف *' }}</label>
-              <input
-                type="number"
-                formControlName="targetUserId"
-                class="form-control"
-                placeholder="e.g. 15"
-              >
+              <label class="form-label required">{{ currentLang() === 'en' ? 'Target User ID *' : 'معرف المستخدم
+                المستهدف *' }}</label>
+              <input type="number" formControlName="targetUserId" class="form-control" placeholder="e.g. 15">
             </div>
 
           </div>
@@ -548,10 +463,14 @@
 
                 <div class="push-content">
                   <h5 class="push-title">
-                    {{ (currentLang() === 'en' ? broadcastForm.get('titleEn')?.value : broadcastForm.get('titleAr')?.value) || (currentLang() === 'en' ? 'Flash Deal Notification' : 'إشعار عرض خاص') }}
+                    {{ (currentLang() === 'en' ? broadcastForm.get('titleEn')?.value :
+                    broadcastForm.get('titleAr')?.value) || (currentLang() === 'en' ? 'Flash Deal Notification' : 'إشعار
+                    عرض خاص') }}
                   </h5>
                   <p class="push-body">
-                    {{ (currentLang() === 'en' ? broadcastForm.get('bodyEn')?.value : broadcastForm.get('bodyAr')?.value) || (currentLang() === 'en' ? 'Tap to explore exclusive discounts available now on DealSpot!' : 'اضغط لاستكشاف الخصومات الحصرية المتاحة الآن على ديل سبوت!') }}
+                    {{ (currentLang() === 'en' ? broadcastForm.get('bodyEn')?.value :
+                    broadcastForm.get('bodyAr')?.value) || (currentLang() === 'en' ? 'Tap to explore exclusive discounts
+                    available now on DealSpot!' : 'اضغط لاستكشاف الخصومات الحصرية المتاحة الآن على ديل سبوت!') }}
                   </p>
                 </div>
 
@@ -568,8 +487,9 @@
                   <span class="summary-title">{{ currentLang() === 'en' ? 'Audience Coverage' : 'نطاق الجمهور' }}</span>
                   <span class="summary-val">
                     {{ broadcastForm.get('targetAudience')?.value === 'ALL'
-                        ? (currentLang() === 'en' ? 'All Registered DealSpot Customers' : 'كافة مستخدمي ديل سبوت المسجلين')
-                        : (currentLang() === 'en' ? ('Single User #' + (broadcastForm.get('targetUserId')?.value || '-')) : ('مستخدم محدد #' + (broadcastForm.get('targetUserId')?.value || '-'))) }}
+                    ? (currentLang() === 'en' ? 'All Registered DealSpot Customers' : 'كافة مستخدمي ديل سبوت المسجلين')
+                    : (currentLang() === 'en' ? ('Single User #' + (broadcastForm.get('targetUserId')?.value || '-')) :
+                    ('مستخدم محدد #' + (broadcastForm.get('targetUserId')?.value || '-'))) }}
                   </span>
                 </div>
               </div>

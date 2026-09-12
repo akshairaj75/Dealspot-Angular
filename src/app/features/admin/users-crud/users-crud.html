@@ -71,7 +71,7 @@
         <span class="material-icons-round">filter_list</span>
         {{ currentLang() === 'en' ? 'Role Filter:' : 'تصفية بالدور:' }}
       </label>
-      <div style="min-width: 170px;">
+      <div class="filter-select-wrap">
         <app-custom-select
           [options]="rolesList"
           [(ngModel)]="roleFilter"

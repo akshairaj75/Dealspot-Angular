@@ -1063,14 +1063,29 @@
    ============================================================ */
 @media (max-width: 768px) {
   .crud-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.75rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-bottom: 0.65rem;
   }
 
-  .btn-primary {
-    width: 100%;
-    justify-content: center;
+  .header-desc {
+    display: none;
+  }
+
+  .header-titles h2 {
+    font-size: 1.05rem;
+    margin: 0;
+  }
+
+  .crud-header .btn-primary {
+    width: auto;
+    padding: 0.42rem 0.85rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   /* 2x2 Stats Grid on Tablets & Phones */
@@ -1096,6 +1111,29 @@
 
   .stat-label {
     font-size: 0.68rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .stat-card {
+    padding: 0.5rem 0.65rem;
+    gap: 0.5rem;
+  }
+
+  .stat-icon-wrapper {
+    width: 32px;
+    height: 32px;
+  }
+
+  .stat-value {
+    font-size: 0.95rem;
+  }
+
+  .stat-label {
+    font-size: 0.65rem;
   }
 
   /* Compact Filter Toolbar */

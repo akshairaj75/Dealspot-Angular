@@ -316,12 +316,35 @@
   width: fit-content;
 }
 
-.badge-flash { background: #fee2e2; color: #dc2626; }
-.badge-price { background: #dcfce7; color: #16a34a; }
-.badge-expiry { background: #ffedd5; color: #ea580c; }
-.badge-flyer { background: #fef3c7; color: #d97706; }
-.badge-coupon { background: #f3e8ff; color: #9333ea; }
-.badge-system { background: #f1f5f9; color: #475569; }
+.badge-flash {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.badge-price {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.badge-expiry {
+  background: #ffedd5;
+  color: #ea580c;
+}
+
+.badge-flyer {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.badge-coupon {
+  background: #f3e8ff;
+  color: #9333ea;
+}
+
+.badge-system {
+  background: #f1f5f9;
+  color: #475569;
+}
 
 .channel-chip {
   display: inline-flex;
@@ -424,14 +447,20 @@
   color: #15803d;
   border: 1px solid #bbf7d0;
 }
-.status-active .status-dot { background: #22c55e; }
+
+.status-active .status-dot {
+  background: #22c55e;
+}
 
 .status-inactive {
   background: var(--surface-hover);
   color: var(--text-muted);
   border: 1px solid var(--border);
 }
-.status-inactive .status-dot { background: var(--text-muted); }
+
+.status-inactive .status-dot {
+  background: var(--text-muted);
+}
 
 .item-action-btns {
   display: inline-flex;
@@ -1161,14 +1190,29 @@
    ============================================================ */
 @media (max-width: 900px) {
   .page-header-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-bottom: 0.65rem;
+  }
+
+  .page-subtitle {
+    display: none;
+  }
+
+  .page-title {
+    font-size: 1.05rem;
+    margin: 0;
   }
 
   .btn-broadcast {
-    width: 100%;
-    justify-content: center;
+    width: auto;
+    padding: 0.42rem 0.85rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .stats-overview-grid {
@@ -1188,13 +1232,15 @@
 
   .filters-flex {
     width: 100%;
-    flex-direction: column;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.5rem;
     align-items: stretch;
   }
 
   .filter-item {
-    width: 100%;
-    min-width: 100%;
+    width: 100% !important;
+    min-width: 0 !important;
   }
 
   .btn-apply {
@@ -1205,6 +1251,7 @@
   .btn-reset {
     width: 100%;
     height: 38px;
+    justify-content: center;
   }
 
   .notif-list-item {
@@ -1260,6 +1307,7 @@
 }
 
 @media (max-width: 640px) {
+
   /* Modal Mobile Bottom Sheet Experience */
   .modal-backdrop {
     padding: 0;

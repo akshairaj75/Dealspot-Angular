@@ -970,6 +970,56 @@
 }
 
 @media (max-width: 768px) {
+  .crud-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-bottom: 0.65rem;
+  }
+
+  .header-desc {
+    display: none;
+  }
+
+  .header-titles h2 {
+    font-size: 1.05rem;
+    margin: 0;
+  }
+
+  .crud-header .btn {
+    width: auto;
+    padding: 0.42rem 0.85rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .filters-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.55rem;
+    padding: 0.75rem 0.85rem;
+  }
+
+  .search-input-wrapper {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .filter-dropdowns {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+  }
+
+  .filter-select-wrap {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
   .form-row-2,
   .form-row-3 {
     grid-template-columns: 1fr;

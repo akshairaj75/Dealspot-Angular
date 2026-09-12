@@ -107,7 +107,7 @@
 
       <div class="filters-group">
         <!-- Main Category Filter -->
-        <div class="filter-select-wrap" style="min-width: 175px;">
+        <div class="filter-select-wrap">
           <app-custom-select [options]="mainCategories()" [ngModel]="filterMainCategoryId()"
             (ngModelChange)="onFilterMainCategoryChange($event)" valueKey="id" labelEnKey="nameEn" labelArKey="nameAr"
             [placeholder]="currentLang() === 'en' ? 'Main Category' : 'القسم الرئيسي'" [allowUnset]="true"
@@ -115,7 +115,7 @@
         </div>
 
         <!-- Subcategory Filter (Cascading) -->
-        <div class="filter-select-wrap" style="min-width: 175px;">
+        <div class="filter-select-wrap">
           <app-custom-select [options]="filterSubcategories()" [ngModel]="filterSubCategoryId()"
             (ngModelChange)="onFilterSubCategoryChange($event)" valueKey="id" labelEnKey="nameEn" labelArKey="nameAr"
             [disabled]="!filterMainCategoryId() || filterSubcategories().length === 0"
@@ -125,7 +125,7 @@
         </div>
 
         <!-- Brand Filter -->
-        <div class="filter-select-wrap" style="min-width: 165px;">
+        <div class="filter-select-wrap">
           <app-custom-select [options]="brands()" [ngModel]="filterBrandId()"
             (ngModelChange)="onFilterBrandChange($event)" valueKey="id" labelEnKey="nameEn" labelArKey="nameAr"
             [searchable]="true" (searchChange)="onBrandSearch($event)" [loading]="loadingBrands()"

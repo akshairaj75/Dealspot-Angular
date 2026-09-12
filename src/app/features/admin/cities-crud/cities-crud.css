@@ -844,13 +844,38 @@
    ============================================================ */
 @media (max-width: 768px) {
   .cities-header {
-    flex-direction: column;
-    align-items: stretch;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-bottom: 0.65rem;
+  }
+
+  .cities-header-text p {
+    display: none;
+  }
+
+  .cities-header-text h1 {
+    font-size: 1.05rem;
+    margin: 0;
+  }
+
+  .cities-icon-badge {
+    width: 34px;
+    height: 34px;
+  }
+
+  .cities-icon-badge .material-icons-round {
+    font-size: 1.2rem;
   }
 
   .btn-new-city {
-    width: 100%;
-    justify-content: center;
+    width: auto;
+    padding: 0.42rem 0.85rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .cities-toolbar {

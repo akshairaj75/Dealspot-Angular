@@ -6,10 +6,13 @@
   <aside class="admin-sidebar" [class.sidebar-open]="isSidebarOpen()">
     <div class="sidebar-header">
       <div class="sidebar-brand-group">
-        <img *ngIf="appConfig.logoUrl" [src]="appConfig.logoUrl" [alt]="appConfig.adminAppNameEn" class="admin-logo-img">
-        <span *ngIf="!appConfig.logoUrl" class="material-icons-round admin-logo-icon">{{ appConfig.adminLogoIcon }}</span>
+        <img *ngIf="appConfig.logoUrl" [src]="appConfig.logoUrl" [alt]="appConfig.adminAppNameEn"
+          class="admin-logo-img">
+        <span *ngIf="!appConfig.logoUrl" class="material-icons-round admin-logo-icon">{{ appConfig.adminLogoIcon
+          }}</span>
         <div class="sidebar-header-text">
-          <span class="admin-logo-title">{{ currentLang() === 'en' ? appConfig.adminAppNameEn : appConfig.adminAppNameAr }}</span>
+          <span class="admin-logo-title">{{ currentLang() === 'en' ? appConfig.adminAppNameEn : appConfig.adminAppNameAr
+            }}</span>
           <span class="admin-logo-subtitle">{{ currentLang() === 'en' ? 'Control Panel' : 'لوحة التحكم' }}</span>
         </div>
       </div>
@@ -21,14 +24,8 @@
     </div>
 
     <nav class="sidebar-nav">
-      <a 
-        *ngFor="let item of menuItems" 
-        [routerLink]="item.route" 
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{exact: item.route === '/admin'}"
-        class="nav-menu-item"
-        (click)="closeSidebar()"
-      >
+      <a *ngFor="let item of menuItems" [routerLink]="item.route" routerLinkActive="active"
+        [routerLinkActiveOptions]="{exact: item.route === '/admin'}" class="nav-menu-item" (click)="closeSidebar()">
         <span class="material-icons-round nav-icon">{{ item.icon }}</span>
         <span>{{ currentLang() === 'en' ? item.label_en : item.label_ar }}</span>
       </a>
@@ -48,7 +45,8 @@
     <header class="admin-topbar">
       <div class="topbar-left">
         <!-- Hamburger Menu Button on Mobile/Tablet -->
-        <button type="button" class="btn-hamburger" (click)="toggleSidebar()" [title]="currentLang() === 'en' ? 'Toggle Navigation Menu' : 'القائمة الرئيسية'">
+        <button type="button" class="btn-hamburger" (click)="toggleSidebar()"
+          [title]="currentLang() === 'en' ? 'Toggle Navigation Menu' : 'القائمة الرئيسية'">
           <span class="material-icons-round">menu</span>
         </button>
 
@@ -60,7 +58,8 @@
       <div class="topbar-right">
         <!-- Notifications Bell Popover Trigger -->
         <div class="notif-dropdown-wrapper">
-          <button type="button" class="btn-icon btn-notif-bell" (click)="toggleNotificationMenu()" [title]="currentLang() === 'en' ? 'Notifications' : 'الإشعارات'">
+          <button type="button" class="btn-icon btn-notif-bell" (click)="toggleNotificationMenu()"
+            [title]="currentLang() === 'en' ? 'Notifications' : 'الإشعارات'">
             <span class="material-icons-round">notifications</span>
             <span class="notif-badge-pill" *ngIf="unreadCount() > 0">
               {{ unreadCount() > 99 ? '99+' : unreadCount() }}
@@ -91,12 +90,8 @@
                 <p>{{ currentLang() === 'en' ? 'No notifications yet' : 'لا توجد إشعارات حالياً' }}</p>
               </div>
 
-              <div
-                class="notif-popover-item"
-                *ngFor="let item of recentNotifications()"
-                [class.unread]="!item.read"
-                (click)="onNotificationClick(item)"
-              >
+              <div class="notif-popover-item" *ngFor="let item of recentNotifications()" [class.unread]="!item.read"
+                (click)="onNotificationClick(item)">
                 <div class="item-icon-box" [ngClass]="item.channel.toLowerCase()">
                   <span class="material-icons-round">
                     {{ item.channel === 'SMS' ? 'sms' : (item.channel === 'EMAIL' ? 'mail' : 'campaign') }}
@@ -104,7 +99,8 @@
                 </div>
                 <div class="item-content-box">
                   <div class="item-title-row">
-                    <span class="item-title">{{ currentLang() === 'en' ? item.titleEn : (item.titleAr || item.titleEn) }}</span>
+                    <span class="item-title">{{ currentLang() === 'en' ? item.titleEn : (item.titleAr || item.titleEn)
+                      }}</span>
                     <span class="unread-dot" *ngIf="!item.read"></span>
                   </div>
                   <p class="item-body" *ngIf="item.bodyEn || item.bodyAr">
@@ -117,8 +113,10 @@
 
             <div class="notif-popover-footer">
               <a routerLink="/admin/notifications" (click)="closeNotificationMenu()" class="btn-view-all-notifs">
-                <span>{{ currentLang() === 'en' ? 'View All Notifications & Broadcast' : 'عرض كافة الإشعارات والبث' }}</span>
-                <span class="material-icons-round icon-sm">{{ currentLang() === 'en' ? 'arrow_forward' : 'arrow_back' }}</span>
+                <span>{{ currentLang() === 'en' ? 'View All Notifications & Broadcast' : 'عرض كافة الإشعارات والبث'
+                  }}</span>
+                <span class="material-icons-round icon-sm">{{ currentLang() === 'en' ? 'arrow_forward' : 'arrow_back'
+                  }}</span>
               </a>
             </div>
           </div>
@@ -141,7 +139,8 @@
         </div>
 
         <!-- Logout button -->
-        <button (click)="logout()" class="btn-logout btn-icon text-danger" [title]="currentLang() === 'en' ? 'Logout' : 'تسجيل الخروج'">
+        <button (click)="logout()" class="btn-logout btn-icon text-danger"
+          [title]="currentLang() === 'en' ? 'Logout' : 'تسجيل الخروج'">
           <span class="material-icons-round">logout</span>
         </button>
       </div>
@@ -153,4 +152,3 @@
     </main>
   </div>
 </div>
-
