@@ -61,12 +61,8 @@ export class FlyerListComponent implements OnInit {
     this.loadFlyers();
 
     this.route.queryParams.subscribe(params => {
-      if (params['q'] || params['search']) {
-        this.searchQuery = params['q'] || params['search'];
-      }
-      if (params['store'] || params['storeId']) {
-        this.selectedStoreId.set(Number(params['store'] || params['storeId']));
-      }
+      this.searchQuery = params['q'] || params['search'] || '';
+      this.selectedStoreId.set((params['store'] || params['storeId']) ? Number(params['store'] || params['storeId']) : null);
       if (params['city'] || params['cityId']) {
         this.selectedCityId.set(Number(params['city'] || params['cityId']));
       }

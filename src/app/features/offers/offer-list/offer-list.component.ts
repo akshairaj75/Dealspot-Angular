@@ -137,17 +137,19 @@ export class OfferListComponent implements OnInit, OnDestroy {
     this.loadDropdowns();
     this.loadOffers();
 
-    // Handle query parameters (from Home page, Offer Detail, or direct links)
+    // Handle query parameters (from Home page, Offer Detail, Header Search, or direct links)
     this.route.queryParams.subscribe(params => {
-      if (params['q'] || params['search']) {
-        this.searchQuery = params['q'] || params['search'];
-      }
+      this.searchQuery = params['q'] || params['search'] || '';
+
       if (params['category']) {
         this.handleCategoryParam(params['category']);
+      } else {
+        this.selectedMainCategoryId.set(null);
+        this.selectedSubCategoryId.set(null);
       }
-      if (params['store'] || params['storeId']) {
-        this.selectedStoreId = Number(params['store'] || params['storeId']);
-      }
+
+      this.selectedStoreId = (params['store'] || params['storeId']) ? Number(params['store'] || params['storeId']) : null;
+
       if (params['brandId']) {
         const bId = Number(params['brandId']);
         this.selectedBrandId = bId;
@@ -168,21 +170,24 @@ export class OfferListComponent implements OnInit, OnDestroy {
             });
           }
         }
-      }
-      if (params['brand']) {
+      } else if (params['brand']) {
         this.selectedBrandName = params['brand'];
+        this.selectedBrandId = null;
+        this.selectedBrand.set(null);
+      } else {
+        this.selectedBrandId = null;
+        this.selectedBrandName = null;
+        this.selectedBrand.set(null);
       }
-      if (params['flash']) {
-        this.showFlashOnly = params['flash'] === 'true' || params['flash'] === true;
-      }
-      if (params['featured']) {
-        this.showFeaturedOnly = params['featured'] === 'true' || params['featured'] === true;
-      }
-      if (params['search']) {
-        this.searchQuery = params['search'];
-      }
+
+      this.showFlashOnly = params['flash'] === 'true' || params['flash'] === true;
+      this.showFeaturedOnly = params['featured'] === 'true' || params['featured'] === true;
+
       if (params['city']) {
         this.selectedCityId = Number(params['city']);
+      } else if (!this.onlySaved()) {
+        const globalCity = this.cityService.selectedCity();
+        this.selectedCityId = globalCity?.id || null;
       }
 
       this.applyFilters();

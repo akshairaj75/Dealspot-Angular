@@ -408,8 +408,11 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
 
   onSearchSubmit() {
     if (!this.searchQuery.trim()) return;
+    const clean = this.searchQuery.trim();
+    this.saveRecentSearch(clean);
+    this.closeSearchOverlay();
     this.closeSearchSuggestions();
-    this.router.navigate(['/offers-list'], { queryParams: { q: this.searchQuery.trim() } });
+    this.router.navigate(['/offers-list'], { queryParams: { q: clean } });
   }
 
   toggleLanguage() {
