@@ -31,6 +31,7 @@ import { AuditLogsComponent } from './features/admin/audit-logs/audit-logs.compo
 
 import { adminGuard } from './core/guards/admin.guard';
 import { guestGuard } from './core/guards/guest.guard';
+import { superAdminGuard } from './core/guards/role.guard';
 
 
 export const routes: Routes = [
@@ -87,30 +88,30 @@ export const routes: Routes = [
                 path: '',
                 component: DashboardComponent
             },
-            { path: 'partner-requests', component: PartnerRequestsComponent },
-            { path: 'cities', component: CitiesCrudComponent },
-            { path: 'categories', component: CategoriesCrud },
+            { path: 'partner-requests', component: PartnerRequestsComponent, canActivate: [superAdminGuard] },
+            { path: 'cities', component: CitiesCrudComponent, canActivate: [superAdminGuard] },
+            { path: 'categories', component: CategoriesCrud, canActivate: [superAdminGuard] },
             { path: 'stores', component: StoresCrudComponent },
             { path: 'stores/:id/branches', component: BranchesCrudComponent },
             { path: 'products', component: ProductsCrudComponent },
             { path: 'products/:id/details', component: ProductDetailComponent },
             { path: 'products/:id', component: ProductDetailComponent },
-            { path: 'brands', component: BrandsCrudComponent },
-            { path: 'brands/:id/details', component: BrandDetailComponent },
-            { path: 'brands/:id', component: BrandDetailComponent },
+            { path: 'brands', component: BrandsCrudComponent, canActivate: [superAdminGuard] },
+            { path: 'brands/:id/details', component: BrandDetailComponent, canActivate: [superAdminGuard] },
+            { path: 'brands/:id', component: BrandDetailComponent, canActivate: [superAdminGuard] },
             { path: 'offers', component: OffersCrudComponent },
             { path: 'offers/:id/details', component: OfferDetailComponent },
             { path: 'offers/:id', component: OfferDetailComponent },
             { path: 'coupons', component: CouponsCrudComponent },
             { path: 'flyers', component: FlyersCrudComponent },
             { path: 'flyers/:id/pages', component: FlyerPagesCrudComponent },
-            { path: 'users', component: UsersCrudComponent },
-            { path: 'notifications', component: NotificationsCrudComponent },
+            { path: 'users', component: UsersCrudComponent, canActivate: [superAdminGuard] },
+            { path: 'notifications', component: NotificationsCrudComponent, canActivate: [superAdminGuard] },
             {
                 path: 'product-specs/:productId/details',
                 component: ProductSpecsCrudComponent
             },
-            { path: 'audit-logs', component: AuditLogsComponent }]
+            { path: 'audit-logs', component: AuditLogsComponent, canActivate: [superAdminGuard] }]
     },
 
 

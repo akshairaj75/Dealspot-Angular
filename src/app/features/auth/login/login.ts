@@ -35,7 +35,6 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
     CommonModule,
     ReactiveFormsModule,
     RouterLink,
-    TranslatePipe,
     CustomSelectComponent
   ],
   templateUrl: './login.html',
