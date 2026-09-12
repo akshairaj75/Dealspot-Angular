@@ -230,6 +230,34 @@
   right: 0.7rem;
 }
 
+.search-input-wrapper .clear-search-btn {
+  position: absolute;
+  right: 0.65rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  border-radius: 50%;
+  transition: color 0.15s ease;
+}
+
+.search-input-wrapper .clear-search-btn .material-icons-round {
+  font-size: 1.1rem;
+}
+
+.search-input-wrapper .clear-search-btn:hover {
+  color: var(--text-primary);
+}
+
+[dir="rtl"] .search-input-wrapper .clear-search-btn {
+  right: auto;
+  left: 0.65rem;
+}
+
 /* Category Quick Chips */
 .store-chips-list {
   display: flex;

@@ -91,6 +91,20 @@ export class StoreListComponent implements OnInit, OnDestroy {
     });
 
     this.loadStores();
+
+    this.route.queryParams.subscribe(params => {
+      if (params['q'] || params['search']) {
+        this.searchQuery = params['q'] || params['search'];
+      }
+      if (params['city'] || params['cityId']) {
+        this.selectedCityId = Number(params['city'] || params['cityId']);
+      }
+      if (params['category'] || params['categoryId']) {
+        this.selectedCategoryId = Number(params['category'] || params['categoryId']);
+      }
+      this.calculateActiveFiltersCount();
+      this.cd.detectChanges();
+    });
   }
 
   @HostListener('document:keydown.escape')

@@ -309,16 +309,16 @@ export class PublicLayoutComponent implements OnInit, OnDestroy {
     });
 
     // 4. Fetch/filter matching flyers
-    this.flyerService.getAllFlyers().subscribe({
+    const activeCityId = this.activeCity()?.id;
+    this.flyerService.getAllFlyers(undefined, undefined, undefined, activeCityId, cleanQ).subscribe({
       next: (flyers) => {
-        const qLower = cleanQ.toLowerCase();
-        const filtered = (flyers || []).filter((f: any) =>
-          (f.titleEn && f.titleEn.toLowerCase().includes(qLower)) ||
-          (f.titleAr && f.titleAr.toLowerCase().includes(qLower)) ||
-          (f.storeNameEn && f.storeNameEn.toLowerCase().includes(qLower)) ||
-          (f.storeNameAr && f.storeNameAr.toLowerCase().includes(qLower))
-        ).slice(0, 4);
-        this.suggestedFlyers.set(filtered);
+        const today = new Date().toISOString().split('T')[0];
+        const valid = (flyers || []).filter((f: any) => {
+          const isActive = f.active !== false && f.is_active !== 0 && f.isActive !== false;
+          const isNotExpired = !f.isExpired && !(f.validUntil && f.validUntil < today) && !(f.valid_until && f.valid_until < today);
+          return isActive && isNotExpired;
+        });
+        this.suggestedFlyers.set(valid.slice(0, 4));
       }
     });
   }

@@ -1,33 +1,92 @@
 <div class="flyer-list-page">
-  <!-- Search & City Filter Bar -->
+  <!-- Search, City Pills & Filters Container -->
   <div class="flyer-filters card">
-    <div class="search-field">
-      <span class="material-icons-round search-field-icon">search</span>
-      <input 
-        type="text" 
-        [(ngModel)]="searchQuery" 
-        [placeholder]="currentLang() === 'en' ? 'Search flyer titles or store names...' : 'ابحث عن عروض ومجلات المتاجر...'" 
-        class="form-control"
-      >
-      <button class="clear-search-btn" *ngIf="searchQuery" (click)="searchQuery = ''">
-        <span class="material-icons-round">close</span>
-      </button>
+    <!-- Top Search & Custom Dropdowns Row -->
+    <div class="filters-top-row">
+      <div class="search-field">
+        <span class="material-icons-round search-field-icon">search</span>
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery" 
+          [placeholder]="currentLang() === 'en' ? 'Search flyer titles, store names, or cities...' : 'ابحث في المجلات، أسماء المتاجر، أو المدن...'" 
+          class="form-control"
+        >
+        <button class="clear-search-btn" *ngIf="searchQuery" (click)="searchQuery = ''" type="button">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <!-- Retailer Store Custom Select -->
+      <div class="store-filter-dropdown" *ngIf="stores().length > 0">
+        <app-custom-select
+          [options]="stores()"
+          [ngModel]="selectedStoreId()"
+          (ngModelChange)="selectedStoreId.set($event)"
+          valueKey="id"
+          labelEnKey="nameEn"
+          labelArKey="nameAr"
+          [placeholder]="currentLang() === 'en' ? 'All Retailers' : 'جميع المتاجر'"
+          [allowUnset]="true"
+          [unsetLabel]="currentLang() === 'en' ? 'All Retailers' : 'جميع المتاجر'"
+          [filePath]="filePath"
+        ></app-custom-select>
+      </div>
+
+      <!-- Sort Options Custom Select -->
+      <div class="sort-filter-dropdown">
+        <app-custom-select
+          [options]="sortOptions()"
+          [ngModel]="sortBy()"
+          (ngModelChange)="sortBy.set($event)"
+          valueKey="value"
+          labelEnKey="nameEn"
+          labelArKey="nameAr"
+          [placeholder]="currentLang() === 'en' ? 'Sort By' : 'ترتيب حسب'"
+        ></app-custom-select>
+      </div>
+    </div>
+
+    <!-- Quick City Switcher Pills Bar -->
+    <div class="city-pills-container" *ngIf="cities().length > 0">
+      <div class="city-pills-scroll">
+        <!-- All Cities Pill -->
+        <button 
+          type="button" 
+          class="city-pill-btn" 
+          [class.active]="selectedCityId() === null"
+          (click)="selectCity(null)"
+        >
+          <span class="material-icons-round pill-icon">public</span>
+          <span>{{ currentLang() === 'en' ? 'All Cities' : 'جميع المدن' }}</span>
+        </button>
+
+        <!-- Dynamic City Pills -->
+        <button 
+          *ngFor="let c of cities()" 
+          type="button" 
+          class="city-pill-btn" 
+          [class.active]="selectedCityId() === c.id"
+          (click)="selectCity(c.id)"
+        >
+          <span class="material-icons-round pill-icon">place</span>
+          <span>{{ c | translate:'name' }}</span>
+        </button>
+      </div>
     </div>
 
     <!-- Active Filter & Count Row -->
-    <div class="flyer-filter-summary-row" *ngIf="(selectedCityId && cityService.selectedCity()) || !loading">
-      <div class="flyer-active-city" *ngIf="selectedCityId && cityService.selectedCity()">
-        <span class="city-chip">
-          <span class="material-icons-round">place</span>
-          <span>{{ cityService.selectedCity() | translate:'name' }}</span>
-          <button type="button" class="remove-chip-btn" (click)="clearCityFilter()" [title]="currentLang() === 'en' ? 'Show all cities' : 'عرض جميع المدن'">
-            <span class="material-icons-round">close</span>
-          </button>
+    <div class="flyer-filter-summary-row" *ngIf="!loading">
+      <div class="active-city-info">
+        <span class="filter-indicator-badge">
+          <span class="material-icons-round">{{ selectedCityId() === null ? 'public' : 'location_on' }}</span>
+          <span>
+            {{ selectedCityId() === null ? (currentLang() === 'en' ? 'Showing flyers from all cities & nationwide' : 'عرض البروشورات من جميع المدن وعلى مستوى المملكة') : (currentLang() === 'en' ? 'Showing flyers for ' + getSelectedCityName() + ' & Nationwide' : 'عرض بروشورات ' + getSelectedCityName() + ' وعروض المملكة') }}
+          </span>
         </span>
       </div>
 
-      <div class="flyer-count-pill" *ngIf="!loading">
-        <span><strong>{{ getFilteredFlyers().length }}</strong> {{ currentLang() === 'en' ? 'flyers' : 'بروشور' }}</span>
+      <div class="flyer-count-pill">
+        <span><strong>{{ getFilteredFlyers().length }}</strong> {{ currentLang() === 'en' ? 'flyers available' : 'بروشور متاح' }}</span>
       </div>
     </div>
   </div>
@@ -41,13 +100,13 @@
   <div class="empty-state card" *ngIf="!loading && getFilteredFlyers().length === 0">
     <span class="material-icons-round empty-state-icon">menu_book</span>
     <h3 class="empty-state-title">{{ currentLang() === 'en' ? 'No flyers found' : 'لا توجد بروشورات متاحة' }}</h3>
-    <p class="empty-state-desc" *ngIf="selectedCityId && cityService.selectedCity()">
-      {{ currentLang() === 'en' ? 'No promotional flyers found in ' + (cityService.selectedCity() | translate:'name') + '.' : 'لم يتم العثور على أي نشرات عروض في ' + (cityService.selectedCity() | translate:'name') + '.' }}
+    <p class="empty-state-desc" *ngIf="selectedCityId() !== null">
+      {{ currentLang() === 'en' ? 'No active promotional flyers found for the selected city. Check out all flyers across Saudi Arabia!' : 'لم يتم العثور على نشرات عروض للمدينة المحددة حالياً. تصفح جميع العروض في كافة المدن!' }}
     </p>
-    <p class="empty-state-desc" *ngIf="!selectedCityId">
+    <p class="empty-state-desc" *ngIf="selectedCityId() === null">
       {{ currentLang() === 'en' ? 'No promotional flyers found matching your search criteria.' : 'لم يتم العثور على أي نشرات عروض تطابق معايير البحث الحالية.' }}
     </p>
-    <button *ngIf="selectedCityId" type="button" class="btn btn-outline" (click)="clearCityFilter()">
+    <button *ngIf="selectedCityId() !== null" type="button" class="btn btn-outline-all" (click)="clearCityFilter()">
       <span class="material-icons-round">public</span>
       <span>{{ currentLang() === 'en' ? 'View Flyers from All Cities' : 'عرض البروشورات من جميع المدن' }}</span>
     </button>
@@ -57,6 +116,7 @@
   <div class="grid-flyers" *ngIf="!loading && getFilteredFlyers().length > 0">
     <div class="flyer-card card" *ngFor="let flyer of getFilteredFlyers()">
       
+      <!-- Cover Image Wrapper -->
       <div class="flyer-image-wrapper">
         <a [routerLink]="['/flyers', flyer.id]" target="_blank" class="flyer-img-link">
           <img 
@@ -65,11 +125,19 @@
             (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&auto=format&fit=crop&q=60'"
           >
         </a>
-        <button class="bookmark-btn" (click)="$event.stopPropagation()">
+
+        <!-- Floating City Badge -->
+        <div class="flyer-city-badge" [class.nationwide-badge]="isNationwide(flyer)">
+          <span class="material-icons-round">{{ isNationwide(flyer) ? 'public' : 'place' }}</span>
+          <span>{{ getCityBadgeText(flyer) }}</span>
+        </div>
+
+        <button class="bookmark-btn" (click)="$event.stopPropagation()" [title]="currentLang() === 'en' ? 'Save Flyer' : 'حفظ المنشور'">
           <span class="material-icons-round">bookmark_border</span>
         </button>
       </div>
 
+      <!-- Flyer Details Body -->
       <div class="flyer-card-body">
         <a *ngIf="flyer.storeId || flyer.store?.id" [routerLink]="['/stores', (flyer.storeId || flyer.store?.id)]" target="_blank" class="store-badge-row">
           <img 
@@ -81,22 +149,24 @@
         </a>
 
         <h3 class="flyer-title">
-          <a [routerLink]="['/flyers', flyer.id]" target="_blank">
+          <a [routerLink]="['/flyers', flyer.id]" target="_blank" [title]="currentLang() === 'en' ? (flyer.titleEn || flyer.title_en) : (flyer.titleAr || flyer.title_ar)">
             {{ currentLang() === 'en' ? (flyer.titleEn || flyer.title_en) : (flyer.titleAr || flyer.title_ar || flyer.titleEn) }}
           </a>
         </h3>
 
         <div class="flyer-card-footer">
           <span class="pages-count">
-            <span class="material-icons-round" style="font-size: 14px;">auto_stories</span>
+            <span class="material-icons-round">auto_stories</span>
             <span>{{ flyer.totalPages || flyer.total_pages || (flyer.pages ? flyer.pages.length : 1) }} {{ currentLang() === 'en' ? 'Pages' : 'صفحات' }}</span>
           </span>
           <span class="validity-dates" *ngIf="flyer.validUntil || flyer.valid_until">
-            {{ currentLang() === 'en' ? 'Until:' : 'حتى:' }} {{ flyer.validUntil || flyer.valid_until }}
+            <span class="material-icons-round clock-icon">schedule</span>
+            <span>{{ currentLang() === 'en' ? 'Until ' : 'حتى ' }}{{ flyer.validUntil || flyer.valid_until }}</span>
           </span>
         </div>
 
         <a [routerLink]="['/flyers', flyer.id]" target="_blank" class="btn btn-view-flyer">
+          <span class="material-icons-round">visibility</span>
           <span>{{ currentLang() === 'en' ? 'View Flyer' : 'عرض البروشور' }}</span>
         </a>
       </div>

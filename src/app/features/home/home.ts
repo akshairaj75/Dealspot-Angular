@@ -49,6 +49,7 @@ export class HomeComponent implements OnInit {
   featuredBrandLoadingMore = signal<boolean>(false);
 
   allOffers = signal<any[]>([]);
+  allFlyers = signal<any[]>([]);
   flashDeals = signal<any[]>([]);
   featuredOffers = signal<any[]>([]);
   latestOffers = signal<any[]>([]);
@@ -263,13 +264,14 @@ export class HomeComponent implements OnInit {
     // 3. Flyers
     this.flyerService.getAllFlyers().subscribe({
       next: (res: any[]) => {
-        const today = new Date().toISOString().split('T')[0];
-        const validFlyers = (res || []).filter(f => {
-          const isActive = f.active !== false && f.is_active !== 0 && f.isActive !== false;
-          const isNotExpired = !f.isExpired && !(f.validUntil && f.validUntil < today) && !(f.valid_until && f.valid_until < today);
-          return isActive && isNotExpired;
-        });
-        this.activeFlyers.set(validFlyers);
+        const flyers = res || [];
+        this.allFlyers.set(flyers);
+        const city = this.cityService.selectedCity();
+        if (city && city.id) {
+          this.filterFlyersByCity(city.id);
+        } else {
+          this.organizeFlyers(flyers);
+        }
         this.cd.detectChanges();
       },
       error: (err) => console.error('Failed to load flyers:', err)
@@ -313,17 +315,58 @@ export class HomeComponent implements OnInit {
     this.latestOffers.set(validOffers.slice(0, 8));
   }
 
-  private filterByCity(cityId: number): void {
-    const all = this.allOffers();
-    if (!all) return;
+  private organizeFlyers(flyers: any[]): void {
+    const today = new Date().toISOString().split('T')[0];
+    const validFlyers = (flyers || []).filter(f => {
+      const isActive = f.active !== false && f.is_active !== 0 && f.isActive !== false;
+      const isNotExpired = !f.isExpired && !(f.validUntil && f.validUntil < today) && !(f.valid_until && f.valid_until < today);
+      return isActive && isNotExpired;
+    });
+    this.activeFlyers.set(validFlyers);
+  }
 
-    // Filter deals matching selected city or deals marked nationwide (!cId)
-    const cityOffers = all.filter(o => {
-      const cId = o.cityId || o.city_id || o.city?.id || o.store?.cityId || o.store?.city_id;
-      return !cId || cId === cityId;
+  private filterFlyersByCity(cityId: number): void {
+    const all = this.allFlyers();
+    if (!all || all.length === 0) return;
+
+    const cityFlyers = all.filter(f => {
+      if (f.nationwide === true || f.isNationwide === true) return true;
+      const cId = f.cityId ?? f.city_id ?? f.city?.id;
+      const stCityId = f.store?.cityId ?? f.store?.city_id;
+      return !cId || cId === cityId || stCityId === cityId;
     });
 
-    this.organizeOffers(cityOffers);
+    this.organizeFlyers(cityFlyers);
+  }
+
+  isNationwide(flyer: any): boolean {
+    if (flyer.nationwide === true || flyer.isNationwide === true) return true;
+    const cId = flyer.cityId ?? flyer.city_id ?? flyer.city?.id;
+    return !cId;
+  }
+
+  getCityBadgeText(flyer: any): string {
+    if (this.isNationwide(flyer)) {
+      return this.currentLang() === 'en' ? 'All Cities' : 'جميع المدن';
+    }
+    if (this.currentLang() === 'ar') {
+      return flyer.cityNameAr || flyer.city?.nameAr || flyer.city_name_ar || flyer.cityNameEn || flyer.city?.nameEn || 'المدينة';
+    }
+    return flyer.cityNameEn || flyer.city?.nameEn || flyer.city_name_en || flyer.cityNameAr || 'City';
+  }
+
+  private filterByCity(cityId: number): void {
+    const all = this.allOffers();
+    if (all && all.length > 0) {
+      // Filter deals matching selected city or deals marked nationwide (!cId)
+      const cityOffers = all.filter(o => {
+        const cId = o.cityId || o.city_id || o.city?.id || o.store?.cityId || o.store?.city_id;
+        return !cId || cId === cityId;
+      });
+      this.organizeOffers(cityOffers);
+    }
+
+    this.filterFlyersByCity(cityId);
   }
 
   getImageUrl(url: string | null | undefined): string {

@@ -174,11 +174,40 @@
   left: 12px;
   color: var(--text-muted);
   font-size: 18px;
+  pointer-events: none;
 }
 
 [dir="rtl"] .search-inside-icon {
   left: auto;
   right: 12px;
+}
+
+.search-input-wrapper .clear-search-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  border-radius: 50%;
+  transition: color 0.15s ease;
+}
+
+.search-input-wrapper .clear-search-btn .material-icons-round {
+  font-size: 16px;
+}
+
+.search-input-wrapper .clear-search-btn:hover {
+  color: var(--text-primary);
+}
+
+[dir="rtl"] .search-input-wrapper .clear-search-btn {
+  right: auto;
+  left: 10px;
 }
 
 .filter-group select.form-control {

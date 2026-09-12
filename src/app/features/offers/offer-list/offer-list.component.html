@@ -31,6 +31,9 @@
             class="form-control"
           >
           <span class="material-icons-round search-inside-icon">search</span>
+          <button type="button" class="clear-search-btn" *ngIf="searchQuery" (click)="searchQuery = ''; applyFilters()" [title]="currentLang() === 'en' ? 'Clear' : 'مسح'">
+            <span class="material-icons-round">close</span>
+          </button>
         </div>
       </div>
 

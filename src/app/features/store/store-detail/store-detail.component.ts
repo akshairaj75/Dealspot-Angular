@@ -247,4 +247,20 @@ export class StoreDetailComponent implements OnInit {
       lang: this.currentLang()
     });
   }
+
+  isNationwide(flyer: any): boolean {
+    if (flyer.nationwide === true || flyer.isNationwide === true) return true;
+    const cId = flyer.cityId ?? flyer.city_id ?? flyer.city?.id;
+    return !cId;
+  }
+
+  getCityBadgeText(flyer: any): string {
+    if (this.isNationwide(flyer)) {
+      return this.currentLang() === 'en' ? 'All Cities' : 'جميع المدن';
+    }
+    if (this.currentLang() === 'ar') {
+      return flyer.cityNameAr || flyer.city?.nameAr || flyer.city_name_ar || flyer.cityNameEn || flyer.city?.nameEn || 'المدينة';
+    }
+    return flyer.cityNameEn || flyer.city?.nameEn || flyer.city_name_en || flyer.cityNameAr || 'City';
+  }
 }

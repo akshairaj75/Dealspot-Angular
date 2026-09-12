@@ -3,7 +3,7 @@
 .flyer-list-page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
   max-width: 100%;
   width: 100%;
   margin: 0 auto;
@@ -11,85 +11,36 @@
   flex: 1;
 }
 
-/* Filters */
+/* Filters Card */
 .flyer-filters {
-  padding: 14px 18px;
+  padding: 16px 20px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-lg, 16px);
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
+  overflow: visible !important;
+  position: relative;
+  z-index: 20;
 }
 
-.flyer-filter-summary-row {
+.filters-top-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
   flex-wrap: wrap;
-  gap: 8px;
-}
-
-.flyer-count-pill {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.flyer-count-pill strong {
-  color: var(--text-primary);
-  font-weight: 800;
-}
-
-.flyer-active-city {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.city-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  background: var(--primary-light, rgba(14, 116, 144, 0.08));
-  border: 1px solid var(--primary);
-  color: var(--primary);
-  border-radius: 9999px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.city-chip .material-icons-round {
-  font-size: 15px;
-}
-
-.remove-chip-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  color: var(--primary);
-  opacity: 0.7;
-  transition: opacity 0.15s ease;
-}
-
-.remove-chip-btn:hover {
-  opacity: 1;
-}
-
-.remove-chip-btn .material-icons-round {
-  font-size: 14px;
+  overflow: visible !important;
 }
 
 .search-field {
   position: relative;
   display: flex;
   align-items: center;
+  flex: 1;
+  min-width: 220px;
 }
 
 .search-field-icon {
@@ -97,18 +48,21 @@
   left: 14px;
   color: var(--text-muted);
   font-size: 20px;
+  pointer-events: none;
 }
 
 .search-field .form-control {
   width: 100%;
-  padding: 12px 16px 12px 44px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border);
-  background: var(--surface-hover);
+  padding: 10px 16px 10px 44px;
+  border-radius: var(--radius-md, 8px);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
   color: var(--text-primary);
   font-size: 14px;
   transition: all 0.2s ease;
   outline: none;
+  height: 42px;
+  box-sizing: border-box;
 }
 
 .search-field .form-control:focus {
@@ -127,10 +81,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  transition: color 0.15s ease;
 }
 
 .clear-search-btn:hover {
   color: var(--text-primary);
+}
+
+.store-filter-dropdown {
+  min-width: 180px;
+  flex: 0 0 auto;
+  position: relative;
+}
+
+.sort-filter-dropdown {
+  min-width: 165px;
+  flex: 0 0 auto;
+  position: relative;
 }
 
 [dir="rtl"] .search-field-icon {
@@ -148,11 +117,105 @@
   left: 12px;
 }
 
+/* Quick City Switcher Pills */
+.city-pills-container {
+  width: 100%;
+  padding-bottom: 2px;
+}
+
+.city-pills-scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 0;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.city-pills-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.city-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full, 9999px);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.city-pill-btn .pill-icon {
+  font-size: 16px;
+}
+
+.city-pill-btn:hover {
+  color: var(--primary);
+  border-color: var(--primary-light, rgba(14, 116, 144, 0.4));
+  background: var(--surface);
+  transform: translateY(-1px);
+}
+
+.city-pill-btn.active {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 2px 8px rgba(14, 116, 144, 0.28);
+}
+
+.city-pill-btn.active .pill-icon {
+  color: #ffffff;
+}
+
+/* Filter Summary Row */
+.flyer-filter-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.filter-indicator-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.filter-indicator-badge .material-icons-round {
+  font-size: 16px;
+  color: var(--primary);
+}
+
+.flyer-count-pill {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.flyer-count-pill strong {
+  color: var(--primary);
+  font-weight: 800;
+}
+
 /* Flyers Grid */
 .grid-flyers {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
+  gap: 18px;
 }
 
 .flyer-card {
@@ -170,10 +233,11 @@
 .flyer-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-md);
+  border-color: rgba(14, 116, 144, 0.25);
 }
 
 .flyer-image-wrapper {
-  height: 240px;
+  height: 250px;
   position: relative;
   overflow: hidden;
   background: #ffffff;
@@ -193,7 +257,7 @@
   height: 100%;
   object-fit: cover;
   object-position: top center;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   display: block;
 }
 
@@ -202,14 +266,52 @@
 }
 
 .flyer-card:hover .flyer-image-wrapper img {
-  transform: scale(1.04);
+  transform: scale(1.05);
+}
+
+/* City Badge Floating on Flyer */
+.flyer-city-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border-radius: var(--radius-full, 9999px);
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(6px);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  z-index: 4;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.flyer-city-badge .material-icons-round {
+  font-size: 13px;
+  color: #38bdf8;
+}
+
+.flyer-city-badge.nationwide-badge {
+  background: rgba(16, 185, 129, 0.88);
+  color: #ffffff;
+}
+
+.flyer-city-badge.nationwide-badge .material-icons-round {
+  color: #ffffff;
+}
+
+[dir="rtl"] .flyer-city-badge {
+  left: auto;
+  right: 10px;
 }
 
 .bookmark-btn {
   position: absolute;
   top: 10px;
   right: 10px;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.92);
   border: 1px solid var(--border);
   border-radius: 50%;
   width: 32px;
@@ -220,7 +322,7 @@
   cursor: pointer;
   color: var(--text-secondary);
   z-index: 5;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
 }
 
@@ -271,7 +373,7 @@
   font-weight: 800;
   color: var(--text-primary);
   margin: 0;
-  line-height: 1.3;
+  line-height: 1.35;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -291,8 +393,8 @@
   justify-content: space-between;
   align-items: center;
   border-top: 1px dashed var(--border);
-  padding-top: 6px;
-  margin-top: 2px;
+  padding-top: 7px;
+  margin-top: 3px;
   font-size: 11px;
 }
 
@@ -305,10 +407,21 @@
   font-size: 11px;
 }
 
+.pages-count .material-icons-round {
+  font-size: 14px;
+}
+
 .validity-dates {
   color: var(--text-muted);
   font-weight: 500;
   font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.validity-dates .clock-icon {
+  font-size: 13px;
 }
 
 .btn-view-flyer {
@@ -323,26 +436,46 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease;
   margin-top: 6px;
   text-decoration: none;
 }
 
+.btn-view-flyer .material-icons-round {
+  font-size: 16px;
+}
+
 .btn-view-flyer:hover {
   background: #166534;
   color: #ffffff;
+  transform: translateY(-1px);
 }
 
-@media (max-width: 576px) {
+@media (max-width: 640px) {
+  .filters-top-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-field {
+    min-width: 100%;
+  }
+
+  .store-filter-dropdown,
+  .sort-filter-dropdown {
+    width: 100%;
+    min-width: 100%;
+  }
+
   .grid-flyers {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
 
   .flyer-image-wrapper {
-    height: 175px;
-    padding: 0;
+    height: 185px;
   }
 
   .flyer-card-body {
@@ -360,9 +493,14 @@
   }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 380px) {
   .grid-flyers {
-    gap: 8px;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .flyer-image-wrapper {
+    height: 220px;
   }
 }
 
@@ -372,11 +510,11 @@
   text-align: center;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-lg, 16px);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .empty-state-icon {
@@ -396,7 +534,29 @@
   font-size: 14px;
   color: var(--text-secondary);
   margin: 0;
-  max-width: 420px;
+  max-width: 440px;
+  line-height: 1.5;
+}
+
+.btn-outline-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  background: var(--primary-light, rgba(14, 116, 144, 0.08));
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  border-radius: var(--radius-full, 9999px);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 6px;
+}
+
+.btn-outline-all:hover {
+  background: var(--primary);
+  color: #ffffff;
 }
 
 .spinner-container {

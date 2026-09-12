@@ -181,9 +181,9 @@
               </span>
             </td>
             <td>
-              <span class="city-pill">
-                <span class="material-icons-round city-icon">location_on</span>
-                {{ currentLang() === 'en' ? (f.cityNameEn || f.city?.nameEn || f.city_id) : (f.cityNameAr || f.city?.nameAr || f.cityNameEn || f.city_id) }}
+              <span class="city-pill" [class.nationwide-pill]="!f.cityId && !f.city_id">
+                <span class="material-icons-round city-icon">{{ (!f.cityId && !f.city_id) ? 'public' : 'location_on' }}</span>
+                {{ (!f.cityId && !f.city_id) ? (currentLang() === 'en' ? 'All Cities (Nationwide)' : 'جميع المدن (المملكة)') : (currentLang() === 'en' ? (f.cityNameEn || f.city?.nameEn || f.city_id) : (f.cityNameAr || f.city?.nameAr || f.cityNameEn || f.city_id)) }}
               </span>
             </td>
             <td>
@@ -288,9 +288,9 @@
                 <span>{{ currentLang() === 'en' ? (f.storeNameEn || f.store?.nameEn || f.store_id) : (f.storeNameAr || f.store?.nameAr || f.storeNameEn || f.store_id) }}</span>
               </span>
 
-              <span class="city-pill">
-                <span class="material-icons-round city-icon">location_on</span>
-                {{ currentLang() === 'en' ? (f.cityNameEn || f.city?.nameEn || f.city_id) : (f.cityNameAr || f.city?.nameAr || f.cityNameEn || f.city_id) }}
+              <span class="city-pill" [class.nationwide-pill]="!f.cityId && !f.city_id">
+                <span class="material-icons-round city-icon">{{ (!f.cityId && !f.city_id) ? 'public' : 'location_on' }}</span>
+                {{ (!f.cityId && !f.city_id) ? (currentLang() === 'en' ? 'All Cities' : 'جميع المدن') : (currentLang() === 'en' ? (f.cityNameEn || f.city?.nameEn || f.city_id) : (f.cityNameAr || f.city?.nameAr || f.cityNameEn || f.city_id)) }}
               </span>
             </div>
           </div>
@@ -413,18 +413,17 @@
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label">{{ currentLang() === 'en' ? 'Target City *' : 'المدينة المستهدفة *' }}</label>
+                  <label class="form-label">{{ currentLang() === 'en' ? 'Target City (Optional / Nationwide)' : 'المدينة المستهدفة (اختياري / على مستوى المملكة)' }}</label>
                   <app-custom-select
                     formControlName="city_id"
                     [options]="cities()"
                     valueKey="id"
                     labelEnKey="nameEn"
                     labelArKey="nameAr"
-                    [placeholder]="currentLang() === 'en' ? '-- Select City --' : '-- اختر المدينة --'"
+                    [placeholder]="currentLang() === 'en' ? '🌐 All Cities / Nationwide' : '🌐 جميع المدن / على مستوى المملكة'"
+                    [allowUnset]="true"
+                    [unsetLabel]="currentLang() === 'en' ? '🌐 All Cities / Nationwide' : '🌐 جميع المدن / على مستوى المملكة'"
                   ></app-custom-select>
-                  <div class="error-msg" *ngIf="flyerForm.get('city_id')?.touched && flyerForm.get('city_id')?.invalid">
-                    {{ currentLang() === 'en' ? 'City is required.' : 'المدينة مطلوبة.' }}
-                  </div>
                 </div>
               </div>
             </div>

@@ -1,50 +1,104 @@
-import { Component, inject, OnInit, signal, effect, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, signal, effect, ChangeDetectorRef, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FlyerService } from '../../../core/services/flyer.service';
 import { CityService } from '../../../core/services/city.service';
+import { StoreService } from '../../../core/services/store.service';
 import { TranslationService } from '../../../core/services/translation.service';
 import { TranslatePipe } from '../../../shared/pipes/translate-pipe';
+import { CustomSelectComponent } from '../../../shared/components/custom-select/custom-select.component';
 import { environment } from '../../../environment/environment';
 
 @Component({
   selector: 'app-flyer-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, TranslatePipe],
+  imports: [CommonModule, RouterLink, FormsModule, TranslatePipe, CustomSelectComponent],
   templateUrl: './flyer-list.component.html',
   styleUrls: ['./flyer-list.component.css']
 })
 export class FlyerListComponent implements OnInit {
   private flyerService = inject(FlyerService);
+  private storeService = inject(StoreService);
   cityService = inject(CityService);
   private translationService = inject(TranslationService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private cd = inject(ChangeDetectorRef);
 
   currentLang = this.translationService.currentLang;
   filePath = environment.filePath;
 
   flyers = signal<any[]>([]);
-  selectedCityId: number | null = null;
+  cities = signal<any[]>([]);
+  stores = signal<any[]>([]);
+  selectedCityId = signal<number | null>(null);
+  selectedStoreId = signal<number | null>(null);
   searchQuery = '';
+  sortBy = signal<string>('newest');
   loading = false;
 
-  clearCityFilter(): void {
-    this.selectedCityId = null;
-  }
+  sortOptions = computed(() => [
+    { value: 'newest', nameEn: 'Newest Added', nameAr: 'الأحدث إضافة', icon: 'schedule' },
+    { value: 'expiring', nameEn: 'Expiring Soon', nameAr: 'ينتهي قريباً', icon: 'alarm' },
+    { value: 'popular', nameEn: 'Most Viewed', nameAr: 'الأكثر مشاهدة', icon: 'visibility' },
+    { value: 'pages', nameEn: 'Most Pages', nameAr: 'الأكثر صفحات', icon: 'auto_stories' }
+  ]);
 
   constructor() {
     effect(() => {
       const city = this.cityService.selectedCity();
-      if (city && city.id) {
-        this.selectedCityId = city.id;
+      if (city && city.id && this.selectedCityId() === null && !this.route.snapshot.queryParams['city']) {
+        this.selectedCityId.set(city.id);
         this.cd.detectChanges();
       }
     });
   }
 
   ngOnInit(): void {
+    this.loadCities();
+    this.loadStores();
     this.loadFlyers();
+
+    this.route.queryParams.subscribe(params => {
+      if (params['q'] || params['search']) {
+        this.searchQuery = params['q'] || params['search'];
+      }
+      if (params['store'] || params['storeId']) {
+        this.selectedStoreId.set(Number(params['store'] || params['storeId']));
+      }
+      if (params['city'] || params['cityId']) {
+        this.selectedCityId.set(Number(params['city'] || params['cityId']));
+      }
+      if (params['sort']) {
+        this.sortBy.set(params['sort']);
+      }
+      this.cd.detectChanges();
+    });
+  }
+
+  loadCities(): void {
+    this.cityService.getCities().subscribe({
+      next: (res) => {
+        if (res && Array.isArray(res)) {
+          this.cities.set(res);
+          this.cd.detectChanges();
+        }
+      },
+      error: (err) => console.error('Failed to load cities for flyer filter:', err)
+    });
+  }
+
+  loadStores(): void {
+    this.storeService.getStores().subscribe({
+      next: (res) => {
+        if (res && Array.isArray(res)) {
+          this.stores.set(res);
+          this.cd.detectChanges();
+        }
+      },
+      error: (err) => console.error('Failed to load stores for flyer filter:', err)
+    });
   }
 
   loadFlyers(): void {
@@ -63,6 +117,38 @@ export class FlyerListComponent implements OnInit {
     });
   }
 
+  selectCity(cityId: number | null): void {
+    this.selectedCityId.set(cityId);
+  }
+
+  getSelectedCityName(): string {
+    const id = this.selectedCityId();
+    if (id === null) return this.currentLang() === 'en' ? 'All Cities' : 'جميع المدن';
+    const found = this.cities().find(c => c.id === id);
+    if (!found) return this.currentLang() === 'en' ? 'Selected City' : 'المدينة المحددة';
+    return this.currentLang() === 'ar' ? (found.nameAr || found.name_ar || found.nameEn) : (found.nameEn || found.name_en || found.nameAr);
+  }
+
+  clearCityFilter(): void {
+    this.selectedCityId.set(null);
+  }
+
+  isNationwide(flyer: any): boolean {
+    if (flyer.nationwide === true || flyer.isNationwide === true) return true;
+    const cId = flyer.cityId ?? flyer.city_id ?? flyer.city?.id;
+    return !cId;
+  }
+
+  getCityBadgeText(flyer: any): string {
+    if (this.isNationwide(flyer)) {
+      return this.currentLang() === 'en' ? 'All Cities' : 'جميع المدن';
+    }
+    if (this.currentLang() === 'ar') {
+      return flyer.cityNameAr || flyer.city?.nameAr || flyer.city_name_ar || flyer.cityNameEn || flyer.city?.nameEn || 'المدينة';
+    }
+    return flyer.cityNameEn || flyer.city?.nameEn || flyer.city_name_en || flyer.cityNameAr || 'City';
+  }
+
   getFilteredFlyers(): any[] {
     const today = new Date().toISOString().split('T')[0];
     let list = this.flyers().filter(f => {
@@ -71,9 +157,24 @@ export class FlyerListComponent implements OnInit {
       return isActive && isNotExpired;
     });
 
-    if (this.selectedCityId !== null) {
-      const cId = Number(this.selectedCityId);
-      list = list.filter(f => f.cityId === cId || f.city_id === cId || (!f.cityId && !f.city_id) || f.store?.cityId === cId);
+    const activeCityId = this.selectedCityId();
+    if (activeCityId !== null) {
+      const cId = Number(activeCityId);
+      list = list.filter(f => {
+        if (this.isNationwide(f)) return true;
+        const flyerCityId = f.cityId ?? f.city_id ?? f.city?.id;
+        const storeCityId = f.store?.cityId ?? f.store?.city_id;
+        return flyerCityId === cId || storeCityId === cId;
+      });
+    }
+
+    const activeStoreId = this.selectedStoreId();
+    if (activeStoreId !== null) {
+      const sId = Number(activeStoreId);
+      list = list.filter(f => {
+        const flyerStoreId = f.storeId ?? f.store_id ?? f.store?.id;
+        return Number(flyerStoreId) === sId;
+      });
     }
 
     if (this.searchQuery.trim()) {
@@ -83,9 +184,32 @@ export class FlyerListComponent implements OnInit {
         const titleAr = (f.titleAr || f.title_ar || '').toLowerCase();
         const storeNameEn = (f.storeNameEn || f.store?.nameEn || f.store?.name_en || '').toLowerCase();
         const storeNameAr = (f.storeNameAr || f.store?.nameAr || f.store?.name_ar || '').toLowerCase();
-        return titleEn.includes(q) || titleAr.includes(q) || storeNameEn.includes(q) || storeNameAr.includes(q);
+        const cityNameEn = (f.cityNameEn || f.city?.nameEn || '').toLowerCase();
+        const cityNameAr = (f.cityNameAr || f.city?.nameAr || '').toLowerCase();
+        return titleEn.includes(q) || titleAr.includes(q) || storeNameEn.includes(q) || storeNameAr.includes(q) || cityNameEn.includes(q) || cityNameAr.includes(q);
       });
     }
+
+    // Sort
+    const sort = this.sortBy();
+    list = [...list].sort((a, b) => {
+      if (sort === 'expiring') {
+        const dateA = a.validUntil || a.valid_until || '9999-12-31';
+        const dateB = b.validUntil || b.valid_until || '9999-12-31';
+        return dateA.localeCompare(dateB);
+      } else if (sort === 'popular') {
+        const viewsA = a.viewCount || a.view_count || 0;
+        const viewsB = b.viewCount || b.view_count || 0;
+        return viewsB - viewsA;
+      } else if (sort === 'pages') {
+        const pagesA = a.totalPages || a.total_pages || (a.pages ? a.pages.length : 1);
+        const pagesB = b.totalPages || b.total_pages || (b.pages ? b.pages.length : 1);
+        return pagesB - pagesA;
+      } else {
+        // newest (default)
+        return (b.id || 0) - (a.id || 0);
+      }
+    });
 
     return list;
   }

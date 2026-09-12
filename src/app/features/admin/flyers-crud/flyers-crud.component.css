@@ -392,6 +392,16 @@
   color: var(--text-primary);
 }
 
+.city-pill.nationwide-pill {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+
+.city-pill.nationwide-pill .city-icon {
+  color: #16a34a;
+}
+
 .city-icon {
   font-size: 0.85rem;
   color: #ef4444;

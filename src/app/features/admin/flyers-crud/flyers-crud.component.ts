@@ -136,7 +136,7 @@ export class FlyersCrudComponent implements OnInit {
       title_en: ['', Validators.required],
       title_ar: ['', Validators.required],
       store_id: ['', Validators.required],
-      city_id: ['', Validators.required],
+      city_id: [''],
       valid_from: ['', Validators.required],
       valid_until: ['', Validators.required],
       description_en: [''],
@@ -212,7 +212,7 @@ export class FlyersCrudComponent implements OnInit {
       title_en: '',
       title_ar: '',
       store_id: defaultStoreId,
-      city_id: this.cities().length > 0 ? this.cities()[0].id : '',
+      city_id: '',
       valid_from: today,
       valid_until: nextWeek,
       description_en: '',
@@ -371,7 +371,7 @@ export class FlyersCrudComponent implements OnInit {
     const val = this.flyerForm.value;
     const flyerData = {
       storeId: Number(val.store_id),
-      cityId: Number(val.city_id),
+      cityId: (val.city_id !== '' && val.city_id !== null && val.city_id !== undefined && Number(val.city_id) > 0) ? Number(val.city_id) : null,
       titleEn: val.title_en,
       titleAr: val.title_ar,
       descriptionEn: val.description_en || '',
