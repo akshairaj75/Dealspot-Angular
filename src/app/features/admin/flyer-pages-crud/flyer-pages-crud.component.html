@@ -27,6 +27,21 @@
     <span>{{ currentLang() === 'en' ? 'Loading catalogue pages...' : 'جاري تحميل صفحات الكتالوج...' }}</span>
   </div>
 
+  <!-- Drag Order Helper Banner -->
+  <div class="drag-hint-card" *ngIf="!loading && pages().length > 1">
+    <div class="drag-hint-content">
+      <span class="material-icons-round drag-hint-icon">drag_indicator</span>
+      <div>
+        <strong>{{ currentLang() === 'en' ? 'Drag & Drop to Reorder Pages' : 'اسحب وأفلت لترتيب الصفحات' }}</strong>
+        <p>{{ currentLang() === 'en' ? 'Drag any page sheet or use the arrow buttons to change its order. Page #1 automatically acts as the catalogue cover.' : 'اسحب أي صفحة أو استخدم أزرار الأسهم لتغيير ترتيبها. الصفحة الأولى #1 تصبح غلاف الكتالوج تلقائياً.' }}</p>
+      </div>
+    </div>
+    <div class="saving-badge" *ngIf="isSavingOrder()">
+      <div class="spinner-sm"></div>
+      <span>{{ currentLang() === 'en' ? 'Saving new order...' : 'جاري حفظ الترتيب...' }}</span>
+    </div>
+  </div>
+
   <!-- Empty State -->
   <div class="empty-card" *ngIf="!loading && pages().length === 0">
     <span class="material-icons-round empty-icon">auto_stories</span>
@@ -34,21 +49,57 @@
     <p>{{ currentLang() === 'en' ? 'Click "Add Page Image" above to upload scanned catalogue sheets.' : 'انقر على "إضافة صفحة كتالوج" أعلاه لرفع صفحات العروض.' }}</p>
   </div>
 
-  <!-- Scanned Pages Grid -->
+  <!-- Scanned Pages Grid with Drag & Drop Reordering -->
   <div class="pages-grid" *ngIf="!loading && pages().length > 0">
-    <div class="page-card" *ngFor="let page of pages()">
+    <div
+      class="page-card"
+      *ngFor="let page of pages(); let i = index"
+      [draggable]="true"
+      (dragstart)="onDragStart($event, i)"
+      (dragover)="onDragOver($event, i)"
+      (dragleave)="onDragLeave($event, i)"
+      (drop)="onDrop($event, i)"
+      (dragend)="onDragEnd($event)"
+      [class.dragging]="draggedIndex === i"
+      [class.drag-over]="dragOverIndex === i && draggedIndex !== i"
+    >
+      <div class="card-drag-handle" title="{{ currentLang() === 'en' ? 'Drag to reorder' : 'اسحب لإعادة الترتيب' }}">
+        <span class="material-icons-round drag-handle-icon">drag_indicator</span>
+        <span class="drag-handle-label">{{ currentLang() === 'en' ? 'Page' : 'صفحة' }} #{{ page.pageNumber || (i + 1) }}</span>
+        <span class="cover-badge" *ngIf="(page.pageNumber || (i + 1)) === 1">{{ currentLang() === 'en' ? 'COVER' : 'الغلاف' }}</span>
+      </div>
+
       <div class="page-image-wrapper">
-        <img [src]="getPageImageUrl(page)" [alt]="'Page ' + (page.pageNumber || page.page_number)">
+        <img [src]="getPageImageUrl(page)" [alt]="'Page ' + (page.pageNumber || (i + 1))">
         <span class="page-num-pill">
           <span class="material-icons-round" style="font-size: 12px;">description</span>
-          <span>{{ currentLang() === 'en' ? 'Page' : 'صفحة' }} {{ page.pageNumber || page.page_number }} {{ (page.pageNumber || page.page_number) === 1 ? (currentLang() === 'en' ? '(Cover)' : '(الغلاف)') : '' }}</span>
+          <span>{{ currentLang() === 'en' ? 'Page' : 'صفحة' }} {{ page.pageNumber || (i + 1) }}</span>
         </span>
       </div>
       
       <div class="page-card-body">
-        <div class="page-info-row">
-          <span class="material-icons-round text-muted" style="font-size: 16px;">tag</span>
-          <span>{{ currentLang() === 'en' ? 'Page Position:' : 'ترتيب الصفحة:' }} <strong>#{{ page.pageNumber || page.page_number }}</strong></span>
+        <div class="page-reorder-controls">
+          <button
+            type="button"
+            class="btn-reorder-step"
+            [disabled]="i === 0"
+            (click)="movePage(i, i - 1)"
+            [title]="currentLang() === 'en' ? 'Move Backward' : 'تحريك للخلف'"
+          >
+            <span class="material-icons-round">{{ currentLang() === 'ar' ? 'arrow_forward' : 'arrow_back' }}</span>
+          </button>
+          
+          <span class="reorder-pos-text"><strong>#{{ page.pageNumber || (i + 1) }}</strong> of {{ pages().length }}</span>
+
+          <button
+            type="button"
+            class="btn-reorder-step"
+            [disabled]="i === pages().length - 1"
+            (click)="movePage(i, i + 1)"
+            [title]="currentLang() === 'en' ? 'Move Forward' : 'تحريك للأمام'"
+          >
+            <span class="material-icons-round">{{ currentLang() === 'ar' ? 'arrow_back' : 'arrow_forward' }}</span>
+          </button>
         </div>
       </div>
 

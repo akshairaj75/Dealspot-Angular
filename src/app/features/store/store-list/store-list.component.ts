@@ -62,7 +62,7 @@ export class StoreListComponent implements OnInit, OnDestroy {
 
     effect(() => {
       const city = this.cityService.selectedCity();
-      if (city && city.id) {
+      if (city && city.id && !this.onlyFollowed()) {
         this.selectedCityId = city.id;
         this.calculateActiveFiltersCount();
       }
@@ -73,6 +73,7 @@ export class StoreListComponent implements OnInit, OnDestroy {
     this.route.data.subscribe(data => {
       if (data && data['onlyFollowed']) {
         this.onlyFollowed.set(true);
+        this.selectedCityId = null; // Show all followed stores regardless of location by default
       }
     });
 
@@ -208,7 +209,16 @@ export class StoreListComponent implements OnInit, OnDestroy {
       });
       return;
     }
-    this.onlyFollowed.set(!this.onlyFollowed());
+    const nextState = !this.onlyFollowed();
+    this.onlyFollowed.set(nextState);
+    if (nextState) {
+      this.selectedCityId = null; // Display all followed stores without restricting to the active city
+    } else {
+      const city = this.cityService.selectedCity();
+      if (city && city.id) {
+        this.selectedCityId = city.id;
+      }
+    }
     this.calculateActiveFiltersCount();
   }
 

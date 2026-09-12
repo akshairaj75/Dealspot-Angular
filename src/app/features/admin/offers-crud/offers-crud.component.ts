@@ -425,7 +425,7 @@ export class OffersCrudComponent implements OnInit, AfterViewInit, OnDestroy {
       title_en: '',
       title_ar: '',
       store_id: defaultStoreId,
-      category_id: this.categories().length > 0 ? this.categories()[0].id : '',
+      category_id: '',
       city_id: this.cities().length > 0 ? this.cities()[0].id : '',
       product_id: null,
       original_price: 0,
@@ -609,7 +609,16 @@ export class OffersCrudComponent implements OnInit, AfterViewInit, OnDestroy {
 
   selectProduct(product: any | null): void {
     this.selectedProduct.set(product);
-    this.offerForm.patchValue({ product_id: product ? product.id : null });
+    if (product) {
+      const prodCatId = product.categoryId ?? product.category_id ?? (product.category ? product.category.id : null);
+      const patchData: any = { product_id: product.id };
+      if (prodCatId) {
+        patchData.category_id = Number(prodCatId);
+      }
+      this.offerForm.patchValue(patchData);
+    } else {
+      this.offerForm.patchValue({ product_id: null });
+    }
     this.isProductDropdownOpen.set(false);
     this.productSearchText = '';
     this.cd.detectChanges();

@@ -35,7 +35,17 @@
       </div>
       <div class="stat-details">
         <span class="stat-value">{{ activeFlyersCount() }}</span>
-        <span class="stat-label">{{ currentLang() === 'en' ? 'Active Flyers' : 'نشرات نشطة' }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Active & Valid' : 'نشرات سارية' }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrapper stat-icon-red">
+        <span class="material-icons-round">event_busy</span>
+      </div>
+      <div class="stat-details">
+        <span class="stat-value">{{ expiredFlyersCount() }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Expired Flyers' : 'نشرات منتهية' }}</span>
       </div>
     </div>
 
@@ -72,7 +82,7 @@
           <app-custom-select
             [options]="stores()"
             [ngModel]="selectedStoreFilter()"
-            (ngModelChange)="selectedStoreFilter.set($event)"
+            (ngModelChange)="selectedStoreFilter.set($event); onFilterChange()"
             valueKey="id"
             labelEnKey="nameEn"
             labelArKey="nameAr"
@@ -87,7 +97,7 @@
           <app-custom-select
             [options]="cities()"
             [ngModel]="selectedCityFilter()"
-            (ngModelChange)="selectedCityFilter.set($event)"
+            (ngModelChange)="selectedCityFilter.set($event); onFilterChange()"
             valueKey="id"
             labelEnKey="nameEn"
             labelArKey="nameAr"
@@ -101,7 +111,7 @@
           <app-custom-select
             [options]="statusFilterOptions()"
             [ngModel]="selectedStatusFilter()"
-            (ngModelChange)="selectedStatusFilter.set($event)"
+            (ngModelChange)="selectedStatusFilter.set($event); onFilterChange()"
             valueKey="value"
             labelEnKey="nameEn"
             labelArKey="nameAr"
@@ -203,11 +213,18 @@
             <td>
               <span
                 class="status-chip"
-                [class.status-active]="f.active === true || f.active === 1 || f.isActive === true"
+                [class.status-active]="(f.active === true || f.active === 1 || f.isActive === true) && !isExpired(f)"
+                [class.status-expired]="isExpired(f)"
                 [class.status-inactive]="!(f.active === true || f.active === 1 || f.isActive === true)"
               >
                 <span class="status-dot"></span>
-                <span>{{ (f.active === true || f.active === 1 || f.isActive === true) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}</span>
+                <span>
+                  {{ isExpired(f)
+                    ? (currentLang() === 'en' ? 'Expired' : 'منتهي')
+                    : ((f.active === true || f.active === 1 || f.isActive === true)
+                        ? (currentLang() === 'en' ? 'Active' : 'نشط')
+                        : (currentLang() === 'en' ? 'Inactive' : 'غير نشط')) }}
+                </span>
               </span>
             </td>
             <td style="text-align: center;">
@@ -248,11 +265,18 @@
               <span class="flyer-id-badge">#{{ f.id }}</span>
               <span
                 class="status-chip"
-                [class.status-active]="f.active === true || f.active === 1 || f.isActive === true"
+                [class.status-active]="(f.active === true || f.active === 1 || f.isActive === true) && !isExpired(f)"
+                [class.status-expired]="isExpired(f)"
                 [class.status-inactive]="!(f.active === true || f.active === 1 || f.isActive === true)"
               >
                 <span class="status-dot"></span>
-                <span>{{ (f.active === true || f.active === 1 || f.isActive === true) ? (currentLang() === 'en' ? 'Active' : 'نشط') : (currentLang() === 'en' ? 'Inactive' : 'غير نشط') }}</span>
+                <span>
+                  {{ isExpired(f)
+                    ? (currentLang() === 'en' ? 'Expired' : 'منتهي')
+                    : ((f.active === true || f.active === 1 || f.isActive === true)
+                        ? (currentLang() === 'en' ? 'Active' : 'نشط')
+                        : (currentLang() === 'en' ? 'Inactive' : 'غير نشط')) }}
+                </span>
               </span>
             </div>
 
@@ -446,11 +470,26 @@
                 </label>
               </div>
 
-              <!-- Previews of newly selected files -->
+              <!-- Previews of newly selected files (Draggable) -->
               <div *ngIf="pagePreviewUrls.length > 0" class="pages-preview-grid">
-                <div class="page-preview-item" *ngFor="let preview of pagePreviewUrls; let i = index">
+                <div
+                  class="page-preview-item"
+                  *ngFor="let preview of pagePreviewUrls; let i = index"
+                  [draggable]="true"
+                  (dragstart)="onModalPageDragStart($event, i)"
+                  (dragover)="onModalPageDragOver($event, i)"
+                  (dragleave)="onModalPageDragLeave($event, i)"
+                  (drop)="onModalPageDrop($event, i)"
+                  (dragend)="onModalPageDragEnd($event)"
+                  [class.preview-dragging]="modalDraggedIndex === i"
+                  [class.preview-drag-over]="modalDragOverIndex === i && modalDraggedIndex !== i"
+                  title="{{ currentLang() === 'en' ? 'Drag to reorder page position' : 'اسحب لتغيير ترتيب الصفحة' }}"
+                >
                   <img [src]="preview" alt="Page preview">
-                  <span class="page-num-badge">Page {{ i + 1 }} {{ i === 0 ? '(Cover)' : '' }}</span>
+                  <span class="page-num-badge">
+                    <span class="material-icons-round" style="font-size: 11px;">drag_indicator</span>
+                    <span>Page {{ i + 1 }} {{ i === 0 ? '(Cover)' : '' }}</span>
+                  </span>
                   <button type="button" class="btn-remove-page" (click)="removePageFile(i)" title="Remove">
                     <span class="material-icons-round">close</span>
                   </button>

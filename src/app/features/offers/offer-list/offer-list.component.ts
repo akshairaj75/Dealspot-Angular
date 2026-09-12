@@ -68,10 +68,14 @@ export class OfferListComponent implements OnInit, OnDestroy {
     return this.categories().filter(c => !c.parentId && !c.parent_id);
   });
 
+  // Filter States (Signals for Reactive Cascading)
+  selectedMainCategoryId = signal<number | null>(null);
+  selectedSubCategoryId = signal<number | null>(null);
+
   availableSubcategories = computed(() => {
-    if (!this.selectedMainCategoryId) return [];
-    const mainId = Number(this.selectedMainCategoryId);
-    return this.categories().filter(c => (c.parentId === mainId || c.parent_id === mainId));
+    const mainId = this.selectedMainCategoryId();
+    if (!mainId) return [];
+    return this.categories().filter(c => Number(c.parentId || c.parent_id) === Number(mainId));
   });
 
   // Mobile Filter Drawer State
@@ -80,8 +84,6 @@ export class OfferListComponent implements OnInit, OnDestroy {
 
   // Filter States
   selectedCityId: number | null = null;
-  selectedMainCategoryId: number | null = null;
-  selectedSubCategoryId: number | null = null;
   selectedStoreId: number | null = null;
   selectedBrandId: number | null = null;
   selectedBrandName: string | null = null;
@@ -97,7 +99,7 @@ export class OfferListComponent implements OnInit, OnDestroy {
     // Monitor global active city signal
     effect(() => {
       const city = this.cityService.selectedCity();
-      if (city && city.id) {
+      if (city && city.id && !this.onlySaved()) {
         this.selectedCityId = city.id;
         this.applyFilters();
       }
@@ -118,6 +120,7 @@ export class OfferListComponent implements OnInit, OnDestroy {
     this.route.data.subscribe(data => {
       if (data && data['onlySaved']) {
         this.onlySaved.set(true);
+        this.selectedCityId = null; // Show all saved offers across all locations by default
       }
     });
 
@@ -215,8 +218,8 @@ export class OfferListComponent implements OnInit, OnDestroy {
   private calculateActiveFiltersCount(): void {
     let count = 0;
     if (this.selectedCityId !== null) count++;
-    if (this.selectedMainCategoryId !== null) count++;
-    if (this.selectedSubCategoryId !== null) count++;
+    if (this.selectedMainCategoryId() !== null) count++;
+    if (this.selectedSubCategoryId() !== null) count++;
     if (this.selectedStoreId !== null) count++;
     if (this.selectedBrandId !== null || (this.selectedBrandName !== null && this.selectedBrandName !== '')) count++;
     if (this.selectedDiscountRange > 0) count++;
@@ -236,45 +239,52 @@ export class OfferListComponent implements OnInit, OnDestroy {
 
   handleCategoryParam(catIdParam: any): void {
     if (!catIdParam) {
-      this.selectedMainCategoryId = null;
-      this.selectedSubCategoryId = null;
+      this.selectedMainCategoryId.set(null);
+      this.selectedSubCategoryId.set(null);
       return;
     }
     const catId = Number(catIdParam);
-    const found = this.categories().find(c => c.id === catId);
+    const found = this.categories().find(c => Number(c.id) === catId);
     if (found) {
       const pId = found.parentId || found.parent_id;
       if (pId) {
-        this.selectedMainCategoryId = pId;
-        this.selectedSubCategoryId = catId;
+        this.selectedMainCategoryId.set(Number(pId));
+        this.selectedSubCategoryId.set(catId);
       } else {
-        this.selectedMainCategoryId = catId;
-        this.selectedSubCategoryId = null;
+        this.selectedMainCategoryId.set(catId);
+        this.selectedSubCategoryId.set(null);
       }
     } else {
-      this.selectedMainCategoryId = catId;
+      this.selectedMainCategoryId.set(catId);
+      this.selectedSubCategoryId.set(null);
     }
   }
 
   onMainCategoryChange(val: any): void {
-    this.selectedMainCategoryId = val !== null && val !== undefined && val !== '' ? Number(val) : null;
-    this.selectedSubCategoryId = null;
+    const parsed = val !== null && val !== undefined && val !== '' ? Number(val) : null;
+    this.selectedMainCategoryId.set(parsed);
+    this.selectedSubCategoryId.set(null);
     this.updateCategoryQueryParams();
     this.applyFilters();
+    this.cd.detectChanges();
   }
 
   onSubCategoryChange(val: any): void {
-    this.selectedSubCategoryId = val !== null && val !== undefined && val !== '' ? Number(val) : null;
+    const parsed = val !== null && val !== undefined && val !== '' ? Number(val) : null;
+    this.selectedSubCategoryId.set(parsed);
     this.updateCategoryQueryParams();
     this.applyFilters();
+    this.cd.detectChanges();
   }
 
   private updateCategoryQueryParams(): void {
     const currentParams = { ...this.route.snapshot.queryParams };
-    if (this.selectedSubCategoryId) {
-      currentParams['category'] = this.selectedSubCategoryId;
-    } else if (this.selectedMainCategoryId) {
-      currentParams['category'] = this.selectedMainCategoryId;
+    const subId = this.selectedSubCategoryId();
+    const mainId = this.selectedMainCategoryId();
+    if (subId) {
+      currentParams['category'] = subId;
+    } else if (mainId) {
+      currentParams['category'] = mainId;
     } else {
       delete currentParams['category'];
     }
@@ -488,13 +498,15 @@ export class OfferListComponent implements OnInit, OnDestroy {
     }
 
 
-    if (this.selectedSubCategoryId) {
-      const sId = Number(this.selectedSubCategoryId);
-      list = list.filter(o => o.categoryId === sId || o.category_id === sId);
-    } else if (this.selectedMainCategoryId) {
-      const mId = Number(this.selectedMainCategoryId);
+    const subId = this.selectedSubCategoryId();
+    const mainId = this.selectedMainCategoryId();
+    if (subId) {
+      const sId = Number(subId);
+      list = list.filter(o => Number(o.categoryId || o.category_id) === sId);
+    } else if (mainId) {
+      const mId = Number(mainId);
       const childCatIds = this.categories()
-        .filter(c => c.parentId === mId || c.parent_id === mId)
+        .filter(c => Number(c.parentId || c.parent_id) === mId)
         .map(c => Number(c.id));
       const allowedCatIds = [mId, ...childCatIds];
       list = list.filter(o => {
@@ -560,8 +572,8 @@ export class OfferListComponent implements OnInit, OnDestroy {
 
   resetFilters(): void {
     this.selectedCityId = null;
-    this.selectedMainCategoryId = null;
-    this.selectedSubCategoryId = null;
+    this.selectedMainCategoryId.set(null);
+    this.selectedSubCategoryId.set(null);
     this.selectedStoreId = null;
     this.selectedBrandId = null;
     this.selectedBrandName = null;
@@ -583,13 +595,15 @@ export class OfferListComponent implements OnInit, OnDestroy {
   }
 
   getSelectedMainCategory(): any | null {
-    if (!this.selectedMainCategoryId) return null;
-    return this.categories().find(c => Number(c.id) === Number(this.selectedMainCategoryId)) || null;
+    const id = this.selectedMainCategoryId();
+    if (!id) return null;
+    return this.categories().find(c => Number(c.id) === Number(id)) || null;
   }
 
   getSelectedSubCategory(): any | null {
-    if (!this.selectedSubCategoryId) return null;
-    return this.categories().find(c => Number(c.id) === Number(this.selectedSubCategoryId)) || null;
+    const id = this.selectedSubCategoryId();
+    if (!id) return null;
+    return this.categories().find(c => Number(c.id) === Number(id)) || null;
   }
 
   getSelectedBrand(): any | null {
@@ -804,7 +818,16 @@ export class OfferListComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.onlySaved.set(!this.onlySaved());
+    const nextSavedState = !this.onlySaved();
+    this.onlySaved.set(nextSavedState);
+    if (nextSavedState) {
+      this.selectedCityId = null; // Display all saved offers without restricting to current active city
+    } else {
+      const city = this.cityService.selectedCity();
+      if (city && city.id) {
+        this.selectedCityId = city.id;
+      }
+    }
     this.applyFilters();
   }
 

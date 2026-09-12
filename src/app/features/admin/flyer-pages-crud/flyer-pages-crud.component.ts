@@ -36,6 +36,11 @@ export class FlyerPagesCrudComponent implements OnInit {
   selectedFile: File | null = null;
   previewUrl: string | null = null;
 
+  // Drag-and-drop state
+  draggedIndex: number | null = null;
+  dragOverIndex: number | null = null;
+  isSavingOrder = signal<boolean>(false);
+
   ngOnInit(): void {
     this.initForm();
     this.route.paramMap.subscribe(params => {
@@ -129,6 +134,96 @@ export class FlyerPagesCrudComponent implements OnInit {
       return url;
     }
     return this.filePath + url;
+  }
+
+  // Drag to order methods
+  onDragStart(event: DragEvent, index: number): void {
+    this.draggedIndex = index;
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', index.toString());
+    }
+  }
+
+  onDragOver(event: DragEvent, index: number): void {
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+    this.dragOverIndex = index;
+  }
+
+  onDragLeave(event: DragEvent, index: number): void {
+    if (this.dragOverIndex === index) {
+      this.dragOverIndex = null;
+    }
+  }
+
+  onDrop(event: DragEvent, targetIndex: number): void {
+    event.preventDefault();
+    if (this.draggedIndex === null || this.draggedIndex === targetIndex) {
+      this.draggedIndex = null;
+      this.dragOverIndex = null;
+      return;
+    }
+
+    this.reorderPagesArray(this.draggedIndex, targetIndex);
+    this.draggedIndex = null;
+    this.dragOverIndex = null;
+  }
+
+  onDragEnd(event: DragEvent): void {
+    this.draggedIndex = null;
+    this.dragOverIndex = null;
+  }
+
+  movePage(fromIndex: number, toIndex: number): void {
+    if (toIndex < 0 || toIndex >= this.pages().length || fromIndex === toIndex) return;
+    this.reorderPagesArray(fromIndex, toIndex);
+  }
+
+  private reorderPagesArray(fromIndex: number, toIndex: number): void {
+    const currentList = [...this.pages()];
+    const [movedItem] = currentList.splice(fromIndex, 1);
+    currentList.splice(toIndex, 0, movedItem);
+
+    // Optimistically renumber pages in memory
+    const updatedList = currentList.map((page, idx) => ({
+      ...page,
+      pageNumber: idx + 1,
+      page_number: idx + 1
+    }));
+    this.pages.set(updatedList);
+    this.cd.detectChanges();
+
+    // Persist to backend
+    this.persistPageOrder(updatedList);
+  }
+
+  private persistPageOrder(pageList: any[]): void {
+    this.isSavingOrder.set(true);
+    const pageIds = pageList.map(p => p.id);
+
+    this.flyerService.reorderFlyerPages(this.flyerId, pageIds).subscribe({
+      next: (res) => {
+        this.isSavingOrder.set(false);
+        if (res && res.length > 0) {
+          this.pages.set(res);
+        }
+        this.loadFlyerInfo();
+        this.cd.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to reorder flyer pages:', err);
+        this.isSavingOrder.set(false);
+        Swal.fire({
+          icon: 'error',
+          title: this.currentLang() === 'en' ? 'Reorder Failed' : 'فشل تغيير الترتيب',
+          text: this.currentLang() === 'en' ? 'Could not save new page order.' : 'تعذر حفظ ترتيب الصفحات الجديد.'
+        });
+        this.loadPages();
+      }
+    });
   }
 
   onSubmit(): void {

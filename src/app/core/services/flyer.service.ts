@@ -11,13 +11,29 @@ export class FlyerService {
 
   constructor(private http: HttpClient) {}
 
-  getAllFlyers(storeId?: number, includeExpired?: boolean): Observable<any[]> {
+  getAllFlyers(
+    storeId?: number,
+    includeExpired?: boolean,
+    status?: string,
+    cityId?: number,
+    search?: string
+  ): Observable<any[]> {
     let url = this.apiUrl + '/fetch-all-flyers';
     const params: string[] = [];
     if (storeId) {
       params.push('storeId=' + storeId);
     }
-    if (includeExpired) {
+    if (cityId) {
+      params.push('cityId=' + cityId);
+    }
+    if (search && search.trim()) {
+      params.push('search=' + encodeURIComponent(search.trim()));
+    }
+    if (status && status !== 'ALL') {
+      params.push('status=' + encodeURIComponent(status));
+    } else if (status === 'ALL') {
+      params.push('status=ALL');
+    } else if (includeExpired) {
       params.push('includeExpired=true');
     }
     if (params.length > 0) {
@@ -27,7 +43,7 @@ export class FlyerService {
   }
 
   getFlyers(cityId?: number): Observable<any[]> {
-    return this.getAllFlyers();
+    return this.getAllFlyers(undefined, undefined, undefined, cityId);
   }
 
 
@@ -70,5 +86,9 @@ export class FlyerService {
 
   deleteFlyerPage(pageId: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/pages/${pageId}`, { responseType: 'text' });
+  }
+
+  reorderFlyerPages(flyerId: number, pageIds: number[]): Observable<any[]> {
+    return this.http.put<any[]>(`${this.apiUrl}/${flyerId}/pages/reorder`, pageIds);
   }
 }

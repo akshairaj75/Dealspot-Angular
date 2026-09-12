@@ -58,7 +58,7 @@
         </div>
         <app-custom-select
           [options]="mainCategories()"
-          [ngModel]="selectedMainCategoryId"
+          [ngModel]="selectedMainCategoryId()"
           (ngModelChange)="onMainCategoryChange($event)"
           valueKey="id"
           labelEnKey="nameEn"
@@ -70,14 +70,14 @@
       </div>
 
       <!-- Subcategory Filter (Cascades when Main Category is chosen) -->
-      <div class="filter-group subcategory-filter-group" *ngIf="selectedMainCategoryId && availableSubcategories().length > 0">
+      <div class="filter-group subcategory-filter-group" *ngIf="selectedMainCategoryId() && availableSubcategories().length > 0">
         <div class="filter-group-title-row">
           <label class="form-label">{{ currentLang() === 'en' ? 'Subcategory' : 'القسم الفرعي' }}</label>
           <span class="subcat-count-badge">{{ availableSubcategories().length }}</span>
         </div>
         <app-custom-select
           [options]="availableSubcategories()"
-          [ngModel]="selectedSubCategoryId"
+          [ngModel]="selectedSubCategoryId()"
           (ngModelChange)="onSubCategoryChange($event)"
           valueKey="id"
           labelEnKey="nameEn"
@@ -92,7 +92,7 @@
           <button 
             type="button"
             class="subcat-chip" 
-            [class.active]="selectedSubCategoryId === null"
+            [class.active]="selectedSubCategoryId() === null"
             (click)="onSubCategoryChange(null)"
           >
             {{ currentLang() === 'en' ? 'All' : 'الكل' }}
@@ -101,7 +101,7 @@
             type="button"
             *ngFor="let sub of availableSubcategories()" 
             class="subcat-chip"
-            [class.active]="selectedSubCategoryId === sub.id"
+            [class.active]="selectedSubCategoryId() === sub.id"
             (click)="onSubCategoryChange(sub.id)"
           >
             {{ sub | translate:'name' }}
@@ -301,7 +301,7 @@
     </button>
 
     <!-- Active Filters Summary Bar -->
-    <div class="offers-grid-header card" [class.has-chips]="selectedMainCategoryId || selectedSubCategoryId || selectedStoreId || selectedBrandId || selectedBrandName || showFlashOnly || showFeaturedOnly || selectedDiscountRange > 0 || searchQuery">
+    <div class="offers-grid-header card" [class.has-chips]="selectedMainCategoryId() || selectedSubCategoryId() || selectedStoreId || selectedBrandId || selectedBrandName || showFlashOnly || showFeaturedOnly || selectedDiscountRange > 0 || searchQuery">
       <div class="header-left-info">
         <span class="material-icons-round header-info-icon">local_offer</span>
         <p class="results-count" *ngIf="!loading">
@@ -312,7 +312,7 @@
         </p>
       </div>
 
-      <div class="active-chips" *ngIf="selectedMainCategoryId || selectedSubCategoryId || selectedStoreId || selectedBrandId || selectedBrandName || showFlashOnly || showFeaturedOnly || selectedDiscountRange > 0 || searchQuery">
+      <div class="active-chips" *ngIf="selectedMainCategoryId() || selectedSubCategoryId() || selectedStoreId || selectedBrandId || selectedBrandName || showFlashOnly || showFeaturedOnly || selectedDiscountRange > 0 || searchQuery">
         <!-- Main Category chip -->
         <span class="active-filter-badge" *ngIf="getSelectedMainCategory()">
           <span>{{ getSelectedMainCategory() | translate:'name' }}</span>

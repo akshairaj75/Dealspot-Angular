@@ -46,13 +46,24 @@ export class FlyersCrudComponent implements OnInit {
 
   statusFilterOptions = computed(() => [
     { value: 'ALL', nameEn: 'All Statuses', nameAr: 'جميع الحالات' },
-    { value: 'ACTIVE', nameEn: 'Active Only', nameAr: 'نشط فقط' },
+    { value: 'UNEXPIRED', nameEn: 'Active & Valid (Unexpired)', nameAr: 'ساري وصالح' },
+    { value: 'EXPIRED', nameEn: 'Expired Only', nameAr: 'منتهي الصلاحية فقط' },
     { value: 'INACTIVE', nameEn: 'Inactive Only', nameAr: 'غير نشط فقط' }
   ]);
 
+  isExpired(f: any): boolean {
+    if (f.status === 'EXPIRED') return true;
+    if (f.expired !== undefined) return f.expired;
+    const today = new Date().toISOString().split('T')[0];
+    return !!((f.validUntil && f.validUntil < today) || (f.valid_until && f.valid_until < today));
+  }
+
   totalFlyersCount = computed(() => this.flyers().length);
   activeFlyersCount = computed(() =>
-    this.flyers().filter(f => f.active === true || f.active === 1 || f.isActive === true).length
+    this.flyers().filter(f => (f.active === true || f.active === 1 || f.isActive === true) && !this.isExpired(f)).length
+  );
+  expiredFlyersCount = computed(() =>
+    this.flyers().filter(f => this.isExpired(f)).length
   );
   totalFlyerViewsCount = computed(() =>
     this.flyers().reduce((acc, f) => acc + (f.viewCount || f.view_count || 0), 0)
@@ -91,8 +102,10 @@ export class FlyersCrudComponent implements OnInit {
       });
     }
 
-    if (status === 'ACTIVE') {
-      list = list.filter(f => f.active === true || f.active === 1 || f.isActive === true);
+    if (status === 'UNEXPIRED' || status === 'ACTIVE') {
+      list = list.filter(f => (f.active === true || f.active === 1 || f.isActive === true) && !this.isExpired(f));
+    } else if (status === 'EXPIRED') {
+      list = list.filter(f => this.isExpired(f));
     } else if (status === 'INACTIVE') {
       list = list.filter(f => f.active === false || f.active === 0 || f.isActive === false);
     }
@@ -114,6 +127,10 @@ export class FlyersCrudComponent implements OnInit {
     this.loadDropdowns();
   }
 
+  onFilterChange(): void {
+    this.loadFlyers();
+  }
+
   initForm(): void {
     this.flyerForm = this.fb.group({
       title_en: ['', Validators.required],
@@ -132,12 +149,14 @@ export class FlyersCrudComponent implements OnInit {
     this.loading = true;
     const storeId = this.authService.isStoreManager() && this.authService.currentUser()?.storeId
       ? Number(this.authService.currentUser()?.storeId)
-      : undefined;
+      : (this.selectedStoreFilter() ? Number(this.selectedStoreFilter()) : undefined);
 
-    this.flyerService.getAllFlyers(storeId).subscribe({
+    const cityId = this.selectedCityFilter() ? Number(this.selectedCityFilter()) : undefined;
+    const status = this.selectedStatusFilter() || 'ALL';
+
+    this.flyerService.getAllFlyers(storeId, undefined, status, cityId).subscribe({
       next: (res) => {
         this.flyers.set(res || []);
-        this.applyFilter();
         this.loading = false;
         this.cd.detectChanges();
       },
@@ -246,6 +265,56 @@ export class FlyersCrudComponent implements OnInit {
         reader.readAsDataURL(file);
       }
     }
+  }
+
+  // Modal file uploads drag to order
+  modalDraggedIndex: number | null = null;
+  modalDragOverIndex: number | null = null;
+
+  onModalPageDragStart(event: DragEvent, index: number): void {
+    this.modalDraggedIndex = index;
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', index.toString());
+    }
+  }
+
+  onModalPageDragOver(event: DragEvent, index: number): void {
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+    this.modalDragOverIndex = index;
+  }
+
+  onModalPageDragLeave(event: DragEvent, index: number): void {
+    if (this.modalDragOverIndex === index) {
+      this.modalDragOverIndex = null;
+    }
+  }
+
+  onModalPageDrop(event: DragEvent, targetIndex: number): void {
+    event.preventDefault();
+    if (this.modalDraggedIndex === null || this.modalDraggedIndex === targetIndex) {
+      this.modalDraggedIndex = null;
+      this.modalDragOverIndex = null;
+      return;
+    }
+
+    const [movedFile] = this.selectedPageFiles.splice(this.modalDraggedIndex, 1);
+    this.selectedPageFiles.splice(targetIndex, 0, movedFile);
+
+    const [movedUrl] = this.pagePreviewUrls.splice(this.modalDraggedIndex, 1);
+    this.pagePreviewUrls.splice(targetIndex, 0, movedUrl);
+
+    this.modalDraggedIndex = null;
+    this.modalDragOverIndex = null;
+    this.cd.detectChanges();
+  }
+
+  onModalPageDragEnd(event: DragEvent): void {
+    this.modalDraggedIndex = null;
+    this.modalDragOverIndex = null;
   }
 
   removePageFile(index: number): void {
