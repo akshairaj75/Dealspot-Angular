@@ -8,17 +8,27 @@ export interface AdminUserResponseDto {
   fullName: string;
   email: string;
   role: string;
-  phone: string;
+  phone?: string;
 }
 
 export interface AuditLogResponseDto {
   auditLogId: number;
-  entityType: string;
-  entityId: number;
-  performedBy: AdminUserResponseDto | null;
-  payload: string;
+  requestId?: string;
+  userId?: number;
   action: string;
-  ipAddress: string;
+  httpMethod?: string;
+  endpoint?: string;
+  statusCode?: number;
+  success?: boolean;
+  ipAddress?: string;
+  userAgent?: string;
+  durationMs?: number;
+  errorType?: string;
+  errorMessage?: string;
+  entityType?: string;
+  entityId?: number;
+  performedBy?: AdminUserResponseDto | null;
+  payload?: string;
   createdAt: string;
 }
 

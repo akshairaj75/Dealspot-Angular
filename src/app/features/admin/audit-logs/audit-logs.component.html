@@ -1,88 +1,483 @@
-<div class="audit-logs-container">
-  <div class="header">
-    <h2>Audit Logs</h2>
-    <p class="subtitle">Track system activities and data changes</p>
+<div class="admin-page-container">
+
+  <!-- Page Header & Stats -->
+  <div class="page-header-row">
+    <div class="page-title-block">
+      <h1 class="page-title">
+        <span class="material-icons-round text-primary">history_edu</span>
+        {{ currentLang() === 'en' ? 'Audit & History Logs' : 'سجل العمليات والتدقيق' }}
+      </h1>
+      <p class="page-subtitle">
+        {{ currentLang() === 'en' ? 'Complete trace of system mutations, HTTP requests, response latencies, and security events.' : 'تتبع شامل لجميع العمليات الإدارية، طلبات HTTP، زمن الاستجابة، وسجلات الأمان في النظام.' }}
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="btn btn-secondary btn-refresh" (click)="loadLogs()" [disabled]="loading()">
+        <span class="material-icons-round" [class.spin-icon]="loading()">refresh</span>
+        <span>{{ currentLang() === 'en' ? 'Refresh' : 'تحديث' }}</span>
+      </button>
+    </div>
   </div>
 
-  <!-- Filters -->
-  <div class="filters-card">
-    <div class="filter-group">
-      <label>Entity Type</label>
-      <select [(ngModel)]="filter.entityType" (change)="onFilterChange()">
-        <option value="">All Entities</option>
-        <option *ngFor="let item of entityTypes" [value]="item.value">{{item.label}}</option>
-      </select>
+  <!-- Stats Grid -->
+  <div class="stats-overview-grid">
+    <div class="stat-card">
+      <div class="stat-icon bg-primary-light text-primary">
+        <span class="material-icons-round">receipt_long</span>
+      </div>
+      <div class="stat-content">
+        <span class="stat-num">{{ totalCount() }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Total Audited Events' : 'إجمالي العمليات المسجلة' }}</span>
+      </div>
     </div>
-    <div class="filter-group">
-      <label>Action</label>
-      <select [(ngModel)]="filter.action" (change)="onFilterChange()">
-        <option value="">All Actions</option>
-        <option *ngFor="let action of actions" [value]="action">{{action}}</option>
-      </select>
+
+    <div class="stat-card">
+      <div class="stat-icon bg-emerald-light text-emerald">
+        <span class="material-icons-round">check_circle</span>
+      </div>
+      <div class="stat-content">
+        <span class="stat-num">{{ successCount() }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Successful (Page)' : 'العمليات الناجحة (الصفحة)' }}</span>
+      </div>
     </div>
-    <div class="filter-group search-group">
-      <label>Search Payload</label>
-      <input type="text" placeholder="Search keywords..." [(ngModel)]="filter.searchKeyword" (keyup.enter)="onFilterChange()">
+
+    <div class="stat-card">
+      <div class="stat-icon bg-rose-light text-rose">
+        <span class="material-icons-round">error_outline</span>
+      </div>
+      <div class="stat-content">
+        <span class="stat-num">{{ errorCount() }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Errors & Failures' : 'الأخطاء والاستثناءات' }}</span>
+      </div>
     </div>
-    <button class="btn-refresh" (click)="loadLogs()">Refresh</button>
+
+    <div class="stat-card">
+      <div class="stat-icon bg-indigo-light text-indigo">
+        <span class="material-icons-round">speed</span>
+      </div>
+      <div class="stat-content">
+        <span class="stat-num">{{ avgDuration() }} <small>ms</small></span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Avg Latency (Page)' : 'متوسط زمن الاستجابة' }}</span>
+      </div>
+    </div>
   </div>
 
-  <!-- Loading State -->
-  <div *ngIf="loading" class="loading-state">
-    <div class="spinner"></div>
-    <p>Loading audit logs...</p>
+  <!-- Filter & Controls Bar -->
+  <div class="controls-bar card">
+    <div class="search-input-wrap">
+      <span class="material-icons-round search-icon">search</span>
+      <input 
+        type="text" 
+        [(ngModel)]="filter.searchKeyword" 
+        (keyup.enter)="onFilterChange()"
+        [placeholder]="currentLang() === 'en' ? 'Search by Request ID, URL, actor, or payload...' : 'ابحث برقم الطلب، الرابط، المشرف، أو البيانات...'"
+        class="form-control search-input"
+      >
+      <button *ngIf="filter.searchKeyword" (click)="filter.searchKeyword = ''; onFilterChange()" class="btn-clear-search">
+        <span class="material-icons-round">close</span>
+      </button>
+    </div>
+
+    <div class="filter-controls-group">
+      <!-- Entity Type Filter with app-custom-select -->
+      <div class="filter-item">
+        <label class="filter-label">
+          <span class="material-icons-round">category</span>
+          {{ currentLang() === 'en' ? 'Entity:' : 'الكيان:' }}
+        </label>
+        <div class="filter-select-wrap">
+          <app-custom-select
+            [options]="entityTypes"
+            [(ngModel)]="filter.entityType"
+            (ngModelChange)="onFilterChange()"
+            valueKey="id"
+            labelEnKey="nameEn"
+            labelArKey="nameAr"
+            [placeholder]="currentLang() === 'en' ? 'All Entities' : 'جميع الكيانات'"
+            [allowUnset]="true"
+            [unsetLabel]="currentLang() === 'en' ? 'All Entities' : 'جميع الكيانات'"
+          ></app-custom-select>
+        </div>
+      </div>
+
+      <!-- Action Filter with app-custom-select -->
+      <div class="filter-item">
+        <label class="filter-label">
+          <span class="material-icons-round">tune</span>
+          {{ currentLang() === 'en' ? 'Action:' : 'العملية:' }}
+        </label>
+        <div class="filter-select-wrap">
+          <app-custom-select
+            [options]="actions"
+            [(ngModel)]="filter.action"
+            (ngModelChange)="onFilterChange()"
+            valueKey="id"
+            labelEnKey="nameEn"
+            labelArKey="nameAr"
+            [placeholder]="currentLang() === 'en' ? 'All Actions' : 'جميع العمليات'"
+            [allowUnset]="true"
+            [unsetLabel]="currentLang() === 'en' ? 'All Actions' : 'جميع العمليات'"
+          ></app-custom-select>
+        </div>
+      </div>
+
+      <!-- Date Range -->
+      <div class="filter-item">
+        <label class="filter-label">
+          <span class="material-icons-round">calendar_today</span>
+          {{ currentLang() === 'en' ? 'From:' : 'من:' }}
+        </label>
+        <input type="date" class="form-control date-input" [(ngModel)]="filter.startDate" (change)="onFilterChange()">
+      </div>
+
+      <div class="filter-item">
+        <label class="filter-label">
+          <span class="material-icons-round">event</span>
+          {{ currentLang() === 'en' ? 'To:' : 'إلى:' }}
+        </label>
+        <input type="date" class="form-control date-input" [(ngModel)]="filter.endDate" (change)="onFilterChange()">
+      </div>
+
+      <!-- Reset CTA -->
+      <button type="button" class="btn btn-outline-secondary btn-reset" (click)="resetFilters()" title="Reset Filters">
+        <span class="material-icons-round">filter_alt_off</span>
+        <span>{{ currentLang() === 'en' ? 'Reset' : 'إعادة ضبط' }}</span>
+      </button>
+    </div>
   </div>
 
-  <!-- Data Table -->
-  <div class="table-container" *ngIf="!loading">
-    <table class="audit-table">
-      <thead>
-        <tr>
-          <th>Timestamp</th>
-          <th>Action</th>
-          <th>Entity</th>
-          <th>Entity ID</th>
-          <th>Performed By</th>
-          <th>IP Address</th>
-          <th>Payload Details</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let log of logs">
-          <td>{{ log.createdAt | date:'MMM d, y, h:mm a' }}</td>
-          <td>
-            <span class="badge" [ngClass]="'badge-' + log.action.toLowerCase()">
-              {{ log.action }}
+  <!-- Main Table Card -->
+  <div class="table-card card">
+    <div class="table-responsive" *ngIf="!loading(); else loadingTpl">
+      <table class="data-table" *ngIf="logs().length > 0; else emptyTpl">
+        <thead>
+          <tr>
+            <th>{{ currentLang() === 'en' ? 'Timestamp' : 'الوقت والتاريخ' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Request ID' : 'معرّف الطلب' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Action & Entity' : 'العملية والكيان' }}</th>
+            <th>{{ currentLang() === 'en' ? 'HTTP Endpoint' : 'رابط الطلب' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Status & Latency' : 'الحالة والزمن' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Actor / User' : 'المنفذ / المشرف' }}</th>
+            <th>{{ currentLang() === 'en' ? 'Client IP' : 'عنوان IP' }}</th>
+            <th class="text-end">{{ currentLang() === 'en' ? 'Inspect' : 'معاينة' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of logs()" class="log-row" [class.row-error]="log.success === false || (log.statusCode && log.statusCode >= 400)">
+            <!-- Timestamp -->
+            <td class="cell-time">
+              <div class="time-block">
+                <span class="time-primary">{{ log.createdAt | date:'MMM d, y, h:mm:ss a' }}</span>
+              </div>
+            </td>
+
+            <!-- Request ID -->
+            <td class="cell-request-id">
+              <div class="request-id-badge" *ngIf="log.requestId" (click)="copyToClipboard(log.requestId, 'Request ID')" title="Click to copy Request ID">
+                <span class="material-icons-round badge-icon">fingerprint</span>
+                <span class="req-id-text">{{ log.requestId }}</span>
+                <span class="material-icons-round copy-icon">content_copy</span>
+              </div>
+              <span *ngIf="!log.requestId" class="text-muted-dash">—</span>
+            </td>
+
+            <!-- Action & Entity -->
+            <td class="cell-action-entity">
+              <div class="action-entity-stack">
+                <span class="action-pill" [ngClass]="getActionBadgeClass(log.action)">
+                  {{ log.action }}
+                </span>
+                <div class="entity-tag" *ngIf="log.entityType">
+                  <span class="entity-name">{{ log.entityType }}</span>
+                  <span class="entity-id" *ngIf="log.entityId">#{{ log.entityId }}</span>
+                </div>
+              </div>
+            </td>
+
+            <!-- HTTP Endpoint -->
+            <td class="cell-endpoint">
+              <div class="endpoint-block" *ngIf="log.endpoint">
+                <span class="method-badge" [ngClass]="getMethodBadgeClass(log.httpMethod)">
+                  {{ log.httpMethod || 'HTTP' }}
+                </span>
+                <span class="endpoint-url" [title]="log.endpoint">{{ log.endpoint }}</span>
+              </div>
+              <span *ngIf="!log.endpoint" class="text-muted-dash">—</span>
+            </td>
+
+            <!-- Status & Latency -->
+            <td class="cell-status-latency">
+              <div class="status-latency-wrap">
+                <span class="status-badge" [ngClass]="getStatusBadgeClass(log.statusCode, log.success)">
+                  <span class="status-dot"></span>
+                  <span class="status-code-num">{{ log.statusCode || (log.success ? '200' : 'FAIL') }}</span>
+                </span>
+                <span class="latency-badge" *ngIf="log.durationMs !== undefined && log.durationMs !== null" [ngClass]="getDurationClass(log.durationMs)">
+                  <span class="material-icons-round latency-icon">schedule</span>
+                  {{ log.durationMs }}ms
+                </span>
+              </div>
+            </td>
+
+            <!-- Actor / Performed By -->
+            <td class="cell-actor">
+              <div class="actor-info" *ngIf="log.performedBy; else systemActor">
+                <span class="actor-name">{{ log.performedBy.fullName }}</span>
+                <span class="actor-role">{{ log.performedBy.role }}</span>
+              </div>
+              <ng-template #systemActor>
+                <div class="actor-system">
+                  <span class="material-icons-round system-icon">dns</span>
+                  <span>{{ log.userId ? ('User #' + log.userId) : 'SYSTEM' }}</span>
+                </div>
+              </ng-template>
+            </td>
+
+            <!-- Client IP -->
+            <td class="cell-ip">
+              <span class="ip-pill">{{ log.ipAddress || '—' }}</span>
+            </td>
+
+            <!-- Actions -->
+            <td class="cell-actions text-end">
+              <button type="button" class="btn-inspect" (click)="openDetailModal(log)" [title]="currentLang() === 'en' ? 'Inspect Audit Log' : 'معاينة تفاصيل السجل'">
+                <span class="material-icons-round">visibility</span>
+                <span>{{ currentLang() === 'en' ? 'Inspect' : 'معاينة' }}</span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <ng-template #emptyTpl>
+        <div class="empty-state-block">
+          <div class="empty-icon-wrap">
+            <span class="material-icons-round">search_off</span>
+          </div>
+          <h3>{{ currentLang() === 'en' ? 'No Audit Logs Found' : 'لم يتم العثور على سجلات' }}</h3>
+          <p>{{ currentLang() === 'en' ? 'Try adjusting your search keywords, action filters, or selected date range.' : 'جرب تغيير كلمات البحث، تصفية العمليات، أو الفترة الزمنية المحددة.' }}</p>
+          <button type="button" class="btn btn-primary" (click)="resetFilters()">
+            <span class="material-icons-round">restart_alt</span>
+            <span>{{ currentLang() === 'en' ? 'Reset All Filters' : 'إعادة ضبط التصفية' }}</span>
+          </button>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Loading Skeleton -->
+    <ng-template #loadingTpl>
+      <div class="loading-state-block">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p>{{ currentLang() === 'en' ? 'Fetching audit records from database...' : 'جاري تحميل سجلات العمليات من قاعدة البيانات...' }}</p>
+      </div>
+    </ng-template>
+
+    <!-- Pagination Footer -->
+    <div class="pagination-footer" *ngIf="!loading() && totalElements() > 0">
+      <div class="pagination-info">
+        <span>
+          {{ currentLang() === 'en' 
+             ? 'Showing ' + (filter.page * filter.size + 1) + ' to ' + (filter.page * filter.size + logs().length) + ' of ' + totalElements() + ' entries'
+             : 'عرض ' + (filter.page * filter.size + 1) + ' إلى ' + (filter.page * filter.size + logs().length) + ' من أصل ' + totalElements() + ' سجل' }}
+        </span>
+
+        <div class="page-size-selector">
+          <label>{{ currentLang() === 'en' ? 'Per page:' : 'لكل صفحة:' }}</label>
+          <div class="filter-select-wrap page-size-wrap">
+            <app-custom-select
+              [options]="pageSizeList"
+              [(ngModel)]="filter.size"
+              (ngModelChange)="onPageSizeChange($event)"
+              valueKey="id"
+              labelEnKey="nameEn"
+              labelArKey="nameAr"
+              [allowUnset]="false"
+              [searchable]="false"
+              [clearable]="false"
+              placeholder="20"
+            ></app-custom-select>
+          </div>
+        </div>
+      </div>
+
+      <div class="pagination-controls" *ngIf="totalPages() > 1">
+        <button type="button" class="btn-page" [disabled]="filter.page === 0" (click)="onPageChange(0)" title="First Page">
+          <span class="material-icons-round">{{ currentLang() === 'en' ? 'first_page' : 'last_page' }}</span>
+        </button>
+        <button type="button" class="btn-page" [disabled]="filter.page === 0" (click)="onPageChange(filter.page - 1)" title="Previous Page">
+          <span class="material-icons-round">{{ currentLang() === 'en' ? 'chevron_left' : 'chevron_right' }}</span>
+        </button>
+
+        <ng-container *ngFor="let p of getPageNumbers()">
+          <span *ngIf="p < 0" class="page-ellipsis">...</span>
+          <button 
+            *ngIf="p >= 0" 
+            type="button" 
+            class="btn-page" 
+            [class.active]="p === filter.page" 
+            (click)="onPageChange(p)"
+          >
+            {{ p + 1 }}
+          </button>
+        </ng-container>
+
+        <button type="button" class="btn-page" [disabled]="filter.page >= totalPages() - 1" (click)="onPageChange(filter.page + 1)" title="Next Page">
+          <span class="material-icons-round">{{ currentLang() === 'en' ? 'chevron_right' : 'chevron_left' }}</span>
+        </button>
+        <button type="button" class="btn-page" [disabled]="filter.page >= totalPages() - 1" (click)="onPageChange(totalPages() - 1)" title="Last Page">
+          <span class="material-icons-round">{{ currentLang() === 'en' ? 'last_page' : 'first_page' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Copied Toast Banner -->
+  <div class="copy-toast" *ngIf="copiedLabel()">
+    <span class="material-icons-round">check_circle</span>
+    <span>{{ copiedLabel() }} {{ currentLang() === 'en' ? 'copied to clipboard!' : 'تم نسخه إلى الحافظة!' }}</span>
+  </div>
+
+  <!-- Detail Inspector Modal -->
+  <div class="audit-modal-backdrop" *ngIf="selectedLog()" (click)="closeDetailModal()">
+    <div class="audit-modal-dialog" (click)="$event.stopPropagation()">
+      
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div class="modal-title-stack">
+          <div class="modal-badge-row">
+            <span class="action-pill" [ngClass]="getActionBadgeClass(selectedLog()?.action)">
+              {{ selectedLog()?.action }}
             </span>
-          </td>
-          <td>{{ log.entityType }}</td>
-          <td>{{ log.entityId }}</td>
-          <td>
-            <div *ngIf="log.performedBy" class="user-info">
-              <span class="user-name">{{ log.performedBy.fullName }}</span>
-              <span class="user-role">{{ log.performedBy.role }}</span>
+            <span class="status-badge" [ngClass]="getStatusBadgeClass(selectedLog()?.statusCode, selectedLog()?.success)">
+              <span class="status-dot"></span>
+              {{ selectedLog()?.statusCode || (selectedLog()?.success ? '200 OK' : 'FAILED') }}
+            </span>
+            <span class="latency-badge" *ngIf="selectedLog()?.durationMs !== undefined" [ngClass]="getDurationClass(selectedLog()?.durationMs)">
+              <span class="material-icons-round latency-icon">schedule</span>
+              {{ selectedLog()?.durationMs }}ms
+            </span>
+          </div>
+          <h2 class="modal-title">
+            <span class="material-icons-round text-primary">manage_search</span>
+            {{ currentLang() === 'en' ? 'Audit Log Record Details' : 'تفاصيل سجل العملية' }}
+          </h2>
+          <span class="modal-timestamp">{{ selectedLog()?.createdAt | date:'full' }}</span>
+        </div>
+
+        <button type="button" class="btn-close-modal" (click)="closeDetailModal()">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        
+        <!-- Error Banner if failed -->
+        <div class="error-alert-banner" *ngIf="selectedLog()?.errorMessage || selectedLog()?.errorType || (selectedLog()?.statusCode && selectedLog()?.statusCode! >= 400)">
+          <div class="error-alert-icon">
+            <span class="material-icons-round">warning_amber</span>
+          </div>
+          <div class="error-alert-body">
+            <h4 class="error-title">{{ selectedLog()?.errorType || 'Request Failed / Exception Encountered' }}</h4>
+            <p class="error-desc">{{ selectedLog()?.errorMessage || 'An HTTP or application error occurred during this request.' }}</p>
+          </div>
+        </div>
+
+        <!-- Request ID Section -->
+        <div class="detail-section card" *ngIf="selectedLog()?.requestId">
+          <div class="section-header">
+            <span class="material-icons-round text-primary">fingerprint</span>
+            <h3>{{ currentLang() === 'en' ? 'Distributed Request & Correlation ID' : 'معرف الطلب والتتبع (Correlation ID)' }}</h3>
+          </div>
+          <div class="copyable-box">
+            <code>{{ selectedLog()?.requestId }}</code>
+            <button type="button" class="btn btn-sm btn-outline-primary" (click)="copyToClipboard(selectedLog()?.requestId, 'Request ID')">
+              <span class="material-icons-round">content_copy</span>
+              <span>{{ currentLang() === 'en' ? 'Copy ID' : 'نسخ المعرف' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Metadata Grid -->
+        <div class="detail-section card">
+          <div class="section-header">
+            <span class="material-icons-round text-primary">info</span>
+            <h3>{{ currentLang() === 'en' ? 'Execution & Network Metadata' : 'بيانات التنفيذ والشبكة' }}</h3>
+          </div>
+
+          <div class="meta-grid">
+            <div class="meta-item" *ngIf="selectedLog()?.endpoint">
+              <span class="meta-label">{{ currentLang() === 'en' ? 'HTTP Method & URL:' : 'طريقة HTTP والرابط:' }}</span>
+              <div class="meta-val flex-val">
+                <span class="method-badge" [ngClass]="getMethodBadgeClass(selectedLog()?.httpMethod)">
+                  {{ selectedLog()?.httpMethod || 'HTTP' }}
+                </span>
+                <span class="endpoint-code">{{ selectedLog()?.endpoint }}</span>
+              </div>
             </div>
-            <span *ngIf="!log.performedBy" class="system-user">SYSTEM</span>
-          </td>
-          <td><span class="ip-address">{{ log.ipAddress }}</span></td>
-          <td class="payload-cell">
-            <details>
-              <summary>View Details</summary>
-              <pre>{{ formatPayload(log.payload) | json }}</pre>
-            </details>
-          </td>
-        </tr>
-        <tr *ngIf="logs.length === 0">
-          <td colspan="7" class="empty-state">No audit logs found matching criteria.</td>
-        </tr>
-      </tbody>
-    </table>
+
+            <div class="meta-item">
+              <span class="meta-label">{{ currentLang() === 'en' ? 'Client IP Address:' : 'عنوان IP للعميل:' }}</span>
+              <span class="meta-val font-mono">{{ selectedLog()?.ipAddress || '—' }}</span>
+            </div>
+
+            <div class="meta-item" *ngIf="selectedLog()?.entityType">
+              <span class="meta-label">{{ currentLang() === 'en' ? 'Target Entity:' : 'الكيان المستهدف:' }}</span>
+              <span class="meta-val">
+                <strong>{{ selectedLog()?.entityType }}</strong>
+                <span *ngIf="selectedLog()?.entityId"> (ID: #{{ selectedLog()?.entityId }})</span>
+              </span>
+            </div>
+
+            <div class="meta-item">
+              <span class="meta-label">{{ currentLang() === 'en' ? 'Performed By / Actor:' : 'المنفذ / المشرف:' }}</span>
+              <div class="meta-val" *ngIf="selectedLog()?.performedBy; else systemPrincipal">
+                <strong>{{ selectedLog()?.performedBy?.fullName }}</strong>
+                <span class="role-tag">{{ selectedLog()?.performedBy?.role }}</span>
+                <small class="email-sub">({{ selectedLog()?.performedBy?.email }})</small>
+              </div>
+              <ng-template #systemPrincipal>
+                <span class="meta-val text-muted">{{ selectedLog()?.userId ? ('User ID #' + selectedLog()?.userId) : 'SYSTEM / Anonymous' }}</span>
+              </ng-template>
+            </div>
+
+            <div class="meta-item full-width" *ngIf="selectedLog()?.userAgent">
+              <span class="meta-label">{{ currentLang() === 'en' ? 'User Agent / Client Device:' : 'متصفح وجهاز العميل:' }}</span>
+              <span class="meta-val text-break font-mono text-sm">{{ selectedLog()?.userAgent }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- JSON Payload Inspector -->
+        <div class="detail-section card" *ngIf="selectedLog()?.payload">
+          <div class="section-header-flex">
+            <div class="header-left">
+              <span class="material-icons-round text-primary">data_object</span>
+              <h3>{{ currentLang() === 'en' ? 'Payload & Mutation Data' : 'بيانات الطلب والتعديلات (Payload)' }}</h3>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="copyToClipboard(formatPayloadJson(selectedLog()?.payload), 'Payload JSON')">
+              <span class="material-icons-round">content_copy</span>
+              <span>{{ currentLang() === 'en' ? 'Copy JSON' : 'نسخ JSON' }}</span>
+            </button>
+          </div>
+
+          <div class="code-viewer-wrap">
+            <pre class="code-viewer"><code>{{ formatPayloadJson(selectedLog()?.payload) }}</code></pre>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeDetailModal()">
+          <span>{{ currentLang() === 'en' ? 'Close Inspector' : 'إغلاق المعاينة' }}</span>
+        </button>
+      </div>
+
+    </div>
   </div>
 
-  <!-- Pagination -->
-  <div class="pagination" *ngIf="!loading && totalPages > 1">
-    <button [disabled]="filter.page === 0" (click)="onPageChange(filter.page - 1)">Previous</button>
-    <span class="page-info">Page {{ filter.page + 1 }} of {{ totalPages }}</span>
-    <button [disabled]="filter.page >= totalPages - 1" (click)="onPageChange(filter.page + 1)">Next</button>
-  </div>
 </div>

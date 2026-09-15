@@ -1,45 +1,95 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AuditLogService, AuditLogFilterDto, AuditLogResponseDto, Page } from '../../../core/services/audit-log.service';
+import { AuditLogService, AuditLogFilterDto, AuditLogResponseDto } from '../../../core/services/audit-log.service';
+import { TranslationService } from '../../../core/services/translation.service';
+import { CustomSelectComponent } from '../../../shared/components/custom-select/custom-select.component';
 
 @Component({
   selector: 'app-audit-logs',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CustomSelectComponent],
   templateUrl: './audit-logs.component.html',
   styleUrls: ['./audit-logs.component.css']
 })
 export class AuditLogsComponent implements OnInit {
   private auditLogService = inject(AuditLogService);
+  private translationService = inject(TranslationService);
 
-  logs: AuditLogResponseDto[] = [];
-  totalElements = 0;
-  totalPages = 0;
-  
+  currentLang = this.translationService.currentLang;
+
+  // Reactive State
+  logs = signal<AuditLogResponseDto[]>([]);
+  totalElements = signal<number>(0);
+  totalPages = signal<number>(0);
+  loading = signal<boolean>(false);
+  selectedLog = signal<AuditLogResponseDto | null>(null);
+  copiedLabel = signal<string | null>(null);
+  activeModalTab = signal<'overview' | 'payload' | 'error'>('overview');
+
+  // Filter state
   filter: AuditLogFilterDto = {
     page: 0,
     size: 20,
     entityType: '',
     action: '',
-    searchKeyword: ''
+    searchKeyword: '',
+    startDate: '',
+    endDate: ''
   };
 
-  loading = false;
+  // Metrics derived from loaded logs and total count
+  totalCount = computed(() => this.totalElements());
+  
+  successCount = computed(() => {
+    return this.logs().filter(l => l.success !== false && (!l.statusCode || l.statusCode < 400)).length;
+  });
 
-  actions = ['CREATE', 'UPDATE', 'DELETE', 'APPROVE', 'REJECT', 'BULK_EXPIRE'];
+  errorCount = computed(() => {
+    return this.logs().filter(l => l.success === false || (l.statusCode && l.statusCode >= 400)).length;
+  });
+
+  avgDuration = computed(() => {
+    const validLogs = this.logs().filter(l => typeof l.durationMs === 'number' && l.durationMs > 0);
+    if (validLogs.length === 0) return 0;
+    const sum = validLogs.reduce((acc, curr) => acc + (curr.durationMs || 0), 0);
+    return Math.round(sum / validLogs.length);
+  });
+
+  actions = [
+    { id: 'CREATE', nameEn: 'CREATE', nameAr: 'إنشاء (CREATE)', icon: 'add_circle' },
+    { id: 'UPDATE', nameEn: 'UPDATE', nameAr: 'تحديث (UPDATE)', icon: 'edit' },
+    { id: 'DELETE', nameEn: 'DELETE', nameAr: 'حذف (DELETE)', icon: 'delete' },
+    { id: 'APPROVE', nameEn: 'APPROVE', nameAr: 'موافقة (APPROVE)', icon: 'check_circle' },
+    { id: 'REJECT', nameEn: 'REJECT', nameAr: 'رفض (REJECT)', icon: 'cancel' },
+    { id: 'BULK_EXPIRE', nameEn: 'BULK_EXPIRE', nameAr: 'إنهاء جماعي (BULK_EXPIRE)', icon: 'timer_off' },
+    { id: 'LOGIN', nameEn: 'LOGIN', nameAr: 'تسجيل دخول (LOGIN)', icon: 'login' },
+    { id: 'LOGOUT', nameEn: 'LOGOUT', nameAr: 'تسجيل خروج (LOGOUT)', icon: 'logout' },
+    { id: 'SYSTEM_EVENT', nameEn: 'SYSTEM_EVENT', nameAr: 'حدث نظام (SYSTEM_EVENT)', icon: 'bolt' }
+  ];
+
   entityTypes = [
-    { label: 'Offer', value: 'OFFER' },
-    { label: 'Product', value: 'PRODUCT' },
-    { label: 'Brand', value: 'BRAND' },
-    { label: 'Store', value: 'STORE' },
-    { label: 'Store Branch', value: 'STORE_BRANCH' },
-    { label: 'Category', value: 'CATEGORY' },
-    { label: 'Coupon Code', value: 'COUPON_CODE' },
-    { label: 'Flyer', value: 'FLYER' },
-    { label: 'Partner Request', value: 'PARTNER_REQUEST' },
-    { label: 'Admin User', value: 'ADMIN_USER' },
-    { label: 'City', value: 'CITY' }
+    { id: 'OFFER', nameEn: 'Offer', nameAr: 'العروض (Offer)', icon: 'local_offer' },
+    { id: 'PRODUCT', nameEn: 'Product', nameAr: 'المنتجات (Product)', icon: 'shopping_bag' },
+    { id: 'BRAND', nameEn: 'Brand', nameAr: 'الماركات (Brand)', icon: 'loyalty' },
+    { id: 'STORE', nameEn: 'Store', nameAr: 'المتاجر (Store)', icon: 'store' },
+    { id: 'STORE_BRANCH', nameEn: 'Store Branch', nameAr: 'فروع المتاجر (Branch)', icon: 'storefront' },
+    { id: 'CATEGORY', nameEn: 'Category', nameAr: 'الأقسام (Category)', icon: 'category' },
+    { id: 'COUPON_CODE', nameEn: 'Coupon Code', nameAr: 'الكوبونات (Coupon)', icon: 'confirmation_number' },
+    { id: 'FLYER', nameEn: 'Flyer', nameAr: 'المنشورات (Flyer)', icon: 'menu_book' },
+    { id: 'PARTNER_REQUEST', nameEn: 'Partner Request', nameAr: 'طلبات الشراكة (Partner Req)', icon: 'handshake' },
+    { id: 'ADMIN_USER', nameEn: 'Admin User', nameAr: 'المشرفين (Admin User)', icon: 'people' },
+    { id: 'CITY', nameEn: 'City', nameAr: 'المدن (City)', icon: 'place' },
+    { id: 'SAVED_OFFER', nameEn: 'Saved Offer', nameAr: 'العروض المحفوظة (Saved Offer)', icon: 'bookmark' },
+    { id: 'STORE_FOLLOW', nameEn: 'Store Follow', nameAr: 'متابعة المتاجر (Store Follow)', icon: 'favorite' },
+    { id: 'HTTP_REQUEST', nameEn: 'HTTP Request', nameAr: 'طلبات HTTP (HTTP Request)', icon: 'http' }
+  ];
+
+  pageSizeList = [
+    { id: 10, nameEn: '10 per page', nameAr: '10 لكل صفحة' },
+    { id: 20, nameEn: '20 per page', nameAr: '20 لكل صفحة' },
+    { id: 50, nameEn: '50 per page', nameAr: '50 لكل صفحة' },
+    { id: 100, nameEn: '100 per page', nameAr: '100 لكل صفحة' }
   ];
 
   ngOnInit(): void {
@@ -47,17 +97,25 @@ export class AuditLogsComponent implements OnInit {
   }
 
   loadLogs(): void {
-    this.loading = true;
-    this.auditLogService.getPagedLogs(this.filter).subscribe({
+    this.loading.set(true);
+
+    // Format dates to ISO if user picked date string (YYYY-MM-DD)
+    const filterCopy: AuditLogFilterDto = {
+      ...this.filter,
+      startDate: this.filter.startDate ? `${this.filter.startDate}T00:00:00` : undefined,
+      endDate: this.filter.endDate ? `${this.filter.endDate}T23:59:59` : undefined
+    };
+
+    this.auditLogService.getPagedLogs(filterCopy).subscribe({
       next: (page) => {
-        this.logs = page.content;
-        this.totalElements = page.totalElements;
-        this.totalPages = page.totalPages;
-        this.loading = false;
+        this.logs.set(page.content || []);
+        this.totalElements.set(page.totalElements || 0);
+        this.totalPages.set(page.totalPages || 0);
+        this.loading.set(false);
       },
       error: (err: any) => {
         console.error('Error loading audit logs', err);
-        this.loading = false;
+        this.loading.set(false);
       }
     });
   }
@@ -67,18 +125,125 @@ export class AuditLogsComponent implements OnInit {
     this.loadLogs();
   }
 
+  resetFilters(): void {
+    this.filter = {
+      page: 0,
+      size: 20,
+      entityType: '',
+      action: '',
+      searchKeyword: '',
+      startDate: '',
+      endDate: ''
+    };
+    this.loadLogs();
+  }
+
   onPageChange(newPage: number): void {
-    if (newPage >= 0 && newPage < this.totalPages) {
+    if (newPage >= 0 && newPage < this.totalPages()) {
       this.filter.page = newPage;
       this.loadLogs();
     }
   }
 
-  formatPayload(payload: string): any {
+  onPageSizeChange(newSize: any): void {
+    this.filter.size = Number(newSize || 20);
+    this.filter.page = 0;
+    this.loadLogs();
+  }
+
+  openDetailModal(log: AuditLogResponseDto): void {
+    this.selectedLog.set(log);
+    this.activeModalTab.set('overview');
+  }
+
+  closeDetailModal(): void {
+    this.selectedLog.set(null);
+  }
+
+  copyToClipboard(text?: string, label: string = 'Copied'): void {
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      this.copiedLabel.set(label);
+      setTimeout(() => {
+        if (this.copiedLabel() === label) {
+          this.copiedLabel.set(null);
+        }
+      }, 2000);
+    });
+  }
+
+  formatPayloadJson(payload?: string): string {
+    if (!payload) return '';
     try {
-      return JSON.parse(payload);
+      const parsed = JSON.parse(payload);
+      return JSON.stringify(parsed, null, 2);
     } catch {
       return payload;
     }
+  }
+
+  getMethodBadgeClass(method?: string): string {
+    if (!method) return 'badge-method-default';
+    switch (method.toUpperCase()) {
+      case 'GET': return 'badge-get';
+      case 'POST': return 'badge-post';
+      case 'PUT': return 'badge-put';
+      case 'PATCH': return 'badge-patch';
+      case 'DELETE': return 'badge-delete';
+      default: return 'badge-method-default';
+    }
+  }
+
+  getStatusBadgeClass(statusCode?: number, success?: boolean): string {
+    if (statusCode) {
+      if (statusCode >= 200 && statusCode < 300) return 'status-badge-2xx';
+      if (statusCode >= 300 && statusCode < 400) return 'status-badge-3xx';
+      if (statusCode >= 400 && statusCode < 500) return 'status-badge-4xx';
+      if (statusCode >= 500) return 'status-badge-5xx';
+    }
+    if (success === true) return 'status-badge-2xx';
+    if (success === false) return 'status-badge-5xx';
+    return 'status-badge-default';
+  }
+
+  getActionBadgeClass(action?: string): string {
+    if (!action) return 'action-badge-default';
+    const normalized = action.toUpperCase();
+    if (normalized.includes('CREATE') || normalized.includes('REGISTER')) return 'action-badge-create';
+    if (normalized.includes('UPDATE') || normalized.includes('EDIT')) return 'action-badge-update';
+    if (normalized.includes('DELETE') || normalized.includes('REMOVE')) return 'action-badge-delete';
+    if (normalized.includes('APPROVE')) return 'action-badge-approve';
+    if (normalized.includes('REJECT')) return 'action-badge-reject';
+    if (normalized.includes('LOGIN')) return 'action-badge-login';
+    if (normalized.includes('LOGOUT')) return 'action-badge-logout';
+    if (normalized.includes('BULK')) return 'action-badge-bulk';
+    return 'action-badge-default';
+  }
+
+  getDurationClass(durationMs?: number): string {
+    if (!durationMs && durationMs !== 0) return '';
+    if (durationMs < 100) return 'duration-fast';
+    if (durationMs < 500) return 'duration-medium';
+    return 'duration-slow';
+  }
+
+  getPageNumbers(): number[] {
+    const total = this.totalPages();
+    const current = this.filter.page;
+    const pages: number[] = [];
+
+    if (total <= 7) {
+      for (let i = 0; i < total; i++) pages.push(i);
+    } else {
+      pages.push(0);
+      let start = Math.max(1, current - 2);
+      let end = Math.min(total - 2, current + 2);
+
+      if (start > 1) pages.push(-1); // ellipsis
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (end < total - 2) pages.push(-2); // ellipsis
+      pages.push(total - 1);
+    }
+    return pages;
   }
 }
