@@ -147,7 +147,7 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
     this.productForm = this.fb.group({
       name_en: ['', Validators.required],
       name_ar: ['', Validators.required],
-      brandId: [null, Validators.required],
+      brandId: [null],
       sku: [''],
       barcode: [''],
       category_id: ['', Validators.required],
@@ -627,11 +627,12 @@ export class ProductsCrudComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     const val = this.productForm.value;
-    const selectedBrand = this.brands().find((b: any) => b.id === Number(val.brandId));
+    const brandIdNum = val.brandId && Number(val.brandId) > 0 ? Number(val.brandId) : null;
+    const selectedBrand = brandIdNum ? this.brands().find((b: any) => b.id === brandIdNum) : null;
     const product: any = {
       nameEn: val.name_en,
       nameAr: val.name_ar,
-      brandId: Number(val.brandId),
+      brandId: brandIdNum,
       brand: selectedBrand ? selectedBrand.nameEn : '',
       brandAr: selectedBrand ? selectedBrand.nameAr : '',
       sku: val.sku ? val.sku.trim() : null,

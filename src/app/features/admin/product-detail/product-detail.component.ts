@@ -114,7 +114,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     this.productForm = this.fb.group({
       name_en: ['', Validators.required],
       name_ar: ['', Validators.required],
-      brandId: [null, Validators.required],
+      brandId: [null],
       sku: [''],
       barcode: [''],
       category_id: [null, Validators.required],
@@ -446,7 +446,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     const productPayload = {
       nameEn: formVal.name_en,
       nameAr: formVal.name_ar,
-      brandId: Number(formVal.brandId),
+      brandId: formVal.brandId && Number(formVal.brandId) > 0 ? Number(formVal.brandId) : null,
       sku: formVal.sku ? formVal.sku.trim() : null,
       barcode: formVal.barcode ? formVal.barcode.trim() : null,
       categoryId: Number(formVal.category_id),
@@ -493,11 +493,12 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     const currentActive = this.product().is_active === 1 || this.product().active === true || this.product().isActive === true;
     const newActiveState = !currentActive;
 
+    const rawBrandId = this.product().brandId || this.product().brand_id || this.product().brand?.id;
     const formData = new FormData();
     const productPayload = {
       nameEn: this.product().nameEn || this.product().name_en,
       nameAr: this.product().nameAr || this.product().name_ar,
-      brandId: Number(this.product().brandId || this.product().brand_id || this.product().brand?.id),
+      brandId: rawBrandId && Number(rawBrandId) > 0 ? Number(rawBrandId) : null,
       sku: this.product().sku || '',
       barcode: this.product().barcode || '',
       categoryId: Number(this.product().categoryId || this.product().category_id),

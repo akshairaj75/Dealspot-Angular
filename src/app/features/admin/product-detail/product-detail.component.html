@@ -132,15 +132,14 @@
         <div class="form-body-grid">
           <!-- Searchable & Paginated Brand Selector -->
           <div class="form-group full-width">
-            <label class="form-label required">{{ currentLang() === 'en' ? 'Brand Partner *' : 'الماركة التجارية *'
+            <label class="form-label">{{ currentLang() === 'en' ? 'Brand Partner (Optional)' : 'الماركة التجارية (اختياري)'
               }}</label>
             <app-custom-select formControlName="brandId" [options]="brands()" valueKey="id" labelEnKey="nameEn"
               labelArKey="nameAr" [searchable]="true" (searchChange)="onBrandSearch($event)" [loading]="loadingBrands()"
-              [placeholder]="currentLang() === 'en' ? '-- Select Brand --' : '-- اختر الماركة --'"
+              [allowUnset]="true"
+              [unsetLabel]="currentLang() === 'en' ? 'No Brand (Generic / Unbranded)' : 'بدون ماركة (عام)'"
+              [placeholder]="currentLang() === 'en' ? '-- Select Brand (Optional) --' : '-- اختر الماركة (اختياري) --'"
               [filePath]="filePath"></app-custom-select>
-            <div class="error-msg" *ngIf="productForm.get('brandId')?.touched && productForm.get('brandId')?.invalid">
-              {{ currentLang() === 'en' ? 'Brand is required.' : 'الماركة مطلوبة.' }}
-            </div>
           </div>
 
           <!-- Product Names -->
