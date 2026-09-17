@@ -25,6 +25,7 @@ export class AuditLogsComponent implements OnInit {
   loading = signal<boolean>(false);
   selectedLog = signal<AuditLogResponseDto | null>(null);
   copiedLabel = signal<string | null>(null);
+  copiedField = signal<string | null>(null);
   activeModalTab = signal<'overview' | 'payload' | 'error'>('overview');
 
   // Filter state
@@ -153,23 +154,107 @@ export class AuditLogsComponent implements OnInit {
 
   openDetailModal(log: AuditLogResponseDto): void {
     this.selectedLog.set(log);
-    this.activeModalTab.set('overview');
+    if (this.hasError(log)) {
+      this.activeModalTab.set('overview');
+    } else if (this.hasPayload(log)) {
+      this.activeModalTab.set('overview');
+    } else {
+      this.activeModalTab.set('overview');
+    }
   }
 
   closeDetailModal(): void {
     this.selectedLog.set(null);
   }
 
-  copyToClipboard(text?: string, label: string = 'Copied'): void {
-    if (!text) return;
-    navigator.clipboard.writeText(text).then(() => {
+  setModalTab(tab: 'overview' | 'payload' | 'error'): void {
+    this.activeModalTab.set(tab);
+  }
+
+  hasError(log?: AuditLogResponseDto | null): boolean {
+    if (!log) return false;
+    return log.success === false || (!!log.statusCode && log.statusCode >= 400) || !!log.errorMessage || !!log.errorType;
+  }
+
+  hasPayload(log?: AuditLogResponseDto | null): boolean {
+    if (!log || !log.payload) return false;
+    return log.payload.trim().length > 0 && log.payload.trim() !== '{}' && log.payload.trim() !== 'null';
+  }
+
+  getStatusText(statusCode?: number, success?: boolean): string {
+    if (statusCode) {
+      switch (statusCode) {
+        case 200: return '200 OK';
+        case 201: return '201 Created';
+        case 204: return '204 No Content';
+        case 400: return '400 Bad Request';
+        case 401: return '401 Unauthorized';
+        case 403: return '403 Forbidden';
+        case 404: return '404 Not Found';
+        case 409: return '409 Conflict';
+        case 422: return '422 Unprocessable';
+        case 500: return '500 Server Error';
+        case 502: return '502 Bad Gateway';
+        case 503: return '503 Unavailable';
+        default: return `${statusCode}`;
+      }
+    }
+    if (success === true) return '200 OK';
+    if (success === false) return 'FAILED';
+    return 'UNKNOWN';
+  }
+
+  copyToClipboard(text?: string | number | null, label: string = 'Copied', fieldId?: string, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (text === null || text === undefined || text === '') return;
+    const stringText = String(text);
+
+    const notifySuccess = () => {
       this.copiedLabel.set(label);
+      if (fieldId) {
+        this.copiedField.set(fieldId);
+      }
       setTimeout(() => {
         if (this.copiedLabel() === label) {
           this.copiedLabel.set(null);
         }
+        if (fieldId && this.copiedField() === fieldId) {
+          this.copiedField.set(null);
+        }
       }, 2000);
-    });
+    };
+
+    if (navigator?.clipboard?.writeText && window.isSecureContext) {
+      navigator.clipboard.writeText(stringText)
+        .then(() => notifySuccess())
+        .catch(() => this.fallbackCopy(stringText, notifySuccess));
+    } else {
+      this.fallbackCopy(stringText, notifySuccess);
+    }
+  }
+
+  private fallbackCopy(stringText: string, notifySuccess: () => void): void {
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = stringText;
+      textArea.style.position = 'fixed';
+      textArea.style.top = '-9999px';
+      textArea.style.left = '-9999px';
+      textArea.style.opacity = '0';
+      textArea.setAttribute('readonly', '');
+      document.body.appendChild(textArea);
+      textArea.select();
+      textArea.setSelectionRange(0, 99999);
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      if (successful) {
+        notifySuccess();
+      }
+    } catch (err) {
+      console.error('Clipboard copy error', err);
+    }
   }
 
   formatPayloadJson(payload?: string): string {
@@ -179,6 +264,19 @@ export class AuditLogsComponent implements OnInit {
       return JSON.stringify(parsed, null, 2);
     } catch {
       return payload;
+    }
+  }
+
+  getPayloadKeyCount(payload?: string): number {
+    if (!payload) return 0;
+    try {
+      const parsed = JSON.parse(payload);
+      if (typeof parsed === 'object' && parsed !== null) {
+        return Object.keys(parsed).length;
+      }
+      return 1;
+    } catch {
+      return 1;
     }
   }
 
