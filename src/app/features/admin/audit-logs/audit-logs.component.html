@@ -8,7 +8,8 @@
         {{ currentLang() === 'en' ? 'Audit & History Logs' : 'سجل العمليات والتدقيق' }}
       </h1>
       <p class="page-subtitle">
-        {{ currentLang() === 'en' ? 'Complete trace of system mutations, HTTP requests, response latencies, and security events.' : 'تتبع شامل لجميع العمليات الإدارية، طلبات HTTP، زمن الاستجابة، وسجلات الأمان في النظام.' }}
+        {{ currentLang() === 'en' ? 'Complete trace of system mutations, HTTP requests, response latencies, and security
+        events.' : 'تتبع شامل لجميع العمليات الإدارية، طلبات HTTP، زمن الاستجابة، وسجلات الأمان في النظام.' }}
       </p>
     </div>
 
@@ -28,7 +29,8 @@
       </div>
       <div class="stat-content">
         <span class="stat-num">{{ totalCount() }}</span>
-        <span class="stat-label">{{ currentLang() === 'en' ? 'Total Audited Events' : 'إجمالي العمليات المسجلة' }}</span>
+        <span class="stat-label">{{ currentLang() === 'en' ? 'Total Audited Events' : 'إجمالي العمليات المسجلة'
+          }}</span>
       </div>
     </div>
 
@@ -67,14 +69,11 @@
   <div class="controls-bar card">
     <div class="search-input-wrap">
       <span class="material-icons-round search-icon">search</span>
-      <input 
-        type="text" 
-        [(ngModel)]="filter.searchKeyword" 
-        (keyup.enter)="onFilterChange()"
+      <input type="text" [(ngModel)]="filter.searchKeyword" (keyup.enter)="onFilterChange()"
         [placeholder]="currentLang() === 'en' ? 'Search by Request ID, URL, actor, or payload...' : 'ابحث برقم الطلب، الرابط، المشرف، أو البيانات...'"
-        class="form-control search-input"
-      >
-      <button *ngIf="filter.searchKeyword" (click)="filter.searchKeyword = ''; onFilterChange()" class="btn-clear-search">
+        class="form-control search-input">
+      <button *ngIf="filter.searchKeyword" (click)="filter.searchKeyword = ''; onFilterChange()"
+        class="btn-clear-search">
         <span class="material-icons-round">close</span>
       </button>
     </div>
@@ -87,17 +86,10 @@
           {{ currentLang() === 'en' ? 'Entity:' : 'الكيان:' }}
         </label>
         <div class="filter-select-wrap">
-          <app-custom-select
-            [options]="entityTypes"
-            [(ngModel)]="filter.entityType"
-            (ngModelChange)="onFilterChange()"
-            valueKey="id"
-            labelEnKey="nameEn"
-            labelArKey="nameAr"
-            [placeholder]="currentLang() === 'en' ? 'All Entities' : 'جميع الكيانات'"
-            [allowUnset]="true"
-            [unsetLabel]="currentLang() === 'en' ? 'All Entities' : 'جميع الكيانات'"
-          ></app-custom-select>
+          <app-custom-select [options]="entityTypes" [(ngModel)]="filter.entityType" (ngModelChange)="onFilterChange()"
+            valueKey="id" labelEnKey="nameEn" labelArKey="nameAr"
+            [placeholder]="currentLang() === 'en' ? 'All Entities' : 'جميع الكيانات'" [allowUnset]="true"
+            [unsetLabel]="currentLang() === 'en' ? 'All Entities' : 'جميع الكيانات'"></app-custom-select>
         </div>
       </div>
 
@@ -108,17 +100,10 @@
           {{ currentLang() === 'en' ? 'Action:' : 'العملية:' }}
         </label>
         <div class="filter-select-wrap">
-          <app-custom-select
-            [options]="actions"
-            [(ngModel)]="filter.action"
-            (ngModelChange)="onFilterChange()"
-            valueKey="id"
-            labelEnKey="nameEn"
-            labelArKey="nameAr"
-            [placeholder]="currentLang() === 'en' ? 'All Actions' : 'جميع العمليات'"
-            [allowUnset]="true"
-            [unsetLabel]="currentLang() === 'en' ? 'All Actions' : 'جميع العمليات'"
-          ></app-custom-select>
+          <app-custom-select [options]="actions" [(ngModel)]="filter.action" (ngModelChange)="onFilterChange()"
+            valueKey="id" labelEnKey="nameEn" labelArKey="nameAr"
+            [placeholder]="currentLang() === 'en' ? 'All Actions' : 'جميع العمليات'" [allowUnset]="true"
+            [unsetLabel]="currentLang() === 'en' ? 'All Actions' : 'جميع العمليات'"></app-custom-select>
         </div>
       </div>
 
@@ -164,7 +149,8 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let log of logs()" class="log-row" [class.row-error]="log.success === false || (log.statusCode && log.statusCode >= 400)">
+          <tr *ngFor="let log of logs()" class="log-row"
+            [class.row-error]="log.success === false || (log.statusCode && log.statusCode >= 400)">
             <!-- Timestamp -->
             <td class="cell-time">
               <div class="time-block">
@@ -174,10 +160,13 @@
 
             <!-- Request ID -->
             <td class="cell-request-id">
-              <div class="request-id-badge" *ngIf="log.requestId" (click)="copyToClipboard(log.requestId, 'Request ID', 'table-req-' + log.auditLogId, $event)" title="Click to copy Request ID">
+              <div class="request-id-badge" *ngIf="log.requestId"
+                (click)="copyToClipboard(log.requestId, 'Request ID', 'table-req-' + log.auditLogId, $event)"
+                title="Click to copy Request ID">
                 <span class="material-icons-round badge-icon">fingerprint</span>
                 <span class="req-id-text">{{ log.requestId }}</span>
-                <span class="material-icons-round copy-icon" [class.text-emerald]="copiedField() === ('table-req-' + log.auditLogId)">
+                <span class="material-icons-round copy-icon"
+                  [class.text-emerald]="copiedField() === ('table-req-' + log.auditLogId)">
                   {{ copiedField() === ('table-req-' + log.auditLogId) ? 'check' : 'content_copy' }}
                 </span>
               </div>
@@ -215,7 +204,8 @@
                   <span class="status-dot"></span>
                   <span class="status-code-num">{{ log.statusCode || (log.success ? '200' : 'FAIL') }}</span>
                 </span>
-                <span class="latency-badge" *ngIf="log.durationMs !== undefined && log.durationMs !== null" [ngClass]="getDurationClass(log.durationMs)">
+                <span class="latency-badge" *ngIf="log.durationMs !== undefined && log.durationMs !== null"
+                  [ngClass]="getDurationClass(log.durationMs)">
                   <span class="material-icons-round latency-icon">schedule</span>
                   {{ log.durationMs }}ms
                 </span>
@@ -243,7 +233,8 @@
 
             <!-- Actions -->
             <td class="cell-actions text-end">
-              <button type="button" class="btn-inspect" (click)="openDetailModal(log)" [title]="currentLang() === 'en' ? 'Inspect Audit Log' : 'معاينة تفاصيل السجل'">
+              <button type="button" class="btn-inspect" (click)="openDetailModal(log)"
+                [title]="currentLang() === 'en' ? 'Inspect Audit Log' : 'معاينة تفاصيل السجل'">
                 <span class="material-icons-round">visibility</span>
                 <span>{{ currentLang() === 'en' ? 'Inspect' : 'معاينة' }}</span>
               </button>
@@ -259,7 +250,8 @@
             <span class="material-icons-round">search_off</span>
           </div>
           <h3>{{ currentLang() === 'en' ? 'No Audit Logs Found' : 'لم يتم العثور على سجلات' }}</h3>
-          <p>{{ currentLang() === 'en' ? 'Try adjusting your search keywords, action filters, or selected date range.' : 'جرب تغيير كلمات البحث، تصفية العمليات، أو الفترة الزمنية المحددة.' }}</p>
+          <p>{{ currentLang() === 'en' ? 'Try adjusting your search keywords, action filters, or selected date range.' :
+            'جرب تغيير كلمات البحث، تصفية العمليات، أو الفترة الزمنية المحددة.' }}</p>
           <button type="button" class="btn btn-primary" (click)="resetFilters()">
             <span class="material-icons-round">restart_alt</span>
             <span>{{ currentLang() === 'en' ? 'Reset All Filters' : 'إعادة ضبط التصفية' }}</span>
@@ -272,7 +264,8 @@
     <ng-template #loadingTpl>
       <div class="loading-state-block">
         <div class="spinner-border text-primary" role="status"></div>
-        <p>{{ currentLang() === 'en' ? 'Fetching audit records from database...' : 'جاري تحميل سجلات العمليات من قاعدة البيانات...' }}</p>
+        <p>{{ currentLang() === 'en' ? 'Fetching audit records from database...' : 'جاري تحميل سجلات العمليات من قاعدة
+          البيانات...' }}</p>
       </div>
     </ng-template>
 
@@ -280,55 +273,47 @@
     <div class="pagination-footer" *ngIf="!loading() && totalElements() > 0">
       <div class="pagination-info">
         <span>
-          {{ currentLang() === 'en' 
-             ? 'Showing ' + (filter.page * filter.size + 1) + ' to ' + (filter.page * filter.size + logs().length) + ' of ' + totalElements() + ' entries'
-             : 'عرض ' + (filter.page * filter.size + 1) + ' إلى ' + (filter.page * filter.size + logs().length) + ' من أصل ' + totalElements() + ' سجل' }}
+          {{ currentLang() === 'en'
+          ? 'Showing ' + (filter.page * filter.size + 1) + ' to ' + (filter.page * filter.size + logs().length) + ' of '
+          + totalElements() + ' entries'
+          : 'عرض ' + (filter.page * filter.size + 1) + ' إلى ' + (filter.page * filter.size + logs().length) + ' من أصل
+          ' + totalElements() + ' سجل' }}
         </span>
 
         <div class="page-size-selector">
           <label>{{ currentLang() === 'en' ? 'Per page:' : 'لكل صفحة:' }}</label>
           <div class="filter-select-wrap page-size-wrap">
-            <app-custom-select
-              [options]="pageSizeList"
-              [(ngModel)]="filter.size"
-              (ngModelChange)="onPageSizeChange($event)"
-              valueKey="id"
-              labelEnKey="nameEn"
-              labelArKey="nameAr"
-              [allowUnset]="false"
-              [searchable]="false"
-              [clearable]="false"
-              placeholder="20"
-            ></app-custom-select>
+            <app-custom-select [options]="pageSizeList" [(ngModel)]="filter.size"
+              (ngModelChange)="onPageSizeChange($event)" valueKey="id" labelEnKey="nameEn" labelArKey="nameAr"
+              [allowUnset]="false" [searchable]="false" [clearable]="false" placeholder="20"></app-custom-select>
           </div>
         </div>
       </div>
 
       <div class="pagination-controls" *ngIf="totalPages() > 1">
-        <button type="button" class="btn-page" [disabled]="filter.page === 0" (click)="onPageChange(0)" title="First Page">
+        <button type="button" class="btn-page" [disabled]="filter.page === 0" (click)="onPageChange(0)"
+          title="First Page">
           <span class="material-icons-round">{{ currentLang() === 'en' ? 'first_page' : 'last_page' }}</span>
         </button>
-        <button type="button" class="btn-page" [disabled]="filter.page === 0" (click)="onPageChange(filter.page - 1)" title="Previous Page">
+        <button type="button" class="btn-page" [disabled]="filter.page === 0" (click)="onPageChange(filter.page - 1)"
+          title="Previous Page">
           <span class="material-icons-round">{{ currentLang() === 'en' ? 'chevron_left' : 'chevron_right' }}</span>
         </button>
 
         <ng-container *ngFor="let p of getPageNumbers()">
           <span *ngIf="p < 0" class="page-ellipsis">...</span>
-          <button 
-            *ngIf="p >= 0" 
-            type="button" 
-            class="btn-page" 
-            [class.active]="p === filter.page" 
-            (click)="onPageChange(p)"
-          >
+          <button *ngIf="p >= 0" type="button" class="btn-page" [class.active]="p === filter.page"
+            (click)="onPageChange(p)">
             {{ p + 1 }}
           </button>
         </ng-container>
 
-        <button type="button" class="btn-page" [disabled]="filter.page >= totalPages() - 1" (click)="onPageChange(filter.page + 1)" title="Next Page">
+        <button type="button" class="btn-page" [disabled]="filter.page >= totalPages() - 1"
+          (click)="onPageChange(filter.page + 1)" title="Next Page">
           <span class="material-icons-round">{{ currentLang() === 'en' ? 'chevron_right' : 'chevron_left' }}</span>
         </button>
-        <button type="button" class="btn-page" [disabled]="filter.page >= totalPages() - 1" (click)="onPageChange(totalPages() - 1)" title="Last Page">
+        <button type="button" class="btn-page" [disabled]="filter.page >= totalPages() - 1"
+          (click)="onPageChange(totalPages() - 1)" title="Last Page">
           <span class="material-icons-round">{{ currentLang() === 'en' ? 'last_page' : 'first_page' }}</span>
         </button>
       </div>
@@ -344,7 +329,7 @@
   <!-- Detail Inspector Modal -->
   <div class="audit-modal-backdrop" *ngIf="selectedLog()" (click)="closeDetailModal()">
     <div class="audit-modal-dialog" (click)="$event.stopPropagation()">
-      
+
       <!-- Modal Header -->
       <div class="modal-header">
         <div class="modal-header-start">
@@ -361,14 +346,18 @@
                 <span class="action-pill" [ngClass]="getActionBadgeClass(selectedLog()?.action)">
                   {{ selectedLog()?.action }}
                 </span>
-                <span class="method-badge" *ngIf="selectedLog()?.httpMethod" [ngClass]="getMethodBadgeClass(selectedLog()?.httpMethod)">
+                <span class="method-badge" *ngIf="selectedLog()?.httpMethod"
+                  [ngClass]="getMethodBadgeClass(selectedLog()?.httpMethod)">
                   {{ selectedLog()?.httpMethod }}
                 </span>
-                <span class="status-badge" [ngClass]="getStatusBadgeClass(selectedLog()?.statusCode, selectedLog()?.success)">
+                <span class="status-badge"
+                  [ngClass]="getStatusBadgeClass(selectedLog()?.statusCode, selectedLog()?.success)">
                   <span class="status-dot"></span>
                   <span>{{ getStatusText(selectedLog()?.statusCode, selectedLog()?.success) }}</span>
                 </span>
-                <span class="latency-badge" *ngIf="selectedLog()?.durationMs !== undefined && selectedLog()?.durationMs !== null" [ngClass]="getDurationClass(selectedLog()?.durationMs)">
+                <span class="latency-badge"
+                  *ngIf="selectedLog()?.durationMs !== undefined && selectedLog()?.durationMs !== null"
+                  [ngClass]="getDurationClass(selectedLog()?.durationMs)">
                   <span class="material-icons-round latency-icon">schedule</span>
                   <span>{{ selectedLog()?.durationMs }}ms</span>
                 </span>
@@ -381,41 +370,29 @@
           </div>
         </div>
 
-        <button type="button" class="btn-close-modal" (click)="closeDetailModal()" [title]="currentLang() === 'en' ? 'Close' : 'إغلاق'">
+        <button type="button" class="btn-close-modal" (click)="closeDetailModal()"
+          [title]="currentLang() === 'en' ? 'Close' : 'إغلاق'">
           <span class="material-icons-round">close</span>
         </button>
       </div>
 
       <!-- Modal Tab Navigation Bar -->
       <div class="modal-tabs-nav">
-        <button 
-          type="button" 
-          class="modal-tab-btn" 
-          [class.active]="activeModalTab() === 'overview'" 
-          (click)="setModalTab('overview')"
-        >
+        <button type="button" class="modal-tab-btn" [class.active]="activeModalTab() === 'overview'"
+          (click)="setModalTab('overview')">
           <span class="material-icons-round">dashboard</span>
           <span>{{ currentLang() === 'en' ? 'Overview & Context' : 'نظرة عامة والبيانات' }}</span>
         </button>
 
-        <button 
-          type="button" 
-          class="modal-tab-btn" 
-          [class.active]="activeModalTab() === 'payload'" 
-          (click)="setModalTab('payload')"
-        >
+        <button type="button" class="modal-tab-btn" [class.active]="activeModalTab() === 'payload'"
+          (click)="setModalTab('payload')">
           <span class="material-icons-round">data_object</span>
           <span>{{ currentLang() === 'en' ? 'Payload & Mutation' : 'بيانات الطلب (Payload)' }}</span>
           <span class="tab-indicator-badge" *ngIf="hasPayload(selectedLog())">JSON</span>
         </button>
 
-        <button 
-          type="button" 
-          class="modal-tab-btn tab-btn-error" 
-          *ngIf="hasError(selectedLog())"
-          [class.active]="activeModalTab() === 'error'" 
-          (click)="setModalTab('error')"
-        >
+        <button type="button" class="modal-tab-btn tab-btn-error" *ngIf="hasError(selectedLog())"
+          [class.active]="activeModalTab() === 'error'" (click)="setModalTab('error')">
           <span class="material-icons-round">error_outline</span>
           <span>{{ currentLang() === 'en' ? 'Error Details' : 'تفاصيل الخطأ' }}</span>
           <span class="tab-error-dot"></span>
@@ -427,7 +404,7 @@
 
         <!-- ================= TAB 1: OVERVIEW ================= -->
         <div class="tab-pane-content" *ngIf="activeModalTab() === 'overview'">
-          
+
           <!-- Prominent Error Alert Banner (if failed) -->
           <div class="inspector-error-alert" *ngIf="hasError(selectedLog())">
             <div class="alert-icon-box">
@@ -448,19 +425,22 @@
 
           <!-- Structured 4-Tile Metadata Grid -->
           <div class="inspector-tiles-grid">
-            
+
             <!-- Tile 1: Request ID -->
             <div class="meta-tile">
               <div class="tile-header">
                 <div class="tile-icon-wrap bg-primary-soft text-primary">
                   <span class="material-icons-round">fingerprint</span>
                 </div>
-                <span class="tile-label">{{ currentLang() === 'en' ? 'Request ID (Trace)' : 'معرف الطلب (Correlation ID)' }}</span>
+                <span class="tile-label">{{ currentLang() === 'en' ? 'Request ID (Trace)' : 'معرف الطلب (Correlation
+                  ID)' }}</span>
               </div>
               <div class="tile-body">
                 <div class="tile-value-box" *ngIf="selectedLog()?.requestId; else noReqId">
                   <code class="tile-code">{{ selectedLog()?.requestId }}</code>
-                  <button type="button" class="btn-tile-copy" (click)="copyToClipboard(selectedLog()?.requestId, 'Request ID', 'modal-req-id', $event)" [title]="currentLang() === 'en' ? 'Copy Request ID' : 'نسخ معرف الطلب'">
+                  <button type="button" class="btn-tile-copy"
+                    (click)="copyToClipboard(selectedLog()?.requestId, 'Request ID', 'modal-req-id', $event)"
+                    [title]="currentLang() === 'en' ? 'Copy Request ID' : 'نسخ معرف الطلب'">
                     <span class="material-icons-round" [class.text-emerald]="copiedField() === 'modal-req-id'">
                       {{ copiedField() === 'modal-req-id' ? 'check' : 'content_copy' }}
                     </span>
@@ -480,7 +460,8 @@
                 <div class="tile-icon-wrap bg-indigo-soft text-indigo">
                   <span class="material-icons-round">account_circle</span>
                 </div>
-                <span class="tile-label">{{ currentLang() === 'en' ? 'Performed By (Actor)' : 'المنفذ / المشرف' }}</span>
+                <span class="tile-label">{{ currentLang() === 'en' ? 'Performed By (Actor)' : 'المنفذ / المشرف'
+                  }}</span>
               </div>
               <div class="tile-body">
                 <div class="tile-value-box actor-tile-box" *ngIf="selectedLog()?.performedBy; else systemPrincipalTile">
@@ -489,9 +470,12 @@
                       <span class="actor-title">{{ selectedLog()?.performedBy?.fullName }}</span>
                       <span class="actor-role-badge">{{ selectedLog()?.performedBy?.role }}</span>
                     </div>
-                    <span class="actor-email-line" *ngIf="selectedLog()?.performedBy?.email">{{ selectedLog()?.performedBy?.email }}</span>
+                    <span class="actor-email-line" *ngIf="selectedLog()?.performedBy?.email">{{
+                      selectedLog()?.performedBy?.email }}</span>
                   </div>
-                  <button *ngIf="selectedLog()?.performedBy?.email" type="button" class="btn-tile-copy" (click)="copyToClipboard(selectedLog()?.performedBy?.email, 'Actor Email', 'modal-actor-email', $event)" [title]="currentLang() === 'en' ? 'Copy Email' : 'نسخ البريد'">
+                  <button *ngIf="selectedLog()?.performedBy?.email" type="button" class="btn-tile-copy"
+                    (click)="copyToClipboard(selectedLog()?.performedBy?.email, 'Actor Email', 'modal-actor-email', $event)"
+                    [title]="currentLang() === 'en' ? 'Copy Email' : 'نسخ البريد'">
                     <span class="material-icons-round" [class.text-emerald]="copiedField() === 'modal-actor-email'">
                       {{ copiedField() === 'modal-actor-email' ? 'check' : 'content_copy' }}
                     </span>
@@ -500,8 +484,10 @@
                 <ng-template #systemPrincipalTile>
                   <div class="tile-value-box actor-tile-box">
                     <div class="actor-info-stack">
-                      <span class="actor-title text-muted">{{ selectedLog()?.userId ? ('User ID #' + selectedLog()?.userId) : 'SYSTEM / Automated' }}</span>
-                      <span class="actor-email-line text-muted">{{ currentLang() === 'en' ? 'Automated System Event' : 'حدث تلقائي من النظام' }}</span>
+                      <span class="actor-title text-muted">{{ selectedLog()?.userId ? ('User ID #' +
+                        selectedLog()?.userId) : 'SYSTEM / Automated' }}</span>
+                      <span class="actor-email-line text-muted">{{ currentLang() === 'en' ? 'Automated System Event' :
+                        'حدث تلقائي من النظام' }}</span>
                     </div>
                   </div>
                 </ng-template>
@@ -522,7 +508,9 @@
                     <span class="resource-pill">{{ selectedLog()?.entityType }}</span>
                     <span class="resource-id" *ngIf="selectedLog()?.entityId">#{{ selectedLog()?.entityId }}</span>
                   </div>
-                  <button *ngIf="selectedLog()?.entityId" type="button" class="btn-tile-copy" (click)="copyToClipboard(selectedLog()?.entityId, 'Entity ID', 'modal-entity-id', $event)" [title]="currentLang() === 'en' ? 'Copy Entity ID' : 'نسخ معرف الكيان'">
+                  <button *ngIf="selectedLog()?.entityId" type="button" class="btn-tile-copy"
+                    (click)="copyToClipboard(selectedLog()?.entityId, 'Entity ID', 'modal-entity-id', $event)"
+                    [title]="currentLang() === 'en' ? 'Copy Entity ID' : 'نسخ معرف الكيان'">
                     <span class="material-icons-round" [class.text-emerald]="copiedField() === 'modal-entity-id'">
                       {{ copiedField() === 'modal-entity-id' ? 'check' : 'content_copy' }}
                     </span>
@@ -531,7 +519,8 @@
                 <ng-template #noEntityTile>
                   <div class="tile-value-box resource-tile-box">
                     <div class="resource-block">
-                      <span class="resource-pill bg-slate-light">{{ selectedLog()?.httpMethod ? 'HTTP_REQUEST' : 'GENERAL' }}</span>
+                      <span class="resource-pill bg-slate-light">{{ selectedLog()?.httpMethod ? 'HTTP_REQUEST' :
+                        'GENERAL' }}</span>
                     </div>
                   </div>
                 </ng-template>
@@ -549,7 +538,9 @@
               <div class="tile-body">
                 <div class="tile-value-box" *ngIf="selectedLog()?.ipAddress; else noIpAddress">
                   <code class="tile-code">{{ selectedLog()?.ipAddress }}</code>
-                  <button type="button" class="btn-tile-copy" (click)="copyToClipboard(selectedLog()?.ipAddress, 'IP Address', 'modal-ip', $event)" [title]="currentLang() === 'en' ? 'Copy IP' : 'نسخ IP'">
+                  <button type="button" class="btn-tile-copy"
+                    (click)="copyToClipboard(selectedLog()?.ipAddress, 'IP Address', 'modal-ip', $event)"
+                    [title]="currentLang() === 'en' ? 'Copy IP' : 'نسخ IP'">
                     <span class="material-icons-round" [class.text-emerald]="copiedField() === 'modal-ip'">
                       {{ copiedField() === 'modal-ip' ? 'check' : 'content_copy' }}
                     </span>
@@ -572,11 +563,13 @@
                 <span class="material-icons-round text-primary">route</span>
                 <h4>{{ currentLang() === 'en' ? 'HTTP Request Endpoint' : 'رابط ومسار الطلب' }}</h4>
               </div>
-              <button type="button" class="btn-box-action" (click)="copyToClipboard(selectedLog()?.endpoint, 'Endpoint URL', 'modal-endpoint', $event)">
+              <button type="button" class="btn-box-action"
+                (click)="copyToClipboard(selectedLog()?.endpoint, 'Endpoint URL', 'modal-endpoint', $event)">
                 <span class="material-icons-round" [class.text-emerald]="copiedField() === 'modal-endpoint'">
                   {{ copiedField() === 'modal-endpoint' ? 'check' : 'content_copy' }}
                 </span>
-                <span>{{ copiedField() === 'modal-endpoint' ? (currentLang() === 'en' ? 'Copied!' : 'تم النسخ!') : (currentLang() === 'en' ? 'Copy URL' : 'نسخ الرابط') }}</span>
+                <span>{{ copiedField() === 'modal-endpoint' ? (currentLang() === 'en' ? 'Copied!' : 'تم النسخ!') :
+                  (currentLang() === 'en' ? 'Copy URL' : 'نسخ الرابط') }}</span>
               </button>
             </div>
             <div class="endpoint-display-box">
@@ -592,13 +585,16 @@
             <div class="box-header-row">
               <div class="box-title-group">
                 <span class="material-icons-round text-primary">devices</span>
-                <h4>{{ currentLang() === 'en' ? 'Client Device & User Agent' : 'جهاز العميل والمتصفح (User Agent)' }}</h4>
+                <h4>{{ currentLang() === 'en' ? 'Client Device & User Agent' : 'جهاز العميل والمتصفح (User Agent)' }}
+                </h4>
               </div>
-              <button type="button" class="btn-box-action" (click)="copyToClipboard(selectedLog()?.userAgent, 'User Agent', 'modal-ua', $event)">
+              <button type="button" class="btn-box-action"
+                (click)="copyToClipboard(selectedLog()?.userAgent, 'User Agent', 'modal-ua', $event)">
                 <span class="material-icons-round" [class.text-emerald]="copiedField() === 'modal-ua'">
                   {{ copiedField() === 'modal-ua' ? 'check' : 'content_copy' }}
                 </span>
-                <span>{{ copiedField() === 'modal-ua' ? (currentLang() === 'en' ? 'Copied!' : 'تم النسخ!') : (currentLang() === 'en' ? 'Copy UA' : 'نسخ') }}</span>
+                <span>{{ copiedField() === 'modal-ua' ? (currentLang() === 'en' ? 'Copied!' : 'تم النسخ!') :
+                  (currentLang() === 'en' ? 'Copy UA' : 'نسخ') }}</span>
               </button>
             </div>
             <div class="useragent-display-box">
@@ -611,7 +607,8 @@
             <div class="box-header-row">
               <div class="box-title-group">
                 <span class="material-icons-round text-primary">data_object</span>
-                <h4>{{ currentLang() === 'en' ? 'Recorded Request / Mutation Payload' : 'بيانات الطلب المسجلة (Payload)' }}</h4>
+                <h4>{{ currentLang() === 'en' ? 'Recorded Request / Mutation Payload' : 'بيانات الطلب المسجلة (Payload)'
+                  }}</h4>
               </div>
               <button type="button" class="btn btn-sm btn-primary-light" (click)="setModalTab('payload')">
                 <span>{{ currentLang() === 'en' ? 'Open Full JSON Viewer' : 'عرض محرر JSON بالكامل' }}</span>
@@ -628,18 +625,21 @@
         <!-- ================= TAB 2: PAYLOAD INSPECTOR ================= -->
         <div class="tab-pane-content" *ngIf="activeModalTab() === 'payload'">
           <div class="payload-full-container" *ngIf="hasPayload(selectedLog()); else emptyPayloadTpl">
-            
+
             <div class="payload-toolbar">
               <div class="toolbar-left">
                 <span class="format-pill">JSON</span>
-                <span class="toolbar-meta">{{ getPayloadKeyCount(selectedLog()?.payload) }} {{ currentLang() === 'en' ? 'top-level fields' : 'حقول رئيسية' }}</span>
+                <span class="toolbar-meta">{{ getPayloadKeyCount(selectedLog()?.payload) }} {{ currentLang() === 'en' ?
+                  'top-level fields' : 'حقول رئيسية' }}</span>
               </div>
               <div class="toolbar-actions">
-                <button type="button" class="btn-copy-payload" (click)="copyToClipboard(formatPayloadJson(selectedLog()?.payload), 'Payload JSON', 'modal-payload', $event)">
+                <button type="button" class="btn-copy-payload"
+                  (click)="copyToClipboard(formatPayloadJson(selectedLog()?.payload), 'Payload JSON', 'modal-payload', $event)">
                   <span class="material-icons-round" [class.text-emerald]="copiedField() === 'modal-payload'">
                     {{ copiedField() === 'modal-payload' ? 'check' : 'content_copy' }}
                   </span>
-                  <span>{{ copiedField() === 'modal-payload' ? (currentLang() === 'en' ? 'Copied!' : 'تم النسخ!') : (currentLang() === 'en' ? 'Copy Formatted JSON' : 'نسخ JSON منسق') }}</span>
+                  <span>{{ copiedField() === 'modal-payload' ? (currentLang() === 'en' ? 'Copied!' : 'تم النسخ!') :
+                    (currentLang() === 'en' ? 'Copy Formatted JSON' : 'نسخ JSON منسق') }}</span>
                 </button>
               </div>
             </div>
@@ -664,7 +664,9 @@
                 <span class="material-icons-round">code_off</span>
               </div>
               <h4>{{ currentLang() === 'en' ? 'No Payload Recorded' : 'لا توجد بيانات طلب مسجلة' }}</h4>
-              <p>{{ currentLang() === 'en' ? 'This operation (e.g. GET request or read-only event) did not include a JSON request body or payload mutation.' : 'هذه العملية لم تتضمن بيانات في نص الطلب أو تعديلات JSON.' }}</p>
+              <p>{{ currentLang() === 'en' ? 'This operation (e.g. GET request or read-only event) did not include a
+                JSON request body or payload mutation.' : 'هذه العملية لم تتضمن بيانات في نص الطلب أو تعديلات JSON.' }}
+              </p>
             </div>
           </ng-template>
         </div>
@@ -672,7 +674,7 @@
         <!-- ================= TAB 3: ERROR DETAILS ================= -->
         <div class="tab-pane-content" *ngIf="activeModalTab() === 'error'">
           <div class="error-detail-container" *ngIf="hasError(selectedLog()); else noErrorTpl">
-            
+
             <!-- Error Banner -->
             <div class="error-hero-card">
               <div class="error-hero-header">
@@ -689,16 +691,20 @@
                 <div class="card-mini-header">
                   <div class="mini-header-start">
                     <span class="material-icons-round">subject</span>
-                    <span>{{ currentLang() === 'en' ? 'Error Description / Exception Message' : 'نص رسالة الخطأ / الاستثناء' }}</span>
+                    <span>{{ currentLang() === 'en' ? 'Error Description / Exception Message' : 'نص رسالة الخطأ /
+                      الاستثناء' }}</span>
                   </div>
-                  <button type="button" class="btn-mini-copy" (click)="copyToClipboard(selectedLog()?.errorMessage, 'Error Message', 'modal-err-msg', $event)" [title]="currentLang() === 'en' ? 'Copy Message' : 'نسخ الرسالة'">
+                  <button type="button" class="btn-mini-copy"
+                    (click)="copyToClipboard(selectedLog()?.errorMessage, 'Error Message', 'modal-err-msg', $event)"
+                    [title]="currentLang() === 'en' ? 'Copy Message' : 'نسخ الرسالة'">
                     <span class="material-icons-round" [class.text-emerald]="copiedField() === 'modal-err-msg'">
                       {{ copiedField() === 'modal-err-msg' ? 'check' : 'content_copy' }}
                     </span>
                   </button>
                 </div>
                 <div class="error-message-content" dir="ltr">
-                  <p>{{ selectedLog()?.errorMessage || 'No detailed error message was provided for this exception.' }}</p>
+                  <p>{{ selectedLog()?.errorMessage || 'No detailed error message was provided for this exception.' }}
+                  </p>
                 </div>
               </div>
             </div>
@@ -709,7 +715,9 @@
                 <span class="diag-label">{{ currentLang() === 'en' ? 'Failed Endpoint:' : 'الرابط المتأثر:' }}</span>
                 <div class="diag-val-row">
                   <code class="diag-val">{{ selectedLog()?.endpoint || '—' }}</code>
-                  <button *ngIf="selectedLog()?.endpoint" type="button" class="btn-mini-copy" (click)="copyToClipboard(selectedLog()?.endpoint, 'Endpoint', 'modal-diag-ep', $event)" [title]="currentLang() === 'en' ? 'Copy Endpoint' : 'نسخ الرابط'">
+                  <button *ngIf="selectedLog()?.endpoint" type="button" class="btn-mini-copy"
+                    (click)="copyToClipboard(selectedLog()?.endpoint, 'Endpoint', 'modal-diag-ep', $event)"
+                    [title]="currentLang() === 'en' ? 'Copy Endpoint' : 'نسخ الرابط'">
                     <span class="material-icons-round" [class.text-emerald]="copiedField() === 'modal-diag-ep'">
                       {{ copiedField() === 'modal-diag-ep' ? 'check' : 'content_copy' }}
                     </span>
@@ -720,7 +728,9 @@
                 <span class="diag-label">{{ currentLang() === 'en' ? 'Request ID:' : 'معرف الطلب:' }}</span>
                 <div class="diag-val-row">
                   <code class="diag-val">{{ selectedLog()?.requestId || '—' }}</code>
-                  <button *ngIf="selectedLog()?.requestId" type="button" class="btn-mini-copy" (click)="copyToClipboard(selectedLog()?.requestId, 'Request ID', 'modal-diag-req', $event)" [title]="currentLang() === 'en' ? 'Copy Request ID' : 'نسخ معرف الطلب'">
+                  <button *ngIf="selectedLog()?.requestId" type="button" class="btn-mini-copy"
+                    (click)="copyToClipboard(selectedLog()?.requestId, 'Request ID', 'modal-diag-req', $event)"
+                    [title]="currentLang() === 'en' ? 'Copy Request ID' : 'نسخ معرف الطلب'">
                     <span class="material-icons-round" [class.text-emerald]="copiedField() === 'modal-diag-req'">
                       {{ copiedField() === 'modal-diag-req' ? 'check' : 'content_copy' }}
                     </span>
@@ -749,7 +759,8 @@
                 <span class="material-icons-round">check_circle</span>
               </div>
               <h4>{{ currentLang() === 'en' ? 'Operation Completed Successfully' : 'تمت العملية بنجاح تام' }}</h4>
-              <p>{{ currentLang() === 'en' ? 'No errors or exceptions were encountered during this operation.' : 'لم يتم تسجيل أي أخطاء أو استثناءات لهذه العملية.' }}</p>
+              <p>{{ currentLang() === 'en' ? 'No errors or exceptions were encountered during this operation.' : 'لم يتم
+                تسجيل أي أخطاء أو استثناءات لهذه العملية.' }}</p>
             </div>
           </ng-template>
         </div>
@@ -764,11 +775,13 @@
         </div>
 
         <div class="footer-buttons">
-          <button *ngIf="selectedLog()?.requestId" type="button" class="btn btn-footer-secondary" (click)="copyToClipboard(selectedLog()?.requestId, 'Request ID', 'modal-footer-req', $event)">
+          <button *ngIf="selectedLog()?.requestId" type="button" class="btn btn-footer-secondary"
+            (click)="copyToClipboard(selectedLog()?.requestId, 'Request ID', 'modal-footer-req', $event)">
             <span class="material-icons-round" [class.text-emerald]="copiedField() === 'modal-footer-req'">
               {{ copiedField() === 'modal-footer-req' ? 'check' : 'fingerprint' }}
             </span>
-            <span>{{ copiedField() === 'modal-footer-req' ? (currentLang() === 'en' ? 'Copied!' : 'تم النسخ!') : (currentLang() === 'en' ? 'Copy Request ID' : 'نسخ المعرف') }}</span>
+            <span>{{ copiedField() === 'modal-footer-req' ? (currentLang() === 'en' ? 'Copied!' : 'تم النسخ!') :
+              (currentLang() === 'en' ? 'Copy Request ID' : 'نسخ المعرف') }}</span>
           </button>
 
           <button type="button" class="btn btn-primary" (click)="closeDetailModal()">

@@ -1,0 +1,206 @@
+<div class="special-offer-page">
+  <!-- Loading State -->
+  <div class="loading-wrap" *ngIf="loading()">
+    <div class="spinner"></div>
+    <p>{{ currentLang() === 'en' ? 'Loading festive campaign...' : 'جاري تحميل تفاصيل المهرجان الترويجي...' }}</p>
+  </div>
+
+  <!-- Content when loaded -->
+  <ng-container *ngIf="!loading() && campaign() as item">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav">
+      <div class="container">
+        <ol class="breadcrumb-list">
+          <li><a routerLink="/">{{ currentLang() === 'en' ? 'Home' : 'الرئيسية' }}</a></li>
+          <li class="separator">/</li>
+          <li><a routerLink="/offers-list">{{ currentLang() === 'en' ? 'Offers' : 'العروض' }}</a></li>
+          <li class="separator">/</li>
+          <li class="active">{{ currentLang() === 'en' ? item.titleEn : item.titleAr }}</li>
+        </ol>
+      </div>
+    </nav>
+
+    <!-- Hero Campaign Banner Section -->
+    <header class="campaign-hero" [style.backgroundImage]="'url(' + getBannerUrl(item.bannerUrl) + ')'">
+      <div class="hero-overlay"></div>
+      <div class="container hero-inner">
+        <div class="hero-content">
+          <!-- Store Badge & Event Tag -->
+          <div class="hero-top-row">
+            <div class="store-chip" *ngIf="item.storeNameEn">
+              <img [src]="getStoreLogoUrl(item)" [alt]="item.storeNameEn" class="store-chip-logo">
+              <span>{{ currentLang() === 'en' ? item.storeNameEn : (item.storeNameAr || item.storeNameEn) }}</span>
+            </div>
+            <div class="store-chip platform-chip" *ngIf="!item.storeNameEn">
+              <span class="material-icons-round">public</span>
+              <span>{{ currentLang() === 'en' ? 'Platform Mega Event' : 'مهرجان على مستوى المنصة' }}</span>
+            </div>
+
+            <span class="hero-badge-tag" *ngIf="item.badgeText">
+              <span class="material-icons-round">celebration</span>
+              {{ item.badgeText }}
+            </span>
+          </div>
+
+          <!-- Main Title -->
+          <h1 class="hero-title">
+            {{ currentLang() === 'en' ? item.titleEn : item.titleAr }}
+          </h1>
+
+          <!-- Description -->
+          <p class="hero-desc" *ngIf="item.descriptionEn || item.descriptionAr">
+            {{ currentLang() === 'en' ? item.descriptionEn : (item.descriptionAr || item.descriptionEn) }}
+          </p>
+
+          <!-- Live Countdown Timer -->
+          <div class="countdown-card" *ngIf="!item.expired">
+            <div class="countdown-title">
+              <span class="material-icons-round timer-icon">timer</span>
+              <span>{{ currentLang() === 'en' ? 'Offer Ends In' : 'ينتهي هذا العرض الخاص خلال' }}</span>
+            </div>
+            <div class="countdown-boxes">
+              <div class="time-box">
+                <span class="time-number">{{ countdownDays }}</span>
+                <span class="time-label">{{ currentLang() === 'en' ? 'Days' : 'أيام' }}</span>
+              </div>
+              <span class="time-colon">:</span>
+              <div class="time-box">
+                <span class="time-number">{{ countdownHours < 10 ? '0' + countdownHours : countdownHours }}</span>
+                <span class="time-label">{{ currentLang() === 'en' ? 'Hours' : 'ساعات' }}</span>
+              </div>
+              <span class="time-colon">:</span>
+              <div class="time-box">
+                <span class="time-number">{{ countdownMinutes < 10 ? '0' + countdownMinutes : countdownMinutes }}</span>
+                <span class="time-label">{{ currentLang() === 'en' ? 'Mins' : 'دقائق' }}</span>
+              </div>
+              <span class="time-colon">:</span>
+              <div class="time-box">
+                <span class="time-number">{{ countdownSeconds < 10 ? '0' + countdownSeconds : countdownSeconds }}</span>
+                <span class="time-label">{{ currentLang() === 'en' ? 'Secs' : 'ثواني' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Expired Notice if applicable -->
+          <div class="expired-notice" *ngIf="item.expired">
+            <span class="material-icons-round">info</span>
+            <span>{{ currentLang() === 'en' ? 'This special offer campaign has concluded.' : 'انتهت فترة هذا المهرجان الترويجي.' }}</span>
+          </div>
+
+          <!-- Bottom Action Row -->
+          <div class="hero-meta-row">
+            <span class="meta-item">
+              <span class="material-icons-round">calendar_month</span>
+              <span>{{ item.validFrom }} &rarr; {{ item.validUntil }}</span>
+            </span>
+            <span class="meta-item">
+              <span class="material-icons-round">inventory_2</span>
+              <span>{{ item.totalOffersCount }} {{ currentLang() === 'en' ? 'Deals Included' : 'عروض مشمولة' }}</span>
+            </span>
+            <button class="btn btn-share" (click)="shareCampaign()">
+              <span class="material-icons-round">share</span>
+              <span>{{ currentLang() === 'en' ? 'Share Campaign' : 'مشاركة الحملة' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Product Deals Showcase Container -->
+    <main class="deals-showcase-section">
+      <div class="container">
+        <!-- Section Header with Search -->
+        <div class="showcase-header">
+          <div class="showcase-title-box">
+            <h2>{{ currentLang() === 'en' ? 'Special Deal Offers' : 'العروض والمنتجات المشمولة' }}</h2>
+            <p>{{ currentLang() === 'en' ? 'Explore all discounted products included in this campaign' : 'تصفح جميع المنتجات المخفضة المندرجة تحت هذا المهرجان' }}</p>
+          </div>
+
+          <div class="showcase-search">
+            <span class="material-icons-round">search</span>
+            <input type="text" [(ngModel)]="searchQuery"
+              [placeholder]="currentLang() === 'en' ? 'Search products in this offer...' : 'ابحث عن منتج داخل هذا العرض...'">
+            <button *ngIf="searchQuery" (click)="searchQuery = ''" class="clear-btn">
+              <span class="material-icons-round">close</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Deals Grid -->
+        <div class="deals-grid" *ngIf="filteredOffers().length > 0">
+          <div class="deal-card card" *ngFor="let deal of filteredOffers()">
+            <!-- Discount Tag Float -->
+            <span class="badge-discount" *ngIf="deal.discountPct">-{{ deal.discountPct }}%</span>
+
+            <!-- Image Wrap -->
+            <div class="card-img-wrap">
+              <a [routerLink]="['/offers', deal.id]" target="_blank">
+                <img [src]="getOfferImageUrl(deal)" [alt]="deal.titleEn" class="deal-img">
+              </a>
+              <button class="btn-save-float" (click)="toggleSave(deal, $event)" [class.saved]="isOfferSaved(deal.id)">
+                <span class="material-icons-round">{{ isOfferSaved(deal.id) ? 'bookmark' : 'bookmark_border' }}</span>
+              </button>
+            </div>
+
+            <!-- Card Content -->
+            <div class="card-content">
+              <!-- Store badge -->
+              <div class="deal-store-pill" *ngIf="deal.storeNameEn">
+                <img [src]="getStoreLogoUrl(deal)" class="deal-store-img" [alt]="deal.storeNameEn">
+                <span>{{ currentLang() === 'en' ? deal.storeNameEn : (deal.storeNameAr || deal.storeNameEn) }}</span>
+              </div>
+
+              <!-- Deal Title -->
+              <h3 class="deal-title">
+                <a [routerLink]="['/offers', deal.id]" target="_blank">
+                  {{ currentLang() === 'en' ? deal.titleEn : (deal.titleAr || deal.titleEn) }}
+                </a>
+              </h3>
+
+              <!-- Product Name if distinct -->
+              <div class="product-tag-line" *ngIf="deal.productNameEn">
+                <span class="material-icons-round">local_offer</span>
+                <span>{{ currentLang() === 'en' ? deal.productNameEn : (deal.productNameAr || deal.productNameEn) }}</span>
+              </div>
+
+              <!-- Price Box -->
+              <div class="price-box">
+                <div class="price-stack">
+                  <span class="current-price">{{ deal.offerPrice }} <small>SAR</small></span>
+                  <span class="old-price" *ngIf="deal.originalPrice">{{ deal.originalPrice }} SAR</span>
+                </div>
+                <span class="savings-chip" *ngIf="deal.originalPrice && deal.offerPrice && (deal.originalPrice - deal.offerPrice) > 0">
+                  {{ currentLang() === 'en' ? 'Save' : 'وفر' }} {{ (deal.originalPrice - deal.offerPrice) | number:'1.0-2' }} SAR
+                </span>
+              </div>
+
+              <!-- CTA Button -->
+              <a [routerLink]="['/offers', deal.id]" target="_blank" class="btn btn-view-deal">
+                <span>{{ currentLang() === 'en' ? 'View Details' : 'تفاصيل العرض' }}</span>
+                <span class="material-icons-round">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty deals inside campaign -->
+        <div class="no-deals-state card" *ngIf="filteredOffers().length === 0">
+          <span class="material-icons-round empty-icon">sentiment_dissatisfied</span>
+          <h3>{{ currentLang() === 'en' ? 'No matching deals found' : 'لا توجد عروض مطابقة للبحث' }}</h3>
+          <p>{{ currentLang() === 'en' ? 'Try adjusting your search keyword' : 'يرجى تجربة كلمة بحث أخرى' }}</p>
+        </div>
+      </div>
+    </main>
+  </ng-container>
+
+  <!-- Not Found State -->
+  <div class="not-found-wrap container card" *ngIf="!loading() && !campaign()">
+    <span class="material-icons-round not-found-icon">event_busy</span>
+    <h2>{{ currentLang() === 'en' ? 'Campaign Not Found' : 'لم يتم العثور على المهرجان' }}</h2>
+    <p>{{ currentLang() === 'en' ? 'This special offer campaign may have expired or been removed.' : 'قد تكون هذه الحملة منتهية الصلاحية أو تمت إزالتها.' }}</p>
+    <a routerLink="/" class="btn btn-primary">
+      <span class="material-icons-round">home</span>
+      <span>{{ currentLang() === 'en' ? 'Return to Home' : 'العودة للرئيسية' }}</span>
+    </a>
+  </div>
+</div>

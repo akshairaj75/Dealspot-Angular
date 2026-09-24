@@ -28,6 +28,8 @@ import { UsersCrudComponent } from './features/admin/users-crud/users-crud';
 import { PartnerApplyComponent } from './features/partner/partner-apply/partner-apply';
 import { PartnerRequestsComponent } from './features/admin/partner-requests/partner-requests';
 import { AuditLogsComponent } from './features/admin/audit-logs/audit-logs.component';
+import { SpecialOfferDetailComponent } from './features/offers/special-offer-detail/special-offer-detail.component';
+import { SpecialOffersCrudComponent } from './features/admin/special-offers-crud/special-offers-crud.component';
 
 import { adminGuard } from './core/guards/admin.guard';
 import { guestGuard } from './core/guards/guest.guard';
@@ -69,6 +71,7 @@ export const routes: Routes = [
             { path: 'saved-offers', component: OfferListComponent, data: { onlySaved: true } },
             { path: 'offers/:id', component: OfferDetailComponent },
             { path: 'offers', redirectTo: 'offers-list', pathMatch: 'full' },
+            { path: 'special-offers/:id', component: SpecialOfferDetailComponent },
             { path: 'stores', component: StoreListComponent },
             { path: 'followed-stores', component: StoreListComponent, data: { onlyFollowed: true } },
 
@@ -102,6 +105,8 @@ export const routes: Routes = [
             { path: 'offers', component: OffersCrudComponent },
             { path: 'offers/:id/details', component: OfferDetailComponent },
             { path: 'offers/:id', component: OfferDetailComponent },
+            { path: 'special-offers', component: SpecialOffersCrudComponent },
+            { path: 'special-offers/:id/details', component: SpecialOfferDetailComponent },
             { path: 'coupons', component: CouponsCrudComponent },
             { path: 'flyers', component: FlyersCrudComponent },
             { path: 'flyers/:id/pages', component: FlyerPagesCrudComponent },

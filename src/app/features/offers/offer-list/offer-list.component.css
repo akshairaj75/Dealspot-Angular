@@ -645,6 +645,44 @@
   color: var(--primary);
 }
 
+.offer-campaign-chip-row {
+  display: flex;
+  margin-top: -2px;
+  margin-bottom: 2px;
+}
+
+.campaign-micro-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  max-width: 100%;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.campaign-micro-chip:hover {
+  background: #fde68a;
+  transform: translateY(-1px);
+}
+
+.campaign-micro-chip .chip-icon {
+  font-size: 13px;
+  color: #d97706;
+}
+
+.campaign-micro-chip .chip-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .mini-store-logo {
   width: 20px;
   height: 20px;

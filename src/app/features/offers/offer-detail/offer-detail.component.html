@@ -137,6 +137,13 @@
           <span class="material-icons-round font-xs">bolt</span>
           <span>{{ currentLang() === 'en' ? 'Flash Deal' : 'عرض خاطف' }}</span>
         </span>
+        <span class="rating-divider" *ngIf="offer()?.specialOfferId && (offer()?.specialOfferTitleEn || offer()?.specialOfferTitleAr)">•</span>
+        <a [routerLink]="['/special-offers', offer()?.specialOfferId]" class="campaign-deal-tag"
+          *ngIf="offer()?.specialOfferId && (offer()?.specialOfferTitleEn || offer()?.specialOfferTitleAr)"
+          [title]="currentLang() === 'en' ? 'Part of Promotional Campaign' : 'جزء من حملة ترويجية'">
+          <span class="material-icons-round font-xs">campaign</span>
+          <span>{{ currentLang() === 'en' ? (offer()?.specialOfferTitleEn || 'Special Campaign') : (offer()?.specialOfferTitleAr || offer()?.specialOfferTitleEn || 'عرض ترويجي خاص') }}</span>
+        </a>
       </div>
 
       <!-- Offer Price Block (Placed Directly with Product Name & Ratings) -->
@@ -207,6 +214,21 @@
           </span>
         </div>
         <span class="material-icons-round arrow-icon">chevron_right</span>
+      </div>
+
+      <!-- Promotional Campaign Feature Banner -->
+      <div class="noon-campaign-bar" *ngIf="offer()?.specialOfferId && (offer()?.specialOfferTitleEn || offer()?.specialOfferTitleAr)" [routerLink]="['/special-offers', offer()?.specialOfferId]">
+        <div class="campaign-bar-left">
+          <span class="material-icons-round campaign-icon">campaign</span>
+          <div class="campaign-bar-text">
+            <span class="campaign-bar-sub">{{ currentLang() === 'en' ? 'Promotional Campaign Event' : 'ضمن فعالية وحملة ترويجية خاصة' }}</span>
+            <strong class="campaign-bar-title">{{ currentLang() === 'en' ? (offer()?.specialOfferTitleEn || 'Special Campaign Deals') : (offer()?.specialOfferTitleAr || offer()?.specialOfferTitleEn) }}</strong>
+          </div>
+        </div>
+        <div class="campaign-bar-action">
+          <span>{{ currentLang() === 'en' ? 'View Campaign Deals' : 'عروض الحملة' }}</span>
+          <span class="material-icons-round arrow-icon">chevron_right</span>
+        </div>
       </div>
 
       <!-- Offer Promotion Spotlight Box -->

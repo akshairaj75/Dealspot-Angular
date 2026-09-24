@@ -399,6 +399,14 @@
             <span class="material-icons-round verified-icon" *ngIf="offer.store?.is_verified === 1 || offer.storeVerified" title="Verified Store">verified</span>
           </div>
 
+          <!-- Campaign association chip -->
+          <div class="offer-campaign-chip-row" *ngIf="offer.specialOfferId && (offer.specialOfferTitleEn || offer.specialOfferTitleAr)">
+            <a [routerLink]="['/special-offers', offer.specialOfferId]" class="campaign-micro-chip" [title]="currentLang() === 'en' ? 'Part of campaign: ' + (offer.specialOfferTitleEn || '') : 'ضمن حملة: ' + (offer.specialOfferTitleAr || offer.specialOfferTitleEn || '')">
+              <span class="material-icons-round chip-icon">campaign</span>
+              <span class="chip-text">{{ currentLang() === 'en' ? (offer.specialOfferTitleEn || 'Special Campaign') : (offer.specialOfferTitleAr || offer.specialOfferTitleEn || 'حملة ترويجية') }}</span>
+            </a>
+          </div>
+
           <h3 class="offer-title-main">
             <a [routerLink]="['/offers', offer.id]" target="_blank">{{ offer | translate:'title' }}</a>
           </h3>

@@ -49,6 +49,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     { label_en: 'Stores', label_ar: 'المتاجر', icon: 'store', route: '/admin/stores' },
     { label_en: 'Products', label_ar: 'المنتجات', icon: 'shopping_bag', route: '/admin/products' },
     { label_en: 'Offers', label_ar: 'العروض', icon: 'local_offer', route: '/admin/offers' },
+    { label_en: 'Special Offers', label_ar: 'العروض الخاصة', icon: 'campaign', route: '/admin/special-offers' },
     { label_en: 'Flyers', label_ar: 'المنشورات', icon: 'menu_book', route: '/admin/flyers' },
     { label_en: 'Coupons', label_ar: 'الكوبونات', icon: 'confirmation_number', route: '/admin/coupons' },
     { label_en: 'Staff & Admins', label_ar: 'المشرفين', icon: 'people', route: '/admin/users' },
@@ -113,6 +114,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
         { label_en: 'My Branches', label_ar: 'فروع متجري', icon: 'store', route: storeId ? `/admin/stores/${storeId}/branches` : '/admin/stores' },
         { label_en: 'My Products', label_ar: 'منتجات المتجر', icon: 'shopping_bag', route: '/admin/products' },
         { label_en: 'My Offers & Deals', label_ar: 'عروض متجري', icon: 'local_offer', route: '/admin/offers' },
+        { label_en: 'Special Campaigns', label_ar: 'الحملات الترويجية', icon: 'campaign', route: '/admin/special-offers' },
         { label_en: 'My Flyers', label_ar: 'منشورات متجري', icon: 'menu_book', route: '/admin/flyers' },
         { label_en: 'My Coupons', label_ar: 'كوبونات الخصم', icon: 'confirmation_number', route: '/admin/coupons' }
       ];

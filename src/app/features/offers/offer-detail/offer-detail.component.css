@@ -599,6 +599,24 @@
   border-radius: 4px;
 }
 
+.campaign-deal-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #b45309;
+  font-weight: 700;
+  font-size: 12px;
+  background: #fef3c7;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.campaign-deal-tag:hover {
+  background: #fde68a;
+}
+
 /* Prominent Pricing Block Directly Near Product Name */
 .product-price-hero-card {
   display: flex;
@@ -724,6 +742,64 @@
 .arrow-icon {
   font-size: 18px;
   color: #a855f7;
+}
+
+/* Promotional Campaign Feature Banner */
+.noon-campaign-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.noon-campaign-bar:hover {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+}
+
+.campaign-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.campaign-icon {
+  font-size: 22px;
+  color: #d97706;
+}
+
+.campaign-bar-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.campaign-bar-sub {
+  font-size: 11px;
+  color: #92400e;
+  font-weight: 600;
+}
+
+.campaign-bar-title {
+  font-size: 13.5px;
+  color: #78350f;
+  font-weight: 800;
+}
+
+.campaign-bar-action {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #b45309;
 }
 
 /* Delivery & Availability Section */

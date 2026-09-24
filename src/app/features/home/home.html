@@ -51,6 +51,43 @@
     </div>
   </section>
 
+  <!-- Special Campaigns Banner Section -->
+  <section class="home-section special-campaigns-section" *ngIf="specialOffers().length > 0">
+    <div class="section-header">
+      <div class="title-with-badge">
+        <h2 class="section-title">{{ currentLang() === 'en' ? 'Featured Campaigns' : 'أبرز المهرجانات والعروض' }}</h2>
+        <span class="badge badge-featured">{{ currentLang() === 'en' ? 'Special Events' : 'فعاليات خاصة' }}</span>
+      </div>
+    </div>
+    <div class="campaigns-scroll-grid">
+      <a [routerLink]="['/special-offers', campaign.id]" class="campaign-banner-card interactive-hover"
+        *ngFor="let campaign of specialOffers()">
+        <img [src]="getImageUrl(campaign.bannerUrl || campaign.thumbnailUrl)" [alt]="campaign.titleEn" class="campaign-bg-img">
+        <div class="campaign-banner-overlay">
+          <span class="campaign-chip-badge" *ngIf="campaign.badgeText">{{ campaign.badgeText }}</span>
+          <div class="campaign-text-wrap">
+            <h3 class="campaign-card-title">{{ currentLang() === 'en' ? campaign.titleEn : campaign.titleAr }}</h3>
+            <p class="campaign-card-desc" *ngIf="campaign.descriptionEn || campaign.descriptionAr">
+              {{ currentLang() === 'en' ? (campaign.descriptionEn || '') : (campaign.descriptionAr ||
+              campaign.descriptionEn || '') }}
+            </p>
+          </div>
+          <div class="campaign-cta-row">
+            <span class="campaign-store-badge" *ngIf="campaign.storeNameEn">
+              <span class="material-icons-round font-xs">store</span>
+              <span>{{ currentLang() === 'en' ? campaign.storeNameEn : (campaign.storeNameAr || campaign.storeNameEn)
+                }}</span>
+            </span>
+            <span class="campaign-action-pill">
+              <span>{{ currentLang() === 'en' ? 'Explore Deals' : 'تصفح العروض' }}</span>
+              <span class="material-icons-round font-xs">arrow_forward</span>
+            </span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </section>
+
   <!-- Flash Deals Slider -->
   <section class="home-section" *ngIf="flashDeals().length > 0">
     <div class="section-header">
@@ -170,11 +207,9 @@
       <div class="flyer-card card" *ngFor="let flyer of activeFlyers()">
         <div class="flyer-image-wrapper">
           <a [routerLink]="['/flyers', flyer.id]" target="_blank" class="flyer-img-link">
-            <img 
-              [src]="getImageUrl(flyer.coverImageUrl || flyer.cover_image_url || flyer.thumbnailUrl)"
+            <img [src]="getImageUrl(flyer.coverImageUrl || flyer.cover_image_url || flyer.thumbnailUrl)"
               [alt]="flyer | translate:'title'"
-              (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&auto=format&fit=crop&q=60'"
-            >
+              (error)="$any($event.target).src = 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&auto=format&fit=crop&q=60'">
           </a>
           <div class="flyer-city-badge" [class.nationwide-badge]="isNationwide(flyer)">
             <span class="material-icons-round">{{ isNationwide(flyer) ? 'public' : 'place' }}</span>

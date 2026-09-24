@@ -41,7 +41,7 @@ export class AuditLogsComponent implements OnInit {
 
   // Metrics derived from loaded logs and total count
   totalCount = computed(() => this.totalElements());
-  
+
   successCount = computed(() => {
     return this.logs().filter(l => l.success !== false && (!l.statusCode || l.statusCode < 400)).length;
   });

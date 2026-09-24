@@ -8,6 +8,7 @@ import { FlyerService } from '../../core/services/flyer.service';
 import { StoreService } from '../../core/services/store.service';
 import { BrandService } from '../../core/services/brand.service';
 import { AuthService } from '../../core/services/auth.service';
+import { SpecialOfferService, SpecialOfferItem } from '../../core/services/special-offer.service';
 import { TranslationService } from '../../core/services/translation.service';
 import { TranslatePipe } from '../../shared/pipes/translate-pipe';
 import { environment } from '../../environment/environment';
@@ -28,6 +29,7 @@ export class HomeComponent implements OnInit {
   cityService = inject(CityService);
   categoryService = inject(CategoryService);
   offerService = inject(OfferService);
+  specialOfferService = inject(SpecialOfferService);
   flyerService = inject(FlyerService);
   storeService = inject(StoreService);
   brandService = inject(BrandService);
@@ -41,6 +43,7 @@ export class HomeComponent implements OnInit {
   appConfig = APP_CONFIG;
 
   categories = signal<any[]>([]);
+  specialOffers = signal<SpecialOfferItem[]>([]);
   featuredBrands = signal<any[]>([]);
   featuredBrandPage = signal<number>(0);
   featuredBrandPageSize: number = 15;
@@ -228,6 +231,9 @@ export class HomeComponent implements OnInit {
       error: (err) => console.error('Failed to load stores:', err)
     });
 
+    // 0. Special Offer Campaigns
+    this.loadSpecialOffers();
+
     // 1. Categories
     this.categoryService.getCategories().subscribe({
       next: (res: any) => {
@@ -281,6 +287,19 @@ export class HomeComponent implements OnInit {
     this.loadFeaturedBrands(0, false);
   }
 
+  loadSpecialOffers(cityId?: number): void {
+    this.specialOfferService.getActiveSpecialOffers(undefined, cityId).subscribe({
+      next: (campaigns) => {
+        this.specialOffers.set(campaigns || []);
+        this.cd.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load special offers:', err);
+        this.specialOffers.set([]);
+      }
+    });
+  }
+
   private organizeOffers(offers: any[]): void {
     const today = new Date().toISOString().split('T')[0];
 
@@ -291,8 +310,30 @@ export class HomeComponent implements OnInit {
       return isActive && isNotExpired;
     });
 
+    // Deduplicate active offers by (productId, storeId) to ensure a single active price per product in store.
+    // When a Special Offer is currently active, it ALWAYS takes precedence everywhere in that store!
+    const map = new Map<string, any>();
+    for (const o of validOffers) {
+      const pId = o.productId || o.product_id || (o.product ? o.product.id : `o_${o.id}`);
+      const sId = o.storeId || o.store_id || (o.store ? o.store.id : 0);
+      const key = `${pId}_${sId}`;
+      const existing = map.get(key);
+      if (!existing) {
+        map.set(key, o);
+      } else {
+        const isNewSpecial = !!(o.specialOfferTitleEn || o.specialOfferTitleAr);
+        const isCurSpecial = !!(existing.specialOfferTitleEn || existing.specialOfferTitleAr);
+        if (isNewSpecial && !isCurSpecial) {
+          map.set(key, o);
+        } else if (!isCurSpecial && o.id > existing.id) {
+          map.set(key, o);
+        }
+      }
+    }
+    const deduplicatedOffers = Array.from(map.values()).sort((a, b) => (b.id || 0) - (a.id || 0));
+
     // Flash Deals (flash=true or badgeType=FLASH)
-    const flash = validOffers.filter(o =>
+    const flash = deduplicatedOffers.filter(o =>
       o.flash === true ||
       o.badgeType === 'FLASH' ||
       o.is_flash === 1 ||
@@ -302,7 +343,7 @@ export class HomeComponent implements OnInit {
     this.flashDeals.set(flash);
 
     // Featured Offers (featured=true or badgeType=FEATURED)
-    const featured = validOffers.filter(o =>
+    const featured = deduplicatedOffers.filter(o =>
       o.featured === true ||
       o.badgeType === 'FEATURED' ||
       o.is_featured === 1 ||
@@ -312,7 +353,7 @@ export class HomeComponent implements OnInit {
     this.featuredOffers.set(featured);
 
     // Latest Offers (all valid active deals, newest first)
-    this.latestOffers.set(validOffers.slice(0, 8));
+    this.latestOffers.set(deduplicatedOffers.slice(0, 8));
   }
 
   private organizeFlyers(flyers: any[]): void {
@@ -356,6 +397,8 @@ export class HomeComponent implements OnInit {
   }
 
   private filterByCity(cityId: number): void {
+    this.loadSpecialOffers(cityId);
+
     const all = this.allOffers();
     if (all && all.length > 0) {
       // Filter deals matching selected city or deals marked nationwide (!cId)
